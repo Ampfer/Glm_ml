@@ -1,0 +1,50 @@
+{{extend 'layout.html'}}
+
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+        	<h4>Cadastro de Marcas</h4>
+        </div>
+        <div class="panel-body">
+        	{{=formMarca.custom.begin}}
+            <div class="well">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{=formMarca.custom.label.marca}}
+                                {{=formMarca.custom.widget.marca}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{=formMarca.custom.label.logo}}
+                                {{=formMarca.custom.widget.logo}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="col-md-6">
+                            {{=imagem}}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <p></p>
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="right">
+                        {{=formMarca.custom.submit}}
+                        {{=btnNovo}}
+                        {{=btnVoltar}}
+                        {{=btnExcluir}}
+                    </div>
+                </div>
+            </div>
+            {{=formMarca.custom.end}}
+		</div>
+	</div>
+</div>
+

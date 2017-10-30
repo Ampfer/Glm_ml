@@ -1,0 +1,34 @@
+{{=formImagem.custom.begin}}
+<div class="well">
+    <div class="row">
+        <div class="col-md-4">
+            {{=formImagem.custom.label.imagem}}
+            {{=formImagem.custom.widget.imagem}}
+        </div>  
+        <div class="col-md-4">
+            {{=formImagem.custom.submit}}
+        </div>      
+    </div>               
+</div>
+{{=formImagem.custom.end}}
+
+{{item=0}}
+{{for row in imagens:}}
+    {{if(item % 4 == 0):}}
+        <div class="row">
+    {{pass}}
+    <div class="col-md-3 col-sm-6">
+        <span class="thumbnail">
+            <img src="{{=URL('default', 'download', args=row.imagens.imagem)}}">
+            <div class="row">
+                <div class="text-center">
+                    <a href='#' onclick="ajax('{{=URL('cadastro','remove_imagem',args=row.familias_imagens.id)}}',[],'familiaimagem');">remover</a>      
+                </div>      
+            </div>
+        </span>
+    </div>
+    {{item += 1}}
+    {{if(item % 4 == 0):}}
+        </div>
+    {{pass}}
+{{pass}}

@@ -1,0 +1,20 @@
+{{extend 'layout.html'}}
+
+{{=SELECT(arquivos, _id='lista_arquivos', _class="form-control tip")}}
+{{cont = 6}}
+{{for arquivo in arquivos:}}
+	{{cont =+ 1}}
+	{{if cont > 6:}}
+		<div class="row">
+    {{else:}}
+	<div class="col-md-2 col-sm-6 col-xs-12">
+		<span class="thumbnail", style="width : 150px;">
+			<a href="#"><img src="{{=URL('static/imagens',arquivo)}}" class="img-responsive" , width="100px">
+			</a>	
+		</span>
+	</div>
+	{{pass}}
+	{{if cont > 6: cont = 0}}
+		</div>
+	{{pass}}
+{{pass}}

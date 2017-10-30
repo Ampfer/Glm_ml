@@ -1,0 +1,88 @@
+{{extend 'layout.html'}}
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading"><h4>Cadastro de Clientes</h4></div>
+        <div class="panel-body">
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#home">Dados Cadastrais</a></li>
+                    <li><a data-toggle="tab" href="#menu1">Compras</a></li>
+                </ul>
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">
+                    {{=formCliente.custom.begin}}
+                    <div class="well">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{=formCliente.custom.label.nome}}
+                                {{=formCliente.custom.widget.nome}}
+                            </div>
+                            <div class="col-md-3">
+                                {{=formCliente.custom.label.cnpj_cpf}}
+                                {{=formCliente.custom.widget.cnpj_cpf}}
+                            </div>
+                            <div class="col-md-3">
+                                {{=formCliente.custom.label.ie_rg}}
+                                {{=formCliente.custom.widget.ie_rg}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{=formCliente.custom.label.endereco}}
+                                {{=formCliente.custom.widget.endereco}}
+                            </div>
+                            <div class="col-md-3">
+                                {{=formCliente.custom.label.bairro}}
+                                {{=formCliente.custom.widget.bairro}}
+                            </div>
+                            <div class="col-md-3">
+                                {{=formCliente.custom.label.cidade}}
+                                {{=formCliente.custom.widget.cidade}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2">
+                                {{=formCliente.custom.label.estado}}
+                                {{=formCliente.custom.widget.estado}}
+                            </div>
+                            <div class="col-md-2">
+                                {{=formCliente.custom.label.cep}}
+                                {{=formCliente.custom.widget.cep}}
+                            </div>
+                            <div class="col-md-3">
+                                {{=formCliente.custom.label.fone}}
+                                {{=formCliente.custom.widget.fone}}
+                            </div>
+                            <div class="col-md-5">
+                                {{=formCliente.custom.label.email}}
+                                {{=formCliente.custom.widget.email}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="panel panel-info">
+                        <div class="panel-body">
+                            <div class="right">
+                                {{=formCliente.custom.submit}}
+                                {{=btnNovo}}
+                                {{=btnVoltar}}
+                                {{=btnExcluir}}
+                            </div>
+                        </div>
+                    </div>
+                    {{=formCliente.custom.end}}
+                </div>
+                <div id="menu1" class="tab-pane fade">
+                    {{=formClienteCompras}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+

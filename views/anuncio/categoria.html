@@ -1,0 +1,39 @@
+{{extend 'layout.html'}}
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+        	<h4>Cadastro de Categorias</h4>
+        </div>
+        <div class="panel-body">
+        	{{=formCategoria.custom.begin}}
+            <div class="well">
+                <div class="row">
+                    <div class="col-md-8">
+                        {{=formCategoria.custom.label.categoria}}
+                        {{=formCategoria.custom.widget.categoria}}
+                    </div>
+                    <div class="col-md-4">
+                        {{=formCategoria.custom.label.categoria_id}}
+                        {{=formCategoria.custom.widget.categoria_id}}
+                    </div>
+
+                </div>
+                <div class="row">
+                    <p></p>
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="right">
+                        {{=formCategoria.custom.submit}}
+                        {{=btnNovo}}
+                        {{=btnVoltar}}
+                        {{=btnExcluir}}
+                    </div>
+                </div>
+            </div>
+            {{=formCategoria.custom.end}}
+		</div>
+	</div>
+</div>
+

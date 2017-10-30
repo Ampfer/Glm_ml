@@ -1,0 +1,59 @@
+{{extend 'layout.html'}}
+
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+        	<h4>Cadastro de Produtos</h4>
+        </div>
+        <div class="panel-body">
+        	{{=formProduto.custom.begin}}
+            <div class="well">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{=formProduto.custom.label.nome}}
+                        {{=formProduto.custom.widget.nome}}
+                    </div>
+                    <div class="col-md-3">
+                        {{=formProduto.custom.label.atributo}}
+                        {{=formProduto.custom.widget.atributo}}
+                    </div>
+                    <div class="col-md-3">
+                        {{=formProduto.custom.label.variacao}}
+                        {{=formProduto.custom.widget.variacao}}
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{=formProduto.custom.label.familia}}
+                        {{=formProduto.custom.widget.familia}}
+                    </div>
+
+                    <div class="col-md-3">
+                        {{=formProduto.custom.label.preco}}
+                        {{=formProduto.custom.widget.preco}}
+                    </div>
+                    <div class="col-md-3">
+                        {{=formProduto.custom.label.estoque}}
+                        {{=formProduto.custom.widget.estoque}}
+                    </div>
+                </div>
+                <div class="row">
+                    <p></p>
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-body">
+                    <div class="right">
+                        {{=formProduto.custom.submit}}
+                        {{=btnNovo}}
+                        {{=btnVoltar}}
+                        {{=btnExcluir}}
+                    </div>
+                </div>
+            </div>
+            {{=formProduto.custom.end}}
+		</div>
+	</div>
+</div>
+
