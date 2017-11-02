@@ -41,7 +41,6 @@ def cliente():
 
     return dict(formCliente=formCliente,btnExcluir=btnExcluir, btnVoltar=btnVoltar, btnNovo=btnNovo, formClienteCompras=formClienteCompras)
 
-
 def marcas():
     def teste(table,id):
         print 'xxx',formMarcas.errors
@@ -104,11 +103,8 @@ def produto():
 
     if idProduto == "0":
         formProduto = SQLFORM(Produtos,field_id='id', _id='formProduto')
-        btnNovo=btnExcluir=btnVoltar = ''
     else:
         formProduto = SQLFORM(Produtos,idProduto,_id='formProduto',field_id='id')
-        btnExcluir = excluir("#")
-        btnNovo = novo("produto")
 
     btnVoltar = voltar("produtos")
     formProduto.element(_name='nome')['_readonly'] = "readonly"
@@ -121,7 +117,7 @@ def produto():
         formProduto.element('#produtos_familia')['_class'] += ' form-control'
         response.flash = 'Erro no Formulário Principal!'
 
-    return dict(formProduto=formProduto, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
+    return dict(formProduto=formProduto,btnVoltar=btnVoltar)
 
 def familias():
 
@@ -150,7 +146,6 @@ def familia():
         url= URL('static/images','img_camera_ico_retina.png')
         imagem = A(IMG(_src=url,_class="img-responsive",
             _width="180",_height="180"))
-        btnNovo=btnExcluir=btnVoltar = ''
     else:
         formFamilia = SQLFORM(Familias,idFamilia,_id='formFamilia',field_id='id',)
         formFamiliaDescricao = LOAD(c='cadastro',f='familias_descricao',args=[idFamilia], target='familiasdescricao', ajax=True,)
@@ -159,9 +154,6 @@ def familia():
         url = URL('static/imagens',Familias[idFamilia].imagem)
 
         imagem = A(IMG(_src=url,_class="img-responsive"),)
-
-        btnExcluir = excluir("#")
-        btnNovo = novo("familia")
     
     btnVoltar = voltar("familias")
 
@@ -175,8 +167,7 @@ def familia():
         idProximo = rowP.id
     except:
         idProximo = idFamilia
-        response.flash = 'Último Registro...'
-    
+        response.flash = 'Último Registro...'    
 
     # id Familia Anterior
     query2 = (Familias.nome < Familias[idFamilia].nome)
@@ -203,8 +194,7 @@ def familia():
         response.flash = 'Erro no Formulário Principal!'
 
     return dict(url=url,formFamilia=formFamilia,formFamiliaProdutos=formFamiliaProdutos, formFamiliaDescricao=formFamiliaDescricao,
-        formFamiliaImagem=formFamiliaImagem, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir,imagem=imagem,
-        btnProximo=btnProximo, btnAnterior=btnAnterior)
+        formFamiliaImagem=formFamiliaImagem,btnVoltar=btnVoltar,imagem=imagem,btnProximo=btnProximo, btnAnterior=btnAnterior)
 
 def familias_descricao():
     
@@ -251,7 +241,6 @@ def selecionar_produtos():
 
     return dict(formPesquisa=formPesquisa)
 
-
 def adiciona_produto():
 
     if type(request.vars.ids) is list:
@@ -268,7 +257,6 @@ def adiciona_produto():
     #response.js = "web2py_component('%s','familiaprodutos')" %(URL('familia_produtos',args=session.idFamilia))
     redirect(request.env.http_web2py_component_location,client_side=True)    
    
-
 def remove_produto():
     idProduto = int(request.args(0))
     Produtos[idProduto] = dict(familia=None)
@@ -291,7 +279,6 @@ def remove_imagem():
     idImagem = int(request.args(0))
     del Familias_Imagens[idImagem]
     response.js = "$('#familiaimagem').get(0).reload()"
-
 
 def selecionar_imagem():
     import os

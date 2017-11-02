@@ -34,7 +34,6 @@ def categoria():
 
     return dict(formCategoria=formCategoria, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
 
-
 def anuncios():
 
     def delete_anuncio(table,id):
@@ -53,7 +52,6 @@ def anuncios():
        redirect(URL('anuncio', args=idAnuncio ))
 
     return dict(formAnuncios=formAnuncios)
-
 
 def anuncio():
 
@@ -89,13 +87,20 @@ def anuncio():
                 formAnuncioImagem=formAnuncioImagem)
 
 def anuncios_descricao():
-    print 'asdfasdf'
+
     idAnuncio = int(request.args(0))
     idDescricao = Anuncios[idAnuncio].descricao
-    if idDescricao == None:
-      formDescricao = SQLFORM(Descricoes,field_id='id', _id='formdescricao')
+    
+
+    if idDescricao == None:   
+        # Buscar Descrição Default
+        idFamilia = Anuncios[idAnuncio].familia
+        idDescricaoDefault = Familias[idFamilia].descricao
+        Descricoes.descricao.default = Descricoes[idDescricaoDefault].descricao
+
+        formDescricao = SQLFORM(Descricoes,field_id='id', _id='formdescricao')
     else:
-      formDescricao = SQLFORM(Descricoes,idDescricao,field_id='id', _id='formdescricao')
+        formDescricao = SQLFORM(Descricoes,idDescricao,field_id='id', _id='formdescricao')
 
     if formDescricao.process().accepted:
         response.flash = 'Salvo !'
@@ -108,7 +113,6 @@ def anuncios_descricao():
     return dict(formDescricao=formDescricao)        
 
 def atualiza_anuncio(id):
-    print 'aqui'
     db.commit()
     idAnuncio = int(id)
     max = Produtos.preco.max()
@@ -151,7 +155,6 @@ def anuncios_produtos():
     
     def delete_produto(table,id):
 		idAnuncio = Anuncios_Produtos[id].anuncio
-		print idAnuncio
 		atualiza_anuncio(idAnuncio)
 
     query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==Produtos.id)
@@ -166,16 +169,25 @@ def anuncios_produtos():
 
 def anuncios_imagens():
     idAnuncio = int(request.args(0))
-    formImagem = SQLFORM(Imagens)
-    if formImagem.process().accepted:
-        Anuncios_Imagens[0] = dict(anuncio=idAnuncio, imagem = formImagem.vars.id)
-        response.flash = 'Salvo !'
-    elif formImagem.errors:
-        response.flash = 'Erro no Formulário !' 
-    query = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem==Imagens.id)
-    imagens = db(query).select()
 
-    return dict(formImagem=formImagem, imagens=imagens)
+    btnAtualizar = atualizar('atualiza_imagem',' Atualizar Imagens ','anunciosimagens')
+
+    q3 = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem==Imagens.id)
+    imagens = db(q3).select()
+
+    return dict(imagens=imagens,btnAtualizar=btnAtualizar)
+
+def atualiza_imagem():
+    idAnuncio = int(request.args(0))
+    print 'aqui',idAnuncio
+    idFamilia = Anuncios[idAnuncio].familia
+    q1 = (Familias_Imagens.familia == idFamilia) & (Familias_Imagens.imagem==Imagens.id)
+    imagensFamilia = db(q1).select()
+    for row in imagensFamilia:
+        imagem = row.familias_imagens.imagem
+        q2 = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem == imagem)
+        Anuncios_Imagens.update_or_insert(q2,anuncio=idAnuncio,imagem=imagem)
+    response.js = "$('#anunciosimagens').get(0).reload();"
     
 def remove_imagem():
     idImagem = int(request.args(0))

@@ -28,6 +28,10 @@ def adicionar(controle,funcao,titulo):
     return A(SPAN(_class="glyphicon glyphicon-plus"),titulo,_class="btn btn-default",_id='adcionar',
     _onclick="show_modal('%s','%s');" %(URL(controle,funcao,vars={'reload_div':'map'}),titulo))
 
+def atualizar(funcao,titulo,target):
+    return A(SPAN(_class="glyphicon glyphicon-refresh"),titulo,_class="btn btn-default",_id='adcionar',
+    _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao, args=request.args(0)),target))
+
 def grid(query,maxtextlength=50,**kwargs):
     
     grid = SQLFORM.grid(query,

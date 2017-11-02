@@ -27,6 +27,7 @@ Marcas = db.define_table('marcas',
 Descricoes = db.define_table('descricoes',
     Field('descricao','text',label='Descrição:')
     )
+
 Imagens = db.define_table('imagens',
     Field('imagem','upload')
     )
@@ -42,11 +43,11 @@ Familias = db.define_table('familias',
 
     format='%(nome)s',
     )
+
 Familias_Imagens = db.define_table('familias_imagens',
     Field('familia', 'reference familias'),
     Field('imagem','reference imagens'),
     )
-
 
 Produtos = db.define_table('produtos',
     Field('nome', 'string', label='Descrição:', length=100),
