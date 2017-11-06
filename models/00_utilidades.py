@@ -7,6 +7,8 @@ def voltar1(target):
 def voltar2():
     return A(SPAN(_class="glyphicon glyphicon-arrow-left"), ' Voltar ', _class="btn btn-warning",
                  _onClick="history.back()")
+def publicar(url):
+    return A(SPAN(_class="glyphicon glyphicon-cloud-upload"), ' Publicar ', _class="btn btn-success", _href=url)
 def excluir(url):
     return A(SPAN(_class="glyphicon glyphicon-trash"), ' Excluir ', _class="btn btn-danger", _href=url)
 def novo(url):
@@ -23,11 +25,9 @@ def email(idcompra):
     _onclick="show_modal('%s','%s');" %(URL('pagar','enviarEmail',vars=dict(reload_div='map',id_compra=idcompra)),'Enviar Email de Pedido de Compra'))
 def pdf(url,idpagar):
     return A(SPAN(_class="glyphicon glyphicon-file"), ' PDF ', _class="btn btn-info",_href=URL(url,vars=dict(id_pagar=idpagar)),_target = "_blank" )
-
 def adicionar(controle,funcao,titulo):
     return A(SPAN(_class="glyphicon glyphicon-plus"),titulo,_class="btn btn-default",_id='adcionar',
     _onclick="show_modal('%s','%s');" %(URL(controle,funcao,vars={'reload_div':'map'}),titulo))
-
 def atualizar(funcao,titulo,target):
     return A(SPAN(_class="glyphicon glyphicon-refresh"),titulo,_class="btn btn-default",_id='adcionar',
     _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao, args=request.args(0)),target))

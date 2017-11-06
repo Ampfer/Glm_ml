@@ -7,6 +7,7 @@ CONDICAO = {'new':'Novo','used':'Usado'}
 Categorias = db.define_table('categorias',
     Field('categoria','string',label='Categoria:',length=100),
     Field('categoria_id','string',label='Id Categoria',length=30),
+    format = '%(categoria)s'
     )
 Categorias.categoria.requires  = notempty
 Categorias.categoria_id.requires = notempty

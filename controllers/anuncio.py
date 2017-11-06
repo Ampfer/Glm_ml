@@ -59,14 +59,15 @@ def anuncio():
 
     if idAnuncio == "0":
         formAnuncio = SQLFORM(Anuncios,field_id='id', _id='formAnuncio')
-        formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
+        formAnuncioPublicar = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
         btnNovo=btnExcluir=btnVoltar = ''
         
     else:
         formAnuncio = SQLFORM(Anuncios,idAnuncio,_id='formAnuncio',field_id='id')
         formAnuncioProdutos = LOAD(c='anuncio',f='anuncios_produtos',args=[idAnuncio], target='anunciosprodutos', ajax=True,content='Aguarde, carregando...')
         formAnuncioDescricao = LOAD(c='anuncio',f='anuncios_descricao',args=[idAnuncio], target='anunciosdescricao', ajax=True,content='Aguarde, carregando...')
-        formAnuncioImagem = LOAD(c='anuncio', f='anuncios_imagens',args=[idAnuncio], target='anunciosimagens', ajax=True)        
+        formAnuncioImagem = LOAD(c='anuncio', f='anuncios_imagens',args=[idAnuncio], target='anunciosimagens', ajax=True)
+        formAnuncioPublicar = LOAD(c='anuncio', f='anuncios_publicar',args=[idAnuncio], target='anunciospublicar', ajax=True)                
         btnExcluir = excluir("#")
         btnNovo = novo("anuncio")
 
@@ -84,14 +85,13 @@ def anuncio():
 
     return dict(formAnuncio=formAnuncio,btnExcluir=btnExcluir, btnVoltar=btnVoltar, btnNovo=btnNovo, 
                 formAnuncioProdutos=formAnuncioProdutos,formAnuncioDescricao=formAnuncioDescricao,
-                formAnuncioImagem=formAnuncioImagem)
+                formAnuncioImagem=formAnuncioImagem, formAnuncioPublicar=formAnuncioPublicar)
 
 def anuncios_descricao():
 
     idAnuncio = int(request.args(0))
     idDescricao = Anuncios[idAnuncio].descricao
     
-
     if idDescricao == None:   
         # Buscar Descrição Default
         idFamilia = Anuncios[idAnuncio].familia
@@ -179,7 +179,6 @@ def anuncios_imagens():
 
 def atualiza_imagem():
     idAnuncio = int(request.args(0))
-    print 'aqui',idAnuncio
     idFamilia = Anuncios[idAnuncio].familia
     q1 = (Familias_Imagens.familia == idFamilia) & (Familias_Imagens.imagem==Imagens.id)
     imagensFamilia = db(q1).select()
@@ -193,3 +192,9 @@ def remove_imagem():
     idImagem = int(request.args(0))
     del Anuncios_Imagens[idImagem]
     response.js = "$('#anunciosimagens').get(0).reload()"
+
+def anuncios_publicar():
+    idAnuncio = int(request.args(0))
+    anuncio = Anuncios[idAnuncio]
+    btnPublicar = publicar('#')
+    return dict(anuncio=anuncio,btnPublicar=btnPublicar)
