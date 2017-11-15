@@ -1,0 +1,29 @@
+<div class="well">
+    <div class="row">
+        {{=form.custom.begin}}
+        <div class="col-md-3">
+            <label>Preço:</label>
+            {{=form.custom.widget.preco}}
+        </div>
+        <div class="col-md-3">
+            <label>Preço Sugerido:</label>
+            <p>{{=ep}}</p>
+        </div>
+        <div class="col-md-3">
+            <label>Estoque</label>
+            {{=form.custom.widget.estoque}}
+        </div>
+        <div class="col-md-3">
+            <label>Estoque Sugerido:</label>
+            <p>{{=es}}</p>
+        </div>    
+        <div class="row">
+            <div class="col-md-12">
+                <div style="margin-left:18px; margin-top: 20px;">
+                    {{=form.custom.submit}}
+                </div>
+            </div>        
+        </div>
+        {{=form.custom.end}}
+    </div>  
+</div> 

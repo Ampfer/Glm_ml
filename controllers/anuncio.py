@@ -56,10 +56,11 @@ def anuncios():
 def anuncio():
 
     idAnuncio = request.args(0) or "0"
+    
 
     if idAnuncio == "0":
         formAnuncio = SQLFORM(Anuncios,field_id='id', _id='formAnuncio')
-        formAnuncioPublicar = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
+        formAnuncioPublicar = formPreco = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
         btnNovo=btnExcluir=btnVoltar = ''
         
     else:
@@ -67,6 +68,7 @@ def anuncio():
         formAnuncioProdutos = LOAD(c='anuncio',f='anuncios_produtos',args=[idAnuncio], target='anunciosprodutos', ajax=True,content='Aguarde, carregando...')
         formAnuncioDescricao = LOAD(c='anuncio',f='anuncios_descricao',args=[idAnuncio], target='anunciosdescricao', ajax=True,content='Aguarde, carregando...')
         formAnuncioImagem = LOAD(c='anuncio', f='anuncios_imagens',args=[idAnuncio], target='anunciosimagens', ajax=True)
+        formAnuncioPreco = LOAD(c='anuncio', f='anuncios_preco',args=[idAnuncio], target='anunciospreco', ajax=True)                
         formAnuncioPublicar = LOAD(c='anuncio', f='anuncios_publicar',args=[idAnuncio], target='anunciospublicar', ajax=True)                
         btnExcluir = excluir("#")
         btnNovo = novo("anuncio")
@@ -85,7 +87,8 @@ def anuncio():
 
     return dict(formAnuncio=formAnuncio,btnExcluir=btnExcluir, btnVoltar=btnVoltar, btnNovo=btnNovo, 
                 formAnuncioProdutos=formAnuncioProdutos,formAnuncioDescricao=formAnuncioDescricao,
-                formAnuncioImagem=formAnuncioImagem, formAnuncioPublicar=formAnuncioPublicar)
+                formAnuncioImagem=formAnuncioImagem, formAnuncioPublicar=formAnuncioPublicar,
+                formAnuncioPreco=formAnuncioPreco)
 
 def anuncios_descricao():
 
@@ -95,8 +98,13 @@ def anuncios_descricao():
     if idDescricao == None:   
         # Buscar Descrição Default
         idFamilia = Anuncios[idAnuncio].familia
+        
         idDescricaoDefault = Familias[idFamilia].descricao
-        Descricoes.descricao.default = Descricoes[idDescricaoDefault].descricao
+       
+        try:
+            Descricoes.descricao.default = Descricoes[idDescricaoDefault].descricao 
+        except:
+            pass        
 
         formDescricao = SQLFORM(Descricoes,field_id='id', _id='formdescricao')
     else:
@@ -192,6 +200,50 @@ def remove_imagem():
     idImagem = int(request.args(0))
     del Anuncios_Imagens[idImagem]
     response.js = "$('#anunciosimagens').get(0).reload()"
+
+def sugerido(id):
+    anuncio = Anuncios(id)
+    preco = estoque = 0
+    q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==id)
+    if anuncio.forma == 'Individual':
+        max = Produtos.estoque.max()
+        estoque = db(q).select(max).first()[max]
+        max = Produtos.preco.max()
+        preco = db(q).select(max).first()[max]
+    elif anuncio.forma =='Multiplos':
+        sum = Produtos.estoque.sum()
+        estoque = db(q).select(sum).first()[sum]
+        max = Produtos.preco.max()
+        preco = db(q).select(max).first()[max]
+    elif anuncio.forma =='Kit':
+        min = Produtos.estoque.min()
+        estoque = db(q).select(min).first()[min]
+        sum = Produtos.preco.sum()
+        preco = db(q).select(sum).first()[sum]
+    return dict(estoque=estoque,preco=preco)
+
+def anuncios_preco():
+    idAnuncio = int(request.args(0))
+    xsugerido = sugerido(idAnuncio)
+    anuncio = Anuncios[idAnuncio]
+    es = xsugerido['estoque']
+    ep = xsugerido['preco']
+    preco = anuncio.preco
+    estoque = anuncio.estoque
+    form = SQLFORM.factory(
+        Field('preco','decimal(7,2)',label='Preço',default=preco,requires=IS_DECIMAL_IN_RANGE(dot=',')),
+        Field('estoque','decimal(7,2)',label='Estoque',default=estoque,requires=IS_DECIMAL_IN_RANGE(dot=',')),
+        )
+    if form.process().accepted: 
+        preco = form.vars.preco
+        estoque = form.vars.estoque
+        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque)
+        response.js = "$('#anunciospublicar').get(0).reload()"
+    elif form.errors:
+        response.flash = 'form has errors'
+
+    return dict(form=form,es=es,ep=ep)
+
 
 def anuncios_publicar():
     idAnuncio = int(request.args(0))

@@ -3,6 +3,8 @@
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 TIPOANUNCIO = {'gold_pro':'Premium','gold_special':'Clássico'}
 CONDICAO = {'new':'Novo','used':'Usado'}
+STATUS = {'active':'Ativo','paused':'Pausado'}
+FORMA = ('Individual','Multiplos','Kit')
 
 Categorias = db.define_table('categorias',
     Field('categoria','string',label='Categoria:',length=100),
@@ -24,6 +26,8 @@ Anuncios = db.define_table('anuncios',
     Field('tipo','string',label='Tipo de Anuncio:', length=30),
     Field('condicao','string',label='Condição:',length=30),
     Field('garantia','string',label='Garantia',length=30),
+    Field('status','string',label='Status:',length=30),
+    Field('forma','string',label='Forma de Produtos:',length=30),
     Field('descricao','reference descricoes', label='Descrição:')
     )
 Anuncios.titulo.requires = notempty
@@ -36,6 +40,10 @@ Anuncios.tipo.requires = IS_IN_SET(TIPOANUNCIO,zero=None)
 Anuncios.tipo.default = 'gold_pro'
 Anuncios.condicao.requires = IS_IN_SET(CONDICAO,zero=None)
 Anuncios.categoria.requires = IS_IN_DB(db,"categorias.categoria_id",'%(categoria)s',zero=None)
+Anuncios.status.requires = IS_IN_SET(STATUS,zero=None)
+Anuncios.status.default = "active"
+Anuncios.forma.requires = IS_IN_SET(FORMA,zero=None)
+
 
 Anuncios_Produtos = db.define_table('anuncios_produtos',
     Field('anuncio', 'reference anuncios'),
