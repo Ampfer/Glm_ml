@@ -7,8 +7,6 @@ def voltar1(target):
 def voltar2():
     return A(SPAN(_class="glyphicon glyphicon-arrow-left"), ' Voltar ', _class="btn btn-warning",
                  _onClick="history.back()")
-def publicar(url):
-    return A(SPAN(_class="glyphicon glyphicon-cloud-upload"), ' Publicar ', _class="btn btn-success", _href=url)
 def excluir(url):
     return A(SPAN(_class="glyphicon glyphicon-trash"), ' Excluir ', _class="btn btn-danger", _href=url)
 def novo(url):
@@ -31,6 +29,9 @@ def adicionar(controle,funcao,titulo):
 def atualizar(funcao,titulo,target):
     return A(SPAN(_class="glyphicon glyphicon-refresh"),titulo,_class="btn btn-default",_id='adcionar',
     _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao, args=request.args(0)),target))
+
+def publicar(url,titulo):
+    return A(SPAN(_class="glyphicon glyphicon-cloud-upload"), titulo, _class="btn btn-success", _href=url)
 
 def grid(query,maxtextlength=50,**kwargs):
     

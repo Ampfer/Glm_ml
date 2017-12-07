@@ -240,7 +240,7 @@ def anuncios_preco():
         Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque)
         response.js = "$('#anunciospublicar').get(0).reload()"
     elif form.errors:
-        response.flash = 'form has errors'
+        response.flash = 'Erro no Formulário'
 
     return dict(form=form,es=es,ep=ep)
 
@@ -248,5 +248,30 @@ def anuncios_preco():
 def anuncios_publicar():
     idAnuncio = int(request.args(0))
     anuncio = Anuncios[idAnuncio]
-    btnPublicar = publicar('#')
+    if anuncio.item_id == None:
+        url = URL('anunciar_item', args=anuncio)
+        btnPublicar = publicar(url,'Anunciar Item')
+    else:
+        url = URL('alterar_item', args=anuncio)
+        btnPublicar = publicar(url,'Alterar Item')
+    import json
+    item = dict(title=anuncio.titulo,
+                category_id=anuncio.categoria,
+                price=str(anuncio.preco),
+                currency_id="BRL",
+                available_quantity=str(anuncio.estoque),
+                buying_mode="buy_it_now",
+                listing_type_id=anuncio.tipo,
+                condition=anuncio.condicao,
+                warranty=anuncio.garantia,
+               )
+    #description = Descricoes[int(anuncio.descricao)].descricao
+    itemjson = json.dumps(item)
+    print itemjson
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
+
+def anunciar_item():
+    pass
+
+def alterar_item():
+    pass
