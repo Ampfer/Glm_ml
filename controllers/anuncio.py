@@ -248,13 +248,7 @@ def anuncios_preco():
 def anuncios_publicar():
     idAnuncio = int(request.args(0))
     anuncio = Anuncios[idAnuncio]
-    if anuncio.item_id == None:
-        url = URL('anunciar_item', args=anuncio)
-        btnPublicar = publicar(url,'Anunciar Item')
-    else:
-        url = URL('alterar_item', args=anuncio)
-        btnPublicar = publicar(url,'Alterar Item')
-    import json
+
     item = dict(title=anuncio.titulo,
                 category_id=anuncio.categoria,
                 price=str(anuncio.preco),
@@ -266,12 +260,21 @@ def anuncios_publicar():
                 warranty=anuncio.garantia,
                )
     #description = Descricoes[int(anuncio.descricao)].descricao
-    itemjson = json.dumps(item)
-    print itemjson
+
+    if anuncio.item_id:
+        url = URL('alterar_item', args=item)
+        btnPublicar = publicar(url,' Alterar Item')
+    else:
+        url = URL('anunciar_item', args=item)
+        btnPublicar = publicar(url,' Anunciar Item')
+    
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
 
 def anunciar_item():
-    pass
-
+    import json
+    item = json.dumps(request.args(0))
+    response.flash = 'Anunciado com Sucesso....'
+    response.js = "$('#anunciospublicar').get(0).reload()"
+    
 def alterar_item():
     pass
