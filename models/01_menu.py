@@ -53,6 +53,9 @@ response.menu+=[
     ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='estoque')),
     ('Atualizar Preço', False, URL(r=request, c='ferramentas', f='preco')),
     ])]
+response.menu+=[
+    (T('Login ML'), False, URL(request.application,'default','login'),
+    )]
 
 DEVELOPMENT_MENU = True
 

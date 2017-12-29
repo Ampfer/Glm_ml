@@ -24,25 +24,6 @@ def index():
     #return dict(message=T('Welcome to web2py!'))
     return locals()
 
-def login():
-    from meli import Meli
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    return "<a href='"+meli.auth_url(redirect_URI=REDIRECT_URI)+"'>Login</a>"
-
-def autorize():
-    from meli import Meli
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    if request.vars.code:
-        meli.authorize(request.vars.code, REDIRECT_URI)
-    ACCESS_TOKEN = meli.access_token
-    REFRESH_TOKEN = meli.access_token
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=ACCESS_TOKEN, refresh_token=REFRESH_TOKEN)
-    body = {"available_quantity": 30, "price":200 }
-    #teste = meli.put("items/MLB919597672", body, {'access_token':ACCESS_TOKEN})
-    teste = meli.get("categories/MLB2527")
-    response.view='generic_list.csv'
-    return teste
-
 
 def user():
     """
@@ -80,5 +61,23 @@ def call():
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
     return service()
+
+
+def login():
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    return "<a href='"+meli.auth_url(redirect_URI=REDIRECT_URI)+"'> Click para Fazer Login na conta do Mercado Livre </a>"
+
+def autorize():
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    if request.vars.code:
+        meli.authorize(request.vars.code, REDIRECT_URI)
+    session.ACCESS_TOKEN = meli.access_token
+    session.REFRESH_TOKEN = meli.access_token
+    
+    #meli = Meli(client_id=CLIENT_ID,client_secret=session.CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=REFRESH_TOKEN)
+    return meli.access_token
+
 
 

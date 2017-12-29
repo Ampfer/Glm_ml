@@ -60,7 +60,7 @@ def anuncio():
 
     if idAnuncio == "0":
         formAnuncio = SQLFORM(Anuncios,field_id='id', _id='formAnuncio')
-        formAnuncioPublicar = formPreco = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
+        formAnuncioPublicar = formAnuncioPreco = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
         btnNovo=btnExcluir=btnVoltar = ''
         
     else:
@@ -230,6 +230,14 @@ def anuncios_preco():
     ep = xsugerido['preco']
     preco = anuncio.preco
     estoque = anuncio.estoque
+    
+    if preco == None:
+        Anuncios[idAnuncio] = dict(preco = ep)
+        preco = anuncio.preco
+    if estoque == None :
+        Anuncios[idAnuncio] = dict(estoque = es)
+        estoque = anuncio.estoque
+
     form = SQLFORM.factory(
         Field('preco','decimal(7,2)',label='Preço',default=preco,requires=IS_DECIMAL_IN_RANGE(dot=',')),
         Field('estoque','decimal(7,2)',label='Estoque',default=estoque,requires=IS_DECIMAL_IN_RANGE(dot=',')),
@@ -238,7 +246,7 @@ def anuncios_preco():
         preco = form.vars.preco
         estoque = form.vars.estoque
         Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque)
-        response.js = "$('#anunciospublicar').get(0).reload()"
+        response.js = "$('#anunciospreco').get(0).reload()"
     elif form.errors:
         response.flash = 'Erro no Formulário'
 
@@ -248,33 +256,77 @@ def anuncios_preco():
 def anuncios_publicar():
     idAnuncio = int(request.args(0))
     anuncio = Anuncios[idAnuncio]
+    
+    if anuncio.descricao:
+        descricao = Descricoes[int(anuncio.descricao)].descricao
+    elif Familias[int(anuncio.familia)].descricao:
+        descricao = Descricoes[Familias[int(anuncio.familia)].descricao].descricao
+    else:
+        descricao = ' '
 
-    item = dict(title=anuncio.titulo,
-                category_id=anuncio.categoria,
-                price=str(anuncio.preco),
-                currency_id="BRL",
-                available_quantity=str(anuncio.estoque),
-                buying_mode="buy_it_now",
-                listing_type_id=anuncio.tipo,
-                condition=anuncio.condicao,
-                warranty=anuncio.garantia,
-               )
-    #description = Descricoes[int(anuncio.descricao)].descricao
+    descricao = dict(plain_text=descricao)
 
     if anuncio.item_id:
-        url = URL('alterar_item', args=item)
-        btnPublicar = publicar(url,' Alterar Item')
+        session.item = dict(title=anuncio.titulo,
+                            category_id=anuncio.categoria,
+                            price=float(anuncio.preco),        
+                            available_quantity=float(anuncio.estoque),
+                            )
+        session.description = descricao
+        btnPublicar = publicar('alterar_item',' Atualizar Item','anunciospublicar',anuncio.item_id)
     else:
-        url = URL('anunciar_item', args=item)
-        btnPublicar = publicar(url,' Anunciar Item')
+        session.item = dict(title=anuncio.titulo,
+                            category_id=anuncio.categoria,
+                            price=float(anuncio.preco),
+                            currency_id="BRL",
+                            available_quantity=float(anuncio.estoque),
+                            buying_mode="buy_it_now",
+                            listing_type_id=anuncio.tipo,
+                            condition=anuncio.condicao,
+                            warranty=anuncio.garantia,
+                            description = descricao,
+                            )
+        btnPublicar = publicar('anunciar_item',' Anunciar Item','anunciospublicar',anuncio.item_id)
     
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
 
 def anunciar_item():
-    import json
-    item = json.dumps(request.args(0))
-    response.flash = 'Anunciado com Sucesso....'
-    response.js = "$('#anunciospublicar').get(0).reload()"
-    
+    from meli import Meli 
+    body = session.item
+    #body = {"title":"Item De Teste - Por Favor, Não Ofertar! --kc:off","category_id":"MLB257111","price":10,"currency_id":"BRL","available_quantity":1,"buying_mode":"buy_it_now","listing_type_id":"bronze","condition":"new","description":"Item de Teste. Mercado Livre's PHP SDK.","video_id":"Q6dsRpVyyWs","warranty":"12 month","pictures":[{"source":"https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/IPhone_7_Plus_Jet_Black.svg/440px-IPhone_7_Plus_Jet_Black.svg.png"},{"source":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/IPhone7.jpg/440px-IPhone7.jpg"}],"attributes":[{"id":"EAN","value_name":"190198043566"},{"id":"COLOR","value_id":"52049"},{"id":"WEIGHT","value_name":"188g"},{"id":"SCREEN_SIZE","value_name":"4.7 polegadas"},{"id":"TOUCH_SCREEN","value_id":"242085"},{"id":"DIGITAL_CAMERA","value_id":"242085"},{"id":"GPS","value_id":"242085"},{"id":"MP3","value_id":"242085"},{"id":"OPERATING_SYSTEM","value_id":"296859"},{"id":"OPERATING_SYSTEM_VERSION","value_id":"iOS 10"},{"id":"DISPLAY_RESOLUTION","value_id":"1920 x 1080"},{"id":"BATTERY_CAPACITY","value_name":"3980 mAh"},{"id":"FRONT_CAMERA_RESOLUTION","value_name":"7 mpx"}]}
+        
+    if session.ACCESS_TOKEN:
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+        item = meli.post("/items", body, {'access_token':session.ACCESS_TOKEN})
+        status = 'Anunciado com Sucesso....'
+        #teste = meli.get("categories/MLB2527")        
+    else:
+        status = 'Antes Faça o Login....'
+        item = ''    
+
+    #response.flash = status
+    #response.js = "$('#anunciospublicar').get(0).reload()"
+    return  item
+
 def alterar_item():
-    pass
+    from meli import Meli    
+    body = session.item
+    item_args = "items/%s" %(request.args(0))
+    descricao_args = "%s/description" %(item_args)
+    print descricao_args   
+    if session.ACCESS_TOKEN:
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+        item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+        desc = meli.put(descricao_args, session.description, {'access_token':session.ACCESS_TOKEN})
+        status = 'Anuncio Atualizado com Sucesso....'
+    else:
+        status = 'Antes Faça o Login....'
+        item = ''   
+    
+    import json
+    teste = json.loads(desc)
+
+    #response.flash = status
+    #response.js = "$('#anunciospublicar').get(0).reload()"
+    return desc
+

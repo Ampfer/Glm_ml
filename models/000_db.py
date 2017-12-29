@@ -134,3 +134,9 @@ CLIENT_ID = 8985760257369748
 CLIENT_SECRET = "iiRaQEEVWHyQvo2rzSaToHZQkOpkrS7k"
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
+
+def login():
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    return "<a href='"+meli.auth_url(redirect_URI=REDIRECT_URI)+"' target='_blank'>Login</a>"
+
