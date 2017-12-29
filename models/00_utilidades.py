@@ -30,9 +30,9 @@ def atualizar(funcao,titulo,target):
     return A(SPAN(_class="glyphicon glyphicon-refresh"),titulo,_class="btn btn-default",_id='adcionar',
     _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao, args=request.args(0)),target))
 
-def publicar(funcao,titulo,target,itemId):
+def publicar(funcao,titulo,target):
     return A(SPAN(_class="glyphicon glyphicon-cloud-upload"),titulo,_class="btn btn-success",_id='publicar',
-    _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao, args=itemId),target))
+    _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao),target))
 
 def grid(query,maxtextlength=50,**kwargs):
     

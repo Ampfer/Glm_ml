@@ -56,7 +56,10 @@ def anuncios():
 def anuncio():
 
     idAnuncio = request.args(0) or "0"
-    
+
+    Anuncios.preco.writable = False
+    Anuncios.estoque.writable = False
+    Anuncios.descricao.writable = False
 
     if idAnuncio == "0":
         formAnuncio = SQLFORM(Anuncios,field_id='id', _id='formAnuncio')
@@ -76,7 +79,7 @@ def anuncio():
     btnVoltar = voltar("anuncios")
 
     formAnuncio.element(_name='familia')['_onchange'] = "jQuery('#anuncios_titulo').val($('#anuncios_familia option:selected').text());"
-    #formAnuncio.element(_name='preco')['_readonly'] = "readonly"
+    formAnuncio.element(_name='item_id')['_readonly'] = "readonly"
 
     if formAnuncio.process().accepted:
         response.flash = 'Anuncio Salvo com Sucesso!'
@@ -263,39 +266,45 @@ def anuncios_publicar():
         descricao = Descricoes[Familias[int(anuncio.familia)].descricao].descricao
     else:
         descricao = ' '
-
     descricao = dict(plain_text=descricao)
 
+    session.item = dict(title=anuncio.titulo,
+                    item_id=anuncio.item_id,
+                    category_id=anuncio.categoria,
+                    price=float(anuncio.preco),
+                    currency_id="BRL",
+                    available_quantity=float(anuncio.estoque),
+                    status=anuncio.status,
+                    buying_mode="buy_it_now",
+                    listing_type_id=anuncio.tipo,
+                    condition=anuncio.condicao,
+                    warranty=anuncio.garantia,
+                    description = descricao,
+                    )
+
     if anuncio.item_id:
-        session.item = dict(title=anuncio.titulo,
-                            category_id=anuncio.categoria,
-                            price=float(anuncio.preco),        
-                            available_quantity=float(anuncio.estoque),
-                            )
-        session.description = descricao
-        btnPublicar = publicar('alterar_item',' Atualizar Item','anunciospublicar',anuncio.item_id)
+        btnPublicar = publicar('alterar_item',' Atualizar Item','anunciospublicar')
     else:
-        session.item = dict(title=anuncio.titulo,
-                            category_id=anuncio.categoria,
-                            price=float(anuncio.preco),
-                            currency_id="BRL",
-                            available_quantity=float(anuncio.estoque),
-                            buying_mode="buy_it_now",
-                            listing_type_id=anuncio.tipo,
-                            condition=anuncio.condicao,
-                            warranty=anuncio.garantia,
-                            description = descricao,
-                            )
-        btnPublicar = publicar('anunciar_item',' Anunciar Item','anunciospublicar',anuncio.item_id)
+        btnPublicar = publicar('anunciar_item',' Anunciar Item','anunciospublicar')
     
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
 
 def anunciar_item():
-    from meli import Meli 
-    body = session.item
-    #body = {"title":"Item De Teste - Por Favor, Não Ofertar! --kc:off","category_id":"MLB257111","price":10,"currency_id":"BRL","available_quantity":1,"buying_mode":"buy_it_now","listing_type_id":"bronze","condition":"new","description":"Item de Teste. Mercado Livre's PHP SDK.","video_id":"Q6dsRpVyyWs","warranty":"12 month","pictures":[{"source":"https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/IPhone_7_Plus_Jet_Black.svg/440px-IPhone_7_Plus_Jet_Black.svg.png"},{"source":"https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/IPhone7.jpg/440px-IPhone7.jpg"}],"attributes":[{"id":"EAN","value_name":"190198043566"},{"id":"COLOR","value_id":"52049"},{"id":"WEIGHT","value_name":"188g"},{"id":"SCREEN_SIZE","value_name":"4.7 polegadas"},{"id":"TOUCH_SCREEN","value_id":"242085"},{"id":"DIGITAL_CAMERA","value_id":"242085"},{"id":"GPS","value_id":"242085"},{"id":"MP3","value_id":"242085"},{"id":"OPERATING_SYSTEM","value_id":"296859"},{"id":"OPERATING_SYSTEM_VERSION","value_id":"iOS 10"},{"id":"DISPLAY_RESOLUTION","value_id":"1920 x 1080"},{"id":"BATTERY_CAPACITY","value_name":"3980 mAh"},{"id":"FRONT_CAMERA_RESOLUTION","value_name":"7 mpx"}]}
+    item = session.item
+    body = dict(title=item['title'],
+                category_id=item['category_id'],
+                price=item['price'],
+                currency_id=item['currency_id'],
+                available_quantity=item['available_quantity'],
+                buying_mode=item['buying_mode'],
+                listing_type_id=item['listing_type_id'],
+                condition=item['condition'],
+                warranty=item['warranty'],
+                description = item['description'],
+                )
         
     if session.ACCESS_TOKEN:
+        from meli import Meli 
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
         item = meli.post("/items", body, {'access_token':session.ACCESS_TOKEN})
         status = 'Anunciado com Sucesso....'
@@ -304,29 +313,50 @@ def anunciar_item():
         status = 'Antes Faça o Login....'
         item = ''    
 
+    import json
+    print item.status_code
+    if item.status_code == 201:
+        xitem = json.loads(item.content)    
+        print xitem['id']
+
     #response.flash = status
     #response.js = "$('#anunciospublicar').get(0).reload()"
     return  item
 
 def alterar_item():
-    from meli import Meli    
-    body = session.item
-    item_args = "items/%s" %(request.args(0))
+    
+    item = session.item
+    body = dict(title=item['title'],
+                category_id=item['category_id'],
+                price=item['price'],
+                available_quantity=item['available_quantity'],
+                #status=item['status'],
+                #condition=item['condition'],
+                #warranty=item['warranty'],
+                )
+    
+    listing_type_id = dict(id=item['listing_type_id']) 
+    description = item['description']
+
+    item_args = "items/%s" %(item['item_id'])
     descricao_args = "%s/description" %(item_args)
-    print descricao_args   
+    tipo_args = "%s/listing_type" %(item_args)
+     
     if session.ACCESS_TOKEN:
+        from meli import Meli    
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+        #teste = meli.get("categories/MLB2527")
+        
         item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-        desc = meli.put(descricao_args, session.description, {'access_token':session.ACCESS_TOKEN})
+        desc = meli.put(descricao_args,description, {'access_token':session.ACCESS_TOKEN})
+        tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
+        
         status = 'Anuncio Atualizado com Sucesso....'
     else:
         status = 'Antes Faça o Login....'
         item = ''   
-    
-    import json
-    teste = json.loads(desc)
-
-    #response.flash = status
-    #response.js = "$('#anunciospublicar').get(0).reload()"
-    return desc
+       
+    response.flash = status
+    response.js = "$('#anunciospublicar').get(0).reload()"
+    return 
 
