@@ -260,6 +260,7 @@ def anuncios_publicar():
     idAnuncio = int(request.args(0))
     anuncio = Anuncios[idAnuncio]
     
+    #### Buscando a Descrição do Anuncio ####
     if anuncio.descricao:
         descricao = Descricoes[int(anuncio.descricao)].descricao
     elif Familias[int(anuncio.familia)].descricao:
@@ -267,8 +268,19 @@ def anuncios_publicar():
     else:
         descricao = ' '
     descricao = dict(plain_text=descricao)
-
-    session.item = dict(title=anuncio.titulo,
+    
+    #### Buscando as Imagens do Anuncio ####
+    imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
+    imagens = []
+    url = 'http://localhost:8000/glm_ml/uploads/'
+    for imagem in imagensIds:
+        img = str(Imagens[imagem.imagem].imagem)
+        print type(url), type(img)
+        imagens.append(dict(source=url+img))
+    
+    #### Montando Dicionário com Dados do Anuncio ####
+    session.anuncio = dict(id=anuncio.id,
+                    title=anuncio.titulo,
                     item_id=anuncio.item_id,
                     category_id=anuncio.categoria,
                     price=float(anuncio.preco),
@@ -280,8 +292,9 @@ def anuncios_publicar():
                     condition=anuncio.condicao,
                     warranty=anuncio.garantia,
                     description = descricao,
+                    pictures=imagens,
                     )
-
+    #### Verificando se Item Novo ou Alteração ####
     if anuncio.item_id:
         btnPublicar = publicar('alterar_item',' Atualizar Item','anunciospublicar')
     else:
@@ -290,17 +303,22 @@ def anuncios_publicar():
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
 
 def anunciar_item():
-    item = session.item
-    body = dict(title=item['title'],
-                category_id=item['category_id'],
-                price=item['price'],
-                currency_id=item['currency_id'],
-                available_quantity=item['available_quantity'],
-                buying_mode=item['buying_mode'],
-                listing_type_id=item['listing_type_id'],
-                condition=item['condition'],
-                warranty=item['warranty'],
-                description = item['description'],
+    idAnuncio = session.anuncio['id']
+
+    frete = dict(local_pick_up=True,free_shipping=False,free_methods=[],mode="me2")
+
+    body = dict(title=session.anuncio['title'],
+                category_id=session.anuncio['category_id'],
+                price=session.anuncio['price'],
+                currency_id=session.anuncio['currency_id'],
+                available_quantity=session.anuncio['available_quantity'],
+                buying_mode=session.anuncio['buying_mode'],
+                listing_type_id=session.anuncio['listing_type_id'],
+                condition=session.anuncio['condition'],
+                warranty=session.anuncio['warranty'],
+                description=session.anuncio['description'],
+                shipping=frete,
+                pictures=session.anuncio['pictures'],
                 )
         
     if session.ACCESS_TOKEN:
@@ -314,14 +332,13 @@ def anunciar_item():
         item = ''    
 
     import json
-    print item.status_code
     if item.status_code == 201:
         xitem = json.loads(item.content)    
-        print xitem['id']
+        Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'])
 
     #response.flash = status
     #response.js = "$('#anunciospublicar').get(0).reload()"
-    return  item
+    return item
 
 def alterar_item():
     
