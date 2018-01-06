@@ -3,6 +3,12 @@
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 ATRIBUTO = ('Medida','Tamanho','Modelo','Tensão','Cor')
 
+Empresa = db.define_table('empresa',
+    Field('nome','string',label='Nome:',length=60),
+    Field('desconto','decimal(7,2)',label='Desconto Frete'),
+    )
+Empresa.desconto.requires = IS_DECIMAL_IN_RANGE(dot=',')
+
 Clientes = db.define_table('clientes',
 	Field('nome','string',label='Nome:',length=60),
 	Field('cnpj_cpf','string',label='CNPJ/CPF:',length=20),
@@ -11,7 +17,7 @@ Clientes = db.define_table('clientes',
 	Field('bairro','string',label='Bairro:',length=40),
 	Field('cidade','string',label='Cidade:',length=40),
 	Field('estado','string',label='Estado:',length=2),
-	Field('cep','string',label='Cep:',length=9),        Field('cep','string',label='Cep:',length=9),
+	Field('cep','string',label='Cep:',length=9),
     Field('fone','string',label='Fone:',length=30),
     Field('email','string',label='Email:',length=50),
 	)

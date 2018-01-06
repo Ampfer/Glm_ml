@@ -1,0 +1,30 @@
+{{extend 'layout.html'}}
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+        	<h4>Dados da Empresa</h4>
+        </div>
+        <div class="panel-body">
+        	{{=formEmpresa.custom.begin}}
+            <div class="well">
+                <div class="row">
+                    <div class="col-md-6">
+                        {{=formEmpresa.custom.label.nome}}
+                        {{=formEmpresa.custom.widget.nome}}
+                    </div>
+                    <div class="col-md-3">
+                        {{=formEmpresa.custom.label.desconto}}
+                        {{=formEmpresa.custom.widget.desconto}}
+                    </div>
+                </div>
+                <div class="row">
+                    <p></p>
+                </div>
+            </div>
+            <div class="right">
+                {{=formEmpresa.custom.submit}}
+            </div>     
+            {{=formEmpresa.custom.end}}
+		</div>
+	</div>
+</div>

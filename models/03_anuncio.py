@@ -5,14 +5,15 @@ TIPOANUNCIO = {'gold_pro':'Premium','gold_special':'Clássico'}
 CONDICAO = {'new':'Novo','used':'Usado'}
 STATUS = {'active':'Ativo','paused':'Pausado'}
 FORMA = ('Individual','Multiplos','Kit')
-
+FRETE = {'comprador':'Por conta do Comprador','gratis':'Frete Grátis'}
 Categorias = db.define_table('categorias',
     Field('categoria','string',label='Categoria:',length=100),
     Field('categoria_id','string',label='Id Categoria',length=30),
-    format = '%(categoria)s'
+    Field('frete','decimal(7,2)',label='Valor do Frete'),
     )
 Categorias.categoria.requires  = notempty
 Categorias.categoria_id.requires = notempty
+Categorias.frete.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 
 Anuncios = db.define_table('anuncios',
     Field('familia', 'reference familias'),
@@ -23,6 +24,7 @@ Anuncios = db.define_table('anuncios',
     Field('estoque','decimal(7,2)',label='Estoque'),
     Field('moeda','string', label='Moeda:', length=3),
     Field('modo','string',label='Mode de Compra:',length=30),
+    Field('frete','string',label='Tipo de Frete:',length=30),
     Field('tipo','string',label='Tipo de Anuncio:', length=30),
     Field('condicao','string',label='Condição:',length=30),
     Field('garantia','string',label='Garantia',length=30),
@@ -37,6 +39,7 @@ Anuncios.garantia.default = 'None'
 Anuncios.preco.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.estoque.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.tipo.requires = IS_IN_SET(TIPOANUNCIO,zero=None)
+Anuncios.frete.requires = IS_IN_SET(FRETE,zero=None)
 Anuncios.tipo.default = 'gold_pro'
 Anuncios.condicao.requires = IS_IN_SET(CONDICAO,zero=None)
 Anuncios.categoria.requires = IS_IN_DB(db,"categorias.categoria_id",'%(categoria)s',zero=None)
