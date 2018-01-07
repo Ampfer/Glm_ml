@@ -275,6 +275,7 @@
 'Time in Cache (h:m:s)': 'Tempo em Cache (h:m:s)',
 'Timestamp': 'Timestamp',
 'Tipo de Anuncio:': 'Tipo de Anuncio:',
+'Tipo de Frete:': 'Tipo de Frete:',
 'Traceback': 'Traceback',
 'Twitter': 'Twitter',
 'Título:': 'Título:',

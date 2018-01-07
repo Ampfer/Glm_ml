@@ -268,6 +268,10 @@ def anuncios_publicar():
     else:
         descricao = ' '
     descricao = dict(plain_text=descricao)
+
+    #### Buscando Tipo de Frete ####
+    free_shipping = True if anuncio.frete == 'gratis' else False
+    frete = dict(local_pick_up=True,free_shipping=free_shipping,free_methods=[],mode="me2")
     
     #### Buscando as Imagens do Anuncio ####
     imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
@@ -275,7 +279,6 @@ def anuncios_publicar():
     url = 'http://localhost:8000/glm_ml/uploads/'
     for imagem in imagensIds:
         img = str(Imagens[imagem.imagem].imagem)
-        print type(url), type(img)
         imagens.append(dict(source=url+img))
     
     #### Montando Dicionário com Dados do Anuncio ####
@@ -289,7 +292,8 @@ def anuncios_publicar():
                     status=anuncio.status,
                     buying_mode="buy_it_now",
                     listing_type_id=anuncio.tipo,
-                    condition=anuncio.condicao,
+                    frete=frete,
+                    condition="new",
                     warranty=anuncio.garantia,
                     description = descricao,
                     pictures=imagens,
@@ -305,8 +309,6 @@ def anuncios_publicar():
 def anunciar_item():
     idAnuncio = session.anuncio['id']
 
-    frete = dict(local_pick_up=True,free_shipping=False,free_methods=[],mode="me2")
-
     body = dict(title=session.anuncio['title'],
                 category_id=session.anuncio['category_id'],
                 price=session.anuncio['price'],
@@ -317,7 +319,7 @@ def anunciar_item():
                 condition=session.anuncio['condition'],
                 warranty=session.anuncio['warranty'],
                 description=session.anuncio['description'],
-                shipping=frete,
+                shipping=session.anuncio['frete'],
                 pictures=session.anuncio['pictures'],
                 )
         
@@ -341,21 +343,20 @@ def anunciar_item():
     return item
 
 def alterar_item():
-    
-    item = session.item
-    body = dict(title=item['title'],
-                category_id=item['category_id'],
-                price=item['price'],
-                available_quantity=item['available_quantity'],
-                #status=item['status'],
-                #condition=item['condition'],
-                #warranty=item['warranty'],
+
+    body = dict(title=session.anuncio['title'],
+                category_id=session.anuncio['category_id'],
+                price=session.anuncio['price'],
+                available_quantity=session.anuncio['available_quantity'],
+                shipping=session.anuncio['frete'],
+                #warranty=session.anuncio['warranty'], ## não altera com vendas 
+                #status=session.anuncio['status'],
                 )
     
-    listing_type_id = dict(id=item['listing_type_id']) 
-    description = item['description']
+    listing_type_id = dict(id=session.anuncio['listing_type_id']) 
+    description = session.anuncio['description']
 
-    item_args = "items/%s" %(item['item_id'])
+    item_args = "items/%s" %(session.anuncio['item_id'])
     descricao_args = "%s/description" %(item_args)
     tipo_args = "%s/listing_type" %(item_args)
      
@@ -367,8 +368,11 @@ def alterar_item():
         item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
         desc = meli.put(descricao_args,description, {'access_token':session.ACCESS_TOKEN})
         tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
-        
-        status = 'Anuncio Atualizado com Sucesso....'
+
+        if item.status_code != 200 or desc.status_code != 200:
+            status = 'Falha na Atualização do Item'
+        else:
+            status = 'Anuncio Atualizado com Sucesso....'
     else:
         status = 'Antes Faça o Login....'
         item = ''   
