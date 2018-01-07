@@ -39,8 +39,7 @@ def anuncios():
     def delete_anuncio(table,id):
       idDescricao = Anuncios[id].descricao
       del Descricoes[idDescricao] 
-
-    fields = (Anuncios.id,Anuncios.titulo)
+    fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.status)
     formAnuncios = grid(Anuncios,50,formname="formAnuncios",fields=fields, ondelete = delete_anuncio)
             
     formAnuncios = DIV(formAnuncios, _class="well")
@@ -58,8 +57,17 @@ def anuncio():
     idAnuncio = request.args(0) or "0"
 
     Anuncios.preco.writable = False
+    Anuncios.preco.default = 0
+
+    Anuncios.desconto.writable = False
+    Anuncios.desconto.default = 12
+
     Anuncios.estoque.writable = False
+    Anuncios.estoque.default = 0
+
     Anuncios.descricao.writable = False
+
+    Anuncios.tipo.default = 'gold_pro'
 
     if idAnuncio == "0":
         formAnuncio = SQLFORM(Anuncios,field_id='id', _id='formAnuncio')
@@ -232,6 +240,7 @@ def anuncios_preco():
     es = xsugerido['estoque']
     ep = xsugerido['preco']
     preco = anuncio.preco
+    desconto = anuncio.desconto
     estoque = anuncio.estoque
     
     if preco == None:
@@ -242,13 +251,15 @@ def anuncios_preco():
         estoque = anuncio.estoque
 
     form = SQLFORM.factory(
+        Field('desconto','decimal(7,2)',label='Desconto',default=desconto,requires=IS_IN_SET(DESCONTO,zero=None)),
         Field('preco','decimal(7,2)',label='Preço',default=preco,requires=IS_DECIMAL_IN_RANGE(dot=',')),
         Field('estoque','decimal(7,2)',label='Estoque',default=estoque,requires=IS_DECIMAL_IN_RANGE(dot=',')),
         )
     if form.process().accepted: 
         preco = form.vars.preco
         estoque = form.vars.estoque
-        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque)
+        desconto = form.vars.desconto
+        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque, desconto=desconto)
         response.js = "$('#anunciospreco').get(0).reload()"
     elif form.errors:
         response.flash = 'Erro no Formulário'

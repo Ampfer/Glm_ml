@@ -91,6 +91,7 @@
 'Database Administration (appadmin)': 'Database Administration (appadmin)',
 'db': 'bd',
 'DB Model': 'Modelo BD',
+'Deconto Tabela': 'Deconto Tabela',
 'Delete': 'Delete',
 'delete': 'delete',
 'Delete:': 'Apagar:',
