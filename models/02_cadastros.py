@@ -6,6 +6,8 @@ ATRIBUTO = ('Medida','Tamanho','Modelo','Tensão','Cor')
 Empresa = db.define_table('empresa',
     Field('nome','string',label='Nome:',length=60),
     Field('desconto','decimal(7,2)',label='Desconto Frete'),
+    Field('premium','decimal(7,2)',label='Tarifa Premium'),
+    Field('classico','decimal(7,2)',label='Tarifa Clássico'),
     )
 Empresa.desconto.requires = IS_DECIMAL_IN_RANGE(dot=',')
 

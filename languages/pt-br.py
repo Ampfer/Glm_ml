@@ -288,6 +288,7 @@
 'User ID': 'ID do Usuário',
 'User Voice': 'Opinião dos usuários',
 'Users': 'Users',
+'Valor do Frete': 'Valor do Frete',
 'Value not allowed': 'Value not allowed',
 'Value not in database': 'Value not in database',
 'Variação:': 'Variação:',

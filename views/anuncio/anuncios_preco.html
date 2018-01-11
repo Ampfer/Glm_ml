@@ -1,35 +1,34 @@
 <div class="well">
     {{=form.custom.begin}}
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label>Desconto Tabela:</label>
-            {{=form.custom.widget.desconto}}
+            <p style="font-size: 30px; margin-top: 5px;">{{=desconto}}</p>
         </div>
-    </div>
-    <div class="row">   
-        <div class="col-md-3">
-            <label>Preço:</label>
-            {{=form.custom.widget.preco}}
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label>Preço Sugerido:</label>
             <p style="font-size: 30px; margin-top: 5px;">{{=ep}}</p>
         </div>
-        <div class="col-md-3">
-            <label>Estoque</label>
-            {{=form.custom.widget.estoque}}
+        <div class="col-md-2">
+            <label>Preço:</label>
+            {{=form.custom.widget.preco}}
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <label>Estoque Sugerido:</label>
             <p style="font-size: 30px; margin-top: 5px;">{{=es}}</p>
-        </div>    
-        <div class="row">
-            <div class="col-md-12">
-                <div style="margin-left:18px; margin-top: 20px;">
-                    {{=form.custom.submit}}
-                </div>
-            </div>        
         </div>
-    </div>  
+        <div class="col-md-2">
+            <label>Estoque</label>
+            {{=form.custom.widget.estoque}}
+        </div>    
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div style="margin-left:18px; margin-top: 20px;">
+                {{=form.custom.submit}}
+            </div>
+        </div>        
+    </div>
+    
     {{=form.custom.end}}
 </div> 

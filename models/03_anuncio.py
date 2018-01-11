@@ -5,7 +5,6 @@ TIPOANUNCIO = {'gold_pro':'Premium','gold_special':'Clássico'}
 STATUS = {'active':'Ativo','paused':'Pausado'}
 FORMA = ('Individual','Multiplos','Kit')
 FRETE = {'comprador':'Por conta do Comprador','gratis':'Frete Grátis'}
-DESCONTO = (0.00,2.00,4.00,6.00,8.00,10.00,12.00,14.00,16.00,18.00,20.00)
 
 Categorias = db.define_table('categorias',
     Field('categoria','string',label='Categoria:',length=100),
@@ -42,7 +41,6 @@ Anuncios.categoria.requires = IS_IN_DB(db,"categorias.categoria_id",'%(categoria
 Anuncios.status.requires = IS_IN_SET(STATUS,zero=None)
 Anuncios.status.represent = lambda status, row: STATUS[status]
 Anuncios.forma.requires = IS_IN_SET(FORMA,zero=None)
-
 
 Anuncios_Produtos = db.define_table('anuncios_produtos',
     Field('anuncio', 'reference anuncios'),

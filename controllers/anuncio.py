@@ -59,7 +59,6 @@ def anuncio():
     Anuncios.preco.writable = False
     Anuncios.preco.default = 0
 
-    Anuncios.desconto.writable = False
     Anuncios.desconto.default = 12
 
     Anuncios.estoque.writable = False
@@ -220,7 +219,7 @@ def sugerido(id):
         max = Produtos.estoque.max()
         estoque = db(q).select(max).first()[max]
         max = Produtos.preco.max()
-        preco = db(q).select(max).first()[max]
+        preco = db(q).select(max).first()[max] 
     elif anuncio.forma =='Multiplos':
         sum = Produtos.estoque.sum()
         estoque = db(q).select(sum).first()[sum]
@@ -231,6 +230,23 @@ def sugerido(id):
         estoque = db(q).select(min).first()[min]
         sum = Produtos.preco.sum()
         preco = db(q).select(sum).first()[sum]
+
+    empresa = db(Empresa.id==1).select().first()
+
+    if anuncio.tipo == 'gold_pro':
+        tarifa = empresa.premium
+    elif anuncio.tipo == 'gold_special':
+        tarifa = empresa.classico
+
+    categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
+    
+    if anuncio.frete == 'gratis':
+        frete = categoria.frete + categoria.frete * (1 - empresa.desconto/100)
+    else:
+        frete = 0
+    
+    preco = (preco * (1 - anuncio.desconto/100) + frete) / (1-tarifa/100)
+    preco = round(preco,2)
     return dict(estoque=estoque,preco=preco)
 
 def anuncios_preco():
@@ -242,7 +258,7 @@ def anuncios_preco():
     preco = anuncio.preco
     desconto = anuncio.desconto
     estoque = anuncio.estoque
-    
+
     if preco == None:
         Anuncios[idAnuncio] = dict(preco = ep)
         preco = anuncio.preco
@@ -251,10 +267,10 @@ def anuncios_preco():
         estoque = anuncio.estoque
 
     form = SQLFORM.factory(
-        Field('desconto','decimal(7,2)',label='Desconto',default=desconto,requires=IS_IN_SET(DESCONTO,zero=None)),
         Field('preco','decimal(7,2)',label='Preço',default=preco,requires=IS_DECIMAL_IN_RANGE(dot=',')),
         Field('estoque','decimal(7,2)',label='Estoque',default=estoque,requires=IS_DECIMAL_IN_RANGE(dot=',')),
         )
+
     if form.process().accepted: 
         preco = form.vars.preco
         estoque = form.vars.estoque
@@ -264,7 +280,7 @@ def anuncios_preco():
     elif form.errors:
         response.flash = 'Erro no Formulário'
 
-    return dict(form=form,es=es,ep=ep)
+    return dict(form=form,es=es,ep=ep,desconto=desconto)
 
 
 def anuncios_publicar():
