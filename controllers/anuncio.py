@@ -69,12 +69,12 @@ def anuncio():
     Anuncios.tipo.default = 'gold_pro'
 
     if idAnuncio == "0":
-        formAnuncio = SQLFORM(Anuncios,field_id='id', _id='formAnuncio')
+        formAnuncio = SQLFORM(Anuncios,field_id='id', _id='dados')
         formAnuncioPublicar = formAnuncioPreco = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
         btnNovo=btnExcluir=btnVoltar = ''
         
     else:
-        formAnuncio = SQLFORM(Anuncios,idAnuncio,_id='formAnuncio',field_id='id')
+        formAnuncio = SQLFORM(Anuncios,idAnuncio,_id='dados',field_id='id')
         formAnuncioProdutos = LOAD(c='anuncio',f='anuncios_produtos',args=[idAnuncio], target='anunciosprodutos', ajax=True,content='Aguarde, carregando...')
         formAnuncioDescricao = LOAD(c='anuncio',f='anuncios_descricao',args=[idAnuncio], target='anunciosdescricao', ajax=True,content='Aguarde, carregando...')
         formAnuncioImagem = LOAD(c='anuncio', f='anuncios_imagens',args=[idAnuncio], target='anunciosimagens', ajax=True)
@@ -241,12 +241,15 @@ def sugerido(id):
     categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
     
     if anuncio.frete == 'gratis':
-        frete = categoria.frete + categoria.frete * (1 - empresa.desconto/100)
+        frete = categoria.frete * (1 - empresa.desconto/100)
     else:
         frete = 0
     
-    preco = (preco * (1 - anuncio.desconto/100) + frete) / (1-tarifa/100)
+    preco = preco * (1 - anuncio.desconto/100)
+    preco = preco + frete
+    preco = preco/ (1-tarifa/100)
     preco = round(preco,2)
+
     return dict(estoque=estoque,preco=preco)
 
 def anuncios_preco():
@@ -274,8 +277,9 @@ def anuncios_preco():
     if form.process().accepted: 
         preco = form.vars.preco
         estoque = form.vars.estoque
-        desconto = form.vars.desconto
-        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque, desconto=desconto)
+        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque)
+        if preco >= 120:
+            Anuncios[idAnuncio] = dict(frete = 'gratis')
         response.js = "$('#anunciospreco').get(0).reload()"
     elif form.errors:
         response.flash = 'Erro no Formulário'

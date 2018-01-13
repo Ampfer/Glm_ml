@@ -4,12 +4,12 @@
         <div class="panel-heading"><h4>Cadastro de Anuncios</h4></div>
         <div class="panel-body">
             <ul class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#home">Dados</a></li>
+                <li class="active"><a id='dados' data-toggle="tab" href="#home">Dados</a></li>
                     <li><a data-toggle="tab" href="#menu1">Descrição</a></li>
                     <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
                     <li><a data-toggle="tab" href="#menu3">Imagens</a></li>
                     <li><a id='preco' data-toggle="tab" href="#menu4">Preço</a></li>
-                    <li><a data-toggle="tab" href="#menu5">Publicar</a></li>
+                    <li><a id='publicar' data-toggle="tab" href="#menu5">Publicar</a></li>
                 </ul>
             <div class="tab-content">
                 <div id="home" class="tab-pane fade in active">
@@ -35,8 +35,6 @@
                                 {{=formAnuncio.custom.label.tipo}}
                                 {{=formAnuncio.custom.widget.tipo}}
                             </div>
-                        
-                       
                             <div class="col-md-4">
                                 {{=formAnuncio.custom.label.frete}}
                                 {{=formAnuncio.custom.widget.frete}}
@@ -101,4 +99,8 @@
 $(document).on("click","#preco", function(){
     $('#anunciospreco').get(0).reload()
 });
+$(document).on("click","#publicar", function(){
+    $('#anunciospublicar').get(0).reload()
+});
+
 </script>
