@@ -412,3 +412,25 @@ def alterar_item():
     response.js = "$('#anunciospublicar').get(0).reload()"
     return 
 
+def importar_anuncios():
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    busca = meli.get("sites/MLB/search?seller_id=158428813")
+    import json
+    if busca.status_code == 200:
+        itens = json.loads(busca.content)    
+        #Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'])
+    xitens = itens['results']
+    yitens = []
+    for item in xitens
+    yitens = dict(title=xitens[0]['title'],
+                category_id=xitens[0]['category_id'],
+                price=xitens[0]['price'],
+                currency_id=xitens[0]['currency_id'],
+                available_quantity=xitens[0]['available_quantity'],
+                buying_mode=xitens[0]['buying_mode'],
+                listing_type_id=xitens[0]['listing_type_id'],
+                condition=xitens[0]['condition'],
+                shipping=xitens[0]['shipping'],
+                )
+    return yitens

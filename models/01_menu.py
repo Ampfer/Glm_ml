@@ -44,6 +44,7 @@ response.menu+=[
     (T('Anuncio'), False, URL(request.application,'default','index'), [
     ('Categoria', False, URL(r=request, c='anuncio', f='categorias')),
     ('Anuncio', False, URL(r=request, c='anuncio', f='anuncios')),
+    ('Importar', False, URL(r=request, c='anuncio', f='importar_anuncios')),
     ])]
 response.menu+=[
     (T('Vendas'), False, URL(request.application,'default','index'), [
