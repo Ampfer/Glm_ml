@@ -419,18 +419,36 @@ def importar_anuncios():
     import json
     if busca.status_code == 200:
         itens = json.loads(busca.content)    
-        #Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'])
+
     xitens = itens['results']
-    yitens = []
-    for item in xitens
-    yitens = dict(title=xitens[0]['title'],
-                category_id=xitens[0]['category_id'],
-                price=xitens[0]['price'],
-                currency_id=xitens[0]['currency_id'],
-                available_quantity=xitens[0]['available_quantity'],
-                buying_mode=xitens[0]['buying_mode'],
-                listing_type_id=xitens[0]['listing_type_id'],
-                condition=xitens[0]['condition'],
-                shipping=xitens[0]['shipping'],
-                )
-    return yitens
+    
+    for item in xitens: 
+
+        if item['shipping']['free_shipping'] == False:
+            frete = 'comprador'
+        else:
+            frete = 'gratis'
+       
+        args = "categories/%s" %(item['category_id'])
+        categoria = meli.get(args) 
+        if categoria.status_code == 200:
+            categoria = json.loads(categoria.content) 
+        '''
+        Categorias.update_or_insert(Categorias.categorias_id == item['category_id'],
+                categoria = categoria,
+                categoria_id = item['category_id'],
+                frete = valorFrete,
+                ) 
+
+        Anuncios.update_or_insert(Anuncios.item_id == item['id'],
+                item_id=item['id'],
+                titulo=item['title'],
+                categoria=item['category_id'],
+                preco=item['price'],
+                estoque=item['available_quantity'],
+                tipo=item['listing_type_id'],
+                frete = frete,
+                status = 'active',
+                )       
+                '''
+    return categoria['name']
