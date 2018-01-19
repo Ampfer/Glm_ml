@@ -1,6 +1,6 @@
 def categorias():
     fields = (Categorias.categoria_id,Categorias.categoria)
-    formCategorias = grid(Categorias,50,formname="formCategorias",fields=fields)
+    formCategorias = grid(Categorias,150,formname="formCategorias",fields=fields, orderby=Categorias.categoria)
             
     formCategorias = DIV(formCategorias, _class="well")
 
@@ -39,8 +39,8 @@ def anuncios():
     def delete_anuncio(table,id):
       idDescricao = Anuncios[id].descricao
       del Descricoes[idDescricao] 
-    fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.status)
-    formAnuncios = grid(Anuncios,50,formname="formAnuncios",fields=fields, ondelete = delete_anuncio)
+    fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.status, Anuncios.preco, Anuncios.estoque)
+    formAnuncios = grid(Anuncios,80,formname="formAnuncios",fields=fields, ondelete = delete_anuncio,orderby=Anuncios.titulo)
             
     formAnuncios = DIV(formAnuncios, _class="well")
 
@@ -433,13 +433,21 @@ def importar_anuncios():
         categoria = meli.get(args) 
         if categoria.status_code == 200:
             categoria = json.loads(categoria.content) 
-        '''
-        Categorias.update_or_insert(Categorias.categorias_id == item['category_id'],
-                categoria = categoria,
+        
+        nomeCategoria = ''
+        for r in categoria['path_from_root']:
+            if nomeCategoria:
+                nomeCategoria = nomeCategoria + '/' + r['name']
+            else:
+                nomeCategoria = r['name']
+        valorFrete = 0
+
+        Categorias.update_or_insert(Categorias.categoria_id == item['category_id'],
+                categoria = nomeCategoria,
                 categoria_id = item['category_id'],
                 frete = valorFrete,
                 ) 
-
+        
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
                 item_id=item['id'],
                 titulo=item['title'],
@@ -450,5 +458,5 @@ def importar_anuncios():
                 frete = frete,
                 status = 'active',
                 )       
-                '''
-    return categoria['name']
+
+    return categoria
