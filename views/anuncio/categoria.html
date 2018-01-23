@@ -5,34 +5,46 @@
         	<h4>Cadastro de Categorias</h4>
         </div>
         <div class="panel-body">
-        	{{=formCategoria.custom.begin}}
-            <div class="well">
-                <div class="row">
-                    <div class="col-md-6">
-                        {{=formCategoria.custom.label.categoria}}
-                        {{=formCategoria.custom.widget.categoria}}
+            <ul class="nav nav-tabs">
+                <li class="active"><a id='dados' data-toggle="tab" href="#home">Dados</a></li>
+                <li><a data-toggle="tab" href="#menu1">Atributos</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">
+                	{{=formCategoria.custom.begin}}
+                    <div class="well">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{=formCategoria.custom.label.categoria}}
+                                {{=formCategoria.custom.widget.categoria}}
+                            </div>
+                            <div class="col-md-3">
+                                {{=formCategoria.custom.label.categoria_id}}
+                                {{=formCategoria.custom.widget.categoria_id}}
+                            </div>
+                            <div class="col-md-3">
+                                {{=formCategoria.custom.label.frete}}
+                                {{=formCategoria.custom.widget.frete}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <p></p>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        {{=formCategoria.custom.label.categoria_id}}
-                        {{=formCategoria.custom.widget.categoria_id}}
+                    <div class="right">
+                        {{=formCategoria.custom.submit}}
                     </div>
-                    <div class="col-md-3">
-                        {{=formCategoria.custom.label.frete}}
-                        {{=formCategoria.custom.widget.frete}}
-                    </div>
-
+                    {{=formCategoria.custom.end}}
                 </div>
-                <div class="row">
-                    <p></p>
+                <div id="menu1" class="tab-pane fade">
+                    {{=loadAtributos}}
                 </div>
-            </div>
-            <div class="right">
-                {{=formCategoria.custom.submit}}
-                {{=btnNovo}}
-                {{=btnVoltar}}
-                {{=btnExcluir}}
+                <div class="right"> 
+                    {{=btnNovo}}
+                    {{=btnVoltar}}
+                    {{=btnExcluir}}
+                </div>
             </div>     
-            {{=formCategoria.custom.end}}
 		</div>
 	</div>
 </div>

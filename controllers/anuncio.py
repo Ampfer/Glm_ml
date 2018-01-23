@@ -20,6 +20,7 @@ def categoria():
         btnNovo=btnExcluir=btnVoltar = ''
     else:
         formCategoria = SQLFORM(Categorias,idCategoria,_id='formCategoria',field_id='id')
+        loadAtributos = formAnuncioProdutos = LOAD(c='anuncio',f='categoriaAtributos',args=[idCategoria], target='categoriaatributos', ajax=True,)
         btnExcluir = excluir("#")
         btnNovo = novo("categoria")
 
@@ -32,7 +33,14 @@ def categoria():
     elif formCategoria.errors:
         response.flash = 'Erro no Formulário Principal!'
 
-    return dict(formCategoria=formCategoria, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
+    return dict(formCategoria=formCategoria, loadAtributos=loadAtributos, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
+
+def categoriaAtributos():
+    idCategoria = int(request.args(0))
+    fields = (Categoria_Atributos.atributo_id, Categoria_Atributos.nome, Categoria_Atributos.obrigatorio)
+    formAtributos = grid(Categoria_Atributos.categoria == idCategoria, formname = 'categoriaatributos', args=[idCategoria])
+    return dict(formAtributos=formAtributos)
+    
 
 def anuncios():
 
@@ -85,7 +93,7 @@ def anuncio():
 
     btnVoltar = voltar("anuncios")
 
-    formAnuncio.element(_name='familia')['_onchange'] = "jQuery('#anuncios_titulo').val($('#anuncios_familia option:selected').text());"
+    formAnuncio.element(_name='familia')['_onchange'] = "if ($('#anuncios_titulo').val() == '' ) {jQuery('#anuncios_titulo').val($('#anuncios_familia option:selected').text())};"
     formAnuncio.element(_name='item_id')['_readonly'] = "readonly"
 
     if formAnuncio.process().accepted:
@@ -415,7 +423,7 @@ def alterar_item():
 def importar_anuncios():
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    busca = meli.get("sites/MLB/search?seller_id=158428813")
+    busca = meli.get("sites/MLB/search?seller_id=158428813&offset=0&limit=100")
     import json
     if busca.status_code == 200:
         itens = json.loads(busca.content)    
@@ -446,7 +454,7 @@ def importar_anuncios():
                 categoria = nomeCategoria,
                 categoria_id = item['category_id'],
                 frete = valorFrete,
-                ) 
+                )
         
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
                 item_id=item['id'],
@@ -459,4 +467,4 @@ def importar_anuncios():
                 status = 'active',
                 )       
 
-    return categoria
+    return item

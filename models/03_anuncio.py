@@ -15,6 +15,14 @@ Categorias.categoria.requires  = notempty
 Categorias.categoria_id.requires = notempty
 Categorias.frete.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 
+Categoria_Atributos = db.define_table('categoria_atributos',
+    Field('atributo_id','string', label='Id Atributo:', length=50),
+    Field('nome','string', label='Nome:', length=50),
+    Field('categoria', 'reference categorias'),
+    Field('obrigatorio', 'boolean', label = 'Atributo Obrigatório:'),
+    )
+Categoria_Atributos.categoria.readable = Categoria_Atributos.categoria.writable = False
+
 Anuncios = db.define_table('anuncios',
     Field('familia', 'reference familias'),
     Field('titulo', 'string', label='Título:', length=60),
@@ -37,7 +45,7 @@ Anuncios.estoque.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.tipo.requires = IS_IN_SET(TIPOANUNCIO,zero=None)
 Anuncios.tipo.represent = lambda tipo, row: TIPOANUNCIO[tipo]
 Anuncios.frete.requires = IS_IN_SET(FRETE,zero=None)
-Anuncios.categoria.requires = IS_IN_DB(db,"categorias.categoria_id",'%(categoria)s',zero=None)
+Anuncios.categoria.requires = IS_IN_DB(db,"categorias.categoria_id",'%(categoria)s',)
 Anuncios.status.requires = IS_IN_SET(STATUS,zero=None)
 Anuncios.status.represent = lambda status, row: STATUS[status]
 Anuncios.forma.requires = IS_IN_SET(FORMA,zero=None)
