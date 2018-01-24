@@ -15,14 +15,6 @@ Categorias.categoria.requires  = notempty
 Categorias.categoria_id.requires = notempty
 Categorias.frete.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 
-Categoria_Atributos = db.define_table('categoria_atributos',
-    Field('atributo_id','string', label='Id Atributo:', length=50),
-    Field('nome','string', label='Nome:', length=50),
-    Field('categoria', 'reference categorias'),
-    Field('obrigatorio', 'boolean', label = 'Atributo Obrigatório:'),
-    )
-Categoria_Atributos.categoria.readable = Categoria_Atributos.categoria.writable = False
-
 Anuncios = db.define_table('anuncios',
     Field('familia', 'reference familias'),
     Field('titulo', 'string', label='Título:', length=60),
@@ -54,6 +46,12 @@ Anuncios_Produtos = db.define_table('anuncios_produtos',
     Field('anuncio', 'reference anuncios'),
     Field('produto', 'reference produtos'),
     )
+Anuncios_Atributos = db.define_table('anuncios_atributos',
+    Field('anuncio', 'reference anuncios'),
+    Field('atributo', 'reference atributos'),
+    Field('valor', 'string',label='Valor:',length=50),
+    )
+Anuncios_Atributos.atributo.requires = IS_IN_DB(db,"atributos.id",'%(nome)s',)
 
 Anuncios_Imagens = db.define_table('anuncios_imagens',
     Field('anuncio', 'reference anuncios'),

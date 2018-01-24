@@ -39,6 +39,7 @@ response.menu+=[
     ('Marcas', False, URL(r=request, c='cadastro', f='marcas')),
     ('Familia de Produtos', False, URL(r=request, c='cadastro', f='familias')),
     ('Produtos', False, URL(r=request, c='cadastro', f='produtos')),
+    ('Atributos', False, URL(r=request, c='cadastro', f='atributos')),
     ])]
 response.menu+=[
     (T('Anuncio'), False, URL(request.application,'default','index'), [

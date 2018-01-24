@@ -87,4 +87,10 @@ def buscaProduto(id):
         raise HTTP(404, 'Produto não encontrado')
     return produto
 
+Atributos = db.define_table('atributos',
+    Field('atributo_id','string', label='Id Atributo:', length=50),
+    Field('nome','string', label='Nome:', length=50),
+    format='%(nome)s',
+    )
+
 

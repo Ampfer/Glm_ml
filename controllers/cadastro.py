@@ -303,4 +303,11 @@ def selecionar_imagem():
     caminho = os.path.join('applications','glm_ml', 'static','imagens')
     arquivos = os.listdir(caminho)
     return dict(arquivos=arquivos, caminho=caminho)
+
+def atributos():
+    fields = (Atributos.atributo_id, Atributos.nome,)
+    formAtributos = grid(Atributos, formname = 'categoriaatributos',)
+    return dict(formAtributos=formAtributos)
+    
+
        

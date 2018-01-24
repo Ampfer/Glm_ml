@@ -20,7 +20,6 @@ def categoria():
         btnNovo=btnExcluir=btnVoltar = ''
     else:
         formCategoria = SQLFORM(Categorias,idCategoria,_id='formCategoria',field_id='id')
-        loadAtributos = formAnuncioProdutos = LOAD(c='anuncio',f='categoriaAtributos',args=[idCategoria], target='categoriaatributos', ajax=True,)
         btnExcluir = excluir("#")
         btnNovo = novo("categoria")
 
@@ -35,12 +34,6 @@ def categoria():
 
     return dict(formCategoria=formCategoria, loadAtributos=loadAtributos, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
 
-def categoriaAtributos():
-    idCategoria = int(request.args(0))
-    fields = (Categoria_Atributos.atributo_id, Categoria_Atributos.nome, Categoria_Atributos.obrigatorio)
-    formAtributos = grid(Categoria_Atributos.categoria == idCategoria, formname = 'categoriaatributos', args=[idCategoria])
-    return dict(formAtributos=formAtributos)
-    
 
 def anuncios():
 
@@ -78,12 +71,13 @@ def anuncio():
 
     if idAnuncio == "0":
         formAnuncio = SQLFORM(Anuncios,field_id='id', _id='dados')
-        formAnuncioPublicar = formAnuncioPreco = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem =  "Primeiro Cadastre um Anuncio"
+        formAnuncioPublicar = formAnuncioPreco = formAnuncioProdutos = formAnuncioDescricao = formAnuncioImagem = formAnuncioAtributos =  "Primeiro Cadastre um Anuncio"
         btnNovo=btnExcluir=btnVoltar = ''
         
     else:
         formAnuncio = SQLFORM(Anuncios,idAnuncio,_id='dados',field_id='id')
         formAnuncioProdutos = LOAD(c='anuncio',f='anuncios_produtos',args=[idAnuncio], target='anunciosprodutos', ajax=True,content='Aguarde, carregando...')
+        formAnuncioAtributos = LOAD(c='anuncio',f='anuncios_atributos',args=[idAnuncio], target='anunciosatributos', ajax=True,content='Aguarde, carregando...')        
         formAnuncioDescricao = LOAD(c='anuncio',f='anuncios_descricao',args=[idAnuncio], target='anunciosdescricao', ajax=True,content='Aguarde, carregando...')
         formAnuncioImagem = LOAD(c='anuncio', f='anuncios_imagens',args=[idAnuncio], target='anunciosimagens', ajax=True)
         formAnuncioPreco = LOAD(c='anuncio', f='anuncios_preco',args=[idAnuncio], target='anunciospreco', ajax=True)                
@@ -106,7 +100,7 @@ def anuncio():
     return dict(formAnuncio=formAnuncio,btnExcluir=btnExcluir, btnVoltar=btnVoltar, btnNovo=btnNovo, 
                 formAnuncioProdutos=formAnuncioProdutos,formAnuncioDescricao=formAnuncioDescricao,
                 formAnuncioImagem=formAnuncioImagem, formAnuncioPublicar=formAnuncioPublicar,
-                formAnuncioPreco=formAnuncioPreco)
+                formAnuncioPreco=formAnuncioPreco,formAnuncioAtributos=formAnuncioAtributos)
 
 def anuncios_descricao():
 
@@ -192,6 +186,15 @@ def anuncios_produtos():
     
     
     return dict(formProdutos=formProdutos,formProduto=formProduto,)
+
+def anuncios_atributos():
+    idAnuncio = idAnuncio = int(request.args(0))
+
+    Anuncios_Atributos.anuncio.writable = Anuncios_Atributos.anuncio.readable =  False
+    Anuncios_Atributos.anuncio.default = idAnuncio
+
+    formAtributos = grid(Anuncios_Atributos.anuncio==idAnuncio,args=[idAnuncio], formname= 'anunciosatributos')
+    return dict(formAtributos=formAtributos)
 
 def anuncios_imagens():
     idAnuncio = int(request.args(0))
@@ -467,4 +470,13 @@ def importar_anuncios():
                 status = 'active',
                 )       
 
-    return item
+        '''
+        argsAtributos = "%s/attributes" %(args)
+        buscaAtributos = meli.get(argsAtributos) 
+        if buscaAtributos.status_code == 200:
+            atributos = json.loads(buscaAtributos.content) 
+        for atributo in atributos:
+            at = atributo
+        '''
+
+    return at
