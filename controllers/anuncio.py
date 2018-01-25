@@ -34,7 +34,6 @@ def categoria():
 
     return dict(formCategoria=formCategoria, loadAtributos=loadAtributos, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
 
-
 def anuncios():
 
     def delete_anuncio(table,id):
@@ -297,7 +296,6 @@ def anuncios_preco():
 
     return dict(form=form,es=es,ep=ep,desconto=desconto)
 
-
 def anuncios_publicar():
     idAnuncio = int(request.args(0))
     anuncio = Anuncios[idAnuncio]
@@ -424,6 +422,7 @@ def alterar_item():
     return 
 
 def importar_anuncios():
+	# Cunsulta de itens na Api do mercado livre
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
     busca = meli.get("sites/MLB/search?seller_id=158428813&offset=0&limit=100")
@@ -432,14 +431,15 @@ def importar_anuncios():
         itens = json.loads(busca.content)    
 
     xitens = itens['results']
-    
+  
+    #Loop nos itens encontrados
     for item in xitens: 
-
+    	# Verifica Tipo de Frete
         if item['shipping']['free_shipping'] == False:
             frete = 'comprador'
         else:
             frete = 'gratis'
-       
+		# Busca Categorias       
         args = "categories/%s" %(item['category_id'])
         categoria = meli.get(args) 
         if categoria.status_code == 200:
@@ -451,14 +451,15 @@ def importar_anuncios():
                 nomeCategoria = nomeCategoria + '/' + r['name']
             else:
                 nomeCategoria = r['name']
-        valorFrete = 0
+        valorFrete = 0 ### Fazer Rotina para Buscar valor do Frete por Categoria
 
+        # Salva Categorias
         Categorias.update_or_insert(Categorias.categoria_id == item['category_id'],
                 categoria = nomeCategoria,
                 categoria_id = item['category_id'],
                 frete = valorFrete,
                 )
-        
+        # Salva Anuncios
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
                 item_id=item['id'],
                 titulo=item['title'],
@@ -468,15 +469,21 @@ def importar_anuncios():
                 tipo=item['listing_type_id'],
                 frete = frete,
                 status = 'active',
-                )       
+                )
+        # Salva Atributos
+        for atributo in item['attributes'] :
+        	#salva atributos na tabele atributos
+        	id = Atributos.update_or_insert(Atributos.atributo_id == atributo['id'],
+        		atributo_id = atributo['id'],
+        		nome = atributo['name'],
+        		)
+        	idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
+        	idAtributo = int(db(Atributos.atributo_id==atributo['id']).select().first()['id'])
+        	#salva atributos na tabela anucios_atributos
+        	Anuncios_Atributos.update_or_insert((Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == idAtributo),
+        		anuncio = idAnuncio,
+        		atributo = idAtributo,
+        		valor =  atributo['value_name']
+        		)
 
-        '''
-        argsAtributos = "%s/attributes" %(args)
-        buscaAtributos = meli.get(argsAtributos) 
-        if buscaAtributos.status_code == 200:
-            atributos = json.loads(buscaAtributos.content) 
-        for atributo in atributos:
-            at = atributo
-        '''
-
-    return at
+    return
