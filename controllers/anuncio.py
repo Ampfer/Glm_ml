@@ -312,6 +312,13 @@ def anuncios_publicar():
     #### Buscando Tipo de Frete ####
     free_shipping = True if anuncio.frete == 'gratis' else False
     frete = dict(local_pick_up=True,free_shipping=free_shipping,free_methods=[],mode="me2")
+
+    atributos = []
+    buscaAtributos = db(Anuncios_Atributos.anuncio == idAnuncio).select()
+    print buscaAtributos
+    for atributo in buscaAtributos:
+    	atributo_id = Atributos(atributo.atributo).atributo_id
+    	atributos.append(dict(id=atributo_id, value_name=atributo.valor))
     
     #### Buscando as Imagens do Anuncio ####
     imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
@@ -337,6 +344,7 @@ def anuncios_publicar():
                     warranty=anuncio.garantia,
                     description = descricao,
                     pictures=imagens,
+                    attributes=atributos,
                     )
     #### Verificando se Item Novo ou Alteração ####
     if anuncio.item_id:
@@ -362,25 +370,30 @@ def anunciar_item():
                 shipping=session.anuncio['frete'],
                 pictures=session.anuncio['pictures'],
                 )
+    bodyAtributo = dict(attributes=session.anuncio['attributes'])
         
     if session.ACCESS_TOKEN:
         from meli import Meli 
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
         item = meli.post("/items", body, {'access_token':session.ACCESS_TOKEN})
         status = 'Anunciado com Sucesso....'
-        #teste = meli.get("categories/MLB2527")        
+        #teste = meli.get("categories/MLB2527")    
     else:
         status = 'Antes Faça o Login....'
         item = ''    
 
     import json
     if item.status_code == 201:
+    	### Salvando item_id no banco de dados
         xitem = json.loads(item.content)    
         Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'])
+        ### Salvando Atributos no ML
+        atrib_args = "items/%s" %(xitem['id'])
+        atrib = meli.put(atrib_args, bodyAtributo, {'access_token':session.ACCESS_TOKEN})   
 
     #response.flash = status
     #response.js = "$('#anunciospublicar').get(0).reload()"
-    return item
+    return atrib
 
 def alterar_item():
 
@@ -389,9 +402,11 @@ def alterar_item():
                 price=session.anuncio['price'],
                 available_quantity=session.anuncio['available_quantity'],
                 shipping=session.anuncio['frete'],
+                attributes=session.anuncio['attributes']
                 #warranty=session.anuncio['warranty'], ## não altera com vendas 
                 #status=session.anuncio['status'],
                 )
+    #bodyAtributo = dict(attributes=session.anuncio['attributes'])
     
     listing_type_id = dict(id=session.anuncio['listing_type_id']) 
     description = session.anuncio['description']
@@ -408,6 +423,7 @@ def alterar_item():
         item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
         desc = meli.put(descricao_args,description, {'access_token':session.ACCESS_TOKEN})
         tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
+        #atrib = meli.put(item_args, bodyAtributo, {'access_token':session.ACCESS_TOKEN})   
 
         if item.status_code != 200 or desc.status_code != 200:
             status = 'Falha na Atualização do Item'
