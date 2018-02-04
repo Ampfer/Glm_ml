@@ -53,7 +53,7 @@ response.menu+=[
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [
-    ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='estoque')),
+    ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
     ('Atualizar Preço', False, URL(r=request, c='ferramentas', f='preco')),
     ])]
 response.menu+=[
