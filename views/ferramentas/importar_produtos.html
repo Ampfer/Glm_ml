@@ -16,10 +16,17 @@
 				    </div>               
 				</div>
 				{{=form.custom.end}}
-				<p>{{=file}}</p>
+				<div id=status>{{=file}}</div>
                 {{=gridProdutos}}
             </div>
         </div>
     </div>
 </div>
-
+<div id="mensagem" title="Título da mensagem" style="display:none">
+    <p>Aqui fica o conteúdo da mensagem.</p>
+</div>
+<script>
+    $(function teste() {            
+        alert('teste');
+    });
+</script>
