@@ -21,7 +21,7 @@ def importar_produtos():
 				btnAtualizar["_onclick"] = "return confirm('Confirma a Atualização dos Produtos?');"
 				if btnAtualizar:
 					atualiza_produtos()
-					response.js = "teste();"
+					#response.js = "teste();"
 
 				file = 'Arquivo Carregado: %s' %(request.vars.csvfile.filename)
 			except:

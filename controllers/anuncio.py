@@ -441,7 +441,7 @@ def importar_anuncios():
 	# Cunsulta de itens na Api do mercado livre
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    busca = meli.get("sites/MLB/search?seller_id=158428813&offset=0&limit=100")
+    busca = meli.get("sites/MLB/search?seller_id=158428813&offset=0&limit=300")
     import json
     if busca.status_code == 200:
         itens = json.loads(busca.content)    
