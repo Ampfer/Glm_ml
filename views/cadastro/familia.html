@@ -5,71 +5,72 @@
             <h4>Cadastro de Famílias</h4>
         </div>
         <div class="panel-body">
-        <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#home">Dados</a></li>
-            <li><a data-toggle="tab" href="#menu1">Descrição</a></li>
-            <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
-            <li><a data-toggle="tab" href="#menu3">Imagens</a></li>
-        </ul>
-        <div class="tab-content">
-            <div id="home" class="tab-pane fade in active">            
-                {{=formFamilia.custom.begin}}
-                <div class="well">          
-                    <div class="container">
-                        <div class="col-md-8">                    
-                            <div class="row">
-                                   <div class="col-md-11">
-                                    {{=formFamilia.custom.label.nome}}
-                                    {{=formFamilia.custom.widget.nome}}
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#home">Dados</a></li>
+                <li><a data-toggle="tab" href="#menu1">Descrição</a></li>
+                <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
+                <li><a data-toggle="tab" href="#menu3">Imagens</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">            
+                    {{=formFamilia.custom.begin}}
+                    <div class="well">          
+                        <div class="container">
+                            <div class="col-md-8">                    
+                                <div class="row">
+                                       <div class="col-md-11">
+                                        {{=formFamilia.custom.label.nome}}
+                                        {{=formFamilia.custom.widget.nome}}
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-5">
-                                    {{=formFamilia.custom.label.marca}}
-                                    {{=formFamilia.custom.widget.marca}}
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        {{=formFamilia.custom.label.marca}}
+                                        {{=formFamilia.custom.widget.marca}}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{=formFamilia.custom.label.imagem}}
+                                        {{=formFamilia.custom.widget.imagem}}
+                                    </div>    
                                 </div>
-                                <div class="col-md-6">
-                                    {{=formFamilia.custom.label.imagem}}
-                                    {{=formFamilia.custom.widget.imagem}}
-                                </div>    
-                            </div>
-                            <div class="row">
-                                <div class="col-md-11">
-                                    {{=formFamilia.custom.label.atributos}}
-                                    {{=formFamilia.custom.widget.atributos}}
-                                </div>    
-                            </div>                        
-                        </div>    
-                        <div class="col-md-4">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <label class="text-center">Imagem Destacada</Label>
-                                    <span class="thumbnail">
-                                        {{=imagem}}
-                                    </span>
+                                <div class="row">
+                                    <div class="col-md-11">
+                                        {{=formFamilia.custom.label.atributos}}
+                                        {{=formFamilia.custom.widget.atributos}}
+                                    </div>    
+                                </div>                        
+                            </div>    
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <label class="text-center">Imagem Destacada</Label>
+                                        <span class="thumbnail">
+                                            {{=imagem}}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <div style="margin-left:52px;">
+                        {{=formFamilia.custom.submit}}
+                    </div>
+                    {{=formFamilia.custom.end}}
                 </div>
-                <div style="margin-left:52px;">
-                    {{=formFamilia.custom.submit}}
+                <div id="menu1" class="tab-pane fade">
+                    {{=formFamiliaDescricao}}
                 </div>
-                {{=formFamilia.custom.end}}
-            </div>
-            <div id="menu1" class="tab-pane fade">
-                {{=formFamiliaDescricao}}
-            </div>
-            <div id="menu2" class="tab-pane fade">
-                {{=formFamiliaProdutos}}
-            </div>
-            <div id="menu3" class="tab-pane fade">
-                {{=formFamiliaImagem}}
-            </div>
-            <div class="right">
-                {{=btnAnterior}}
-                {{=btnProximo}}                     
-                {{=btnVoltar}}
+                <div id="menu2" class="tab-pane fade">
+                    {{=formFamiliaProdutos}}
+                </div>
+                <div id="menu3" class="tab-pane fade">
+                    {{=formFamiliaImagem}}
+                </div>
+                <div class="right">
+                    {{=btnAnterior}}
+                    {{=btnProximo}}                     
+                    {{=btnVoltar}}
+                </div>
             </div>
         </div>
     </div>

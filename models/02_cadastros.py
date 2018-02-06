@@ -3,6 +3,14 @@
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 ATRIBUTO = ('Medida','Tamanho','Modelo','Tensão','Cor')
 
+Empresa = db.define_table('empresa',
+    Field('nome','string',label='Nome:',length=60),
+    Field('desconto','decimal(7,2)',label='Desconto Frete'),
+    Field('premium','decimal(7,2)',label='Tarifa Premium'),
+    Field('classico','decimal(7,2)',label='Tarifa Clássico'),
+    )
+Empresa.desconto.requires = IS_DECIMAL_IN_RANGE(dot=',')
+
 Clientes = db.define_table('clientes',
 	Field('nome','string',label='Nome:',length=60),
 	Field('cnpj_cpf','string',label='CNPJ/CPF:',length=20),
@@ -11,7 +19,7 @@ Clientes = db.define_table('clientes',
 	Field('bairro','string',label='Bairro:',length=40),
 	Field('cidade','string',label='Cidade:',length=40),
 	Field('estado','string',label='Estado:',length=2),
-	Field('cep','string',label='Cep:',length=9),        Field('cep','string',label='Cep:',length=9),
+	Field('cep','string',label='Cep:',length=9),
     Field('fone','string',label='Fone:',length=30),
     Field('email','string',label='Email:',length=50),
 	)
@@ -57,6 +65,7 @@ Produtos = db.define_table('produtos',
     Field('marca', 'string', label='Marca:', length=30),
     Field('preco','decimal(7,2)',label='Preço'),
     Field('estoque','decimal(7,2)',label='Estoque'),
+    Field('ean','string',label='Ean:',length=13),
     format='%(nome)s',
     )
 Produtos.preco.requires = IS_DECIMAL_IN_RANGE(dot=',')
@@ -78,5 +87,11 @@ def buscaProduto(id):
     if not produto:
         raise HTTP(404, 'Produto não encontrado')
     return produto
+
+Atributos = db.define_table('atributos',
+    Field('atributo_id','string', label='Id Atributo:', length=50),
+    Field('nome','string', label='Nome:', length=50),
+    format='%(nome)s',
+    )
 
 

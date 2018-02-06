@@ -1,5 +1,23 @@
 # -*- coding: utf-8 -*-
 
+def empresa():
+    idEmpresa = db(Empresa.id == 1).select().first() or "0"
+
+    if idEmpresa == "0":
+        formEmpresa = SQLFORM(Empresa,field_id='id', _id='formEmpresa')
+
+    else:
+        formEmpresa = SQLFORM(Empresa,idEmpresa,_id='idEmpresa',field_id='id')
+
+    if formEmpresa.process().accepted:
+        response.flash = 'Salvo com Sucesso!'
+        redirect(URL('empresa', args=formEmpresa.vars.id))
+
+    elif formEmpresa.errors:
+        response.flash = 'Erro no Formulário Principal!'
+
+    return dict(formEmpresa=formEmpresa)
+
 def clientes():
     fields = (Clientes.id,Clientes.nome)
     formClientes = grid(Clientes,formname="formClienteCompras",fields=fields)
@@ -285,4 +303,11 @@ def selecionar_imagem():
     caminho = os.path.join('applications','glm_ml', 'static','imagens')
     arquivos = os.listdir(caminho)
     return dict(arquivos=arquivos, caminho=caminho)
+
+def atributos():
+    fields = (Atributos.atributo_id, Atributos.nome,)
+    formAtributos = grid(Atributos, formname = 'categoriaatributos',)
+    return dict(formAtributos=formAtributos)
+    
+
        

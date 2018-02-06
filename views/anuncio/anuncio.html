@@ -4,23 +4,24 @@
         <div class="panel-heading"><h4>Cadastro de Anuncios</h4></div>
         <div class="panel-body">
             <ul class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#home">Dados</a></li>
+                <li class="active"><a id='dados' data-toggle="tab" href="#home">Dados</a></li>
                     <li><a data-toggle="tab" href="#menu1">Descrição</a></li>
                     <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
-                    <li><a data-toggle="tab" href="#menu3">Imagens</a></li>
-                    <li><a id='preco' data-toggle="tab" href="#menu4">Preço</a></li>
-                    <li><a data-toggle="tab" href="#menu5">Publicar</a></li>
+                    <li><a data-toggle="tab" href="#menu3">Atributos</a></li>
+                    <li><a data-toggle="tab" href="#menu4">Imagens</a></li>
+                    <li><a id='preco' data-toggle="tab" href="#menu5">Preço</a></li>
+                    <li><a id='publicar' data-toggle="tab" href="#menu6">Publicar</a></li>
                 </ul>
             <div class="tab-content">
                 <div id="home" class="tab-pane fade in active">
                      {{=formAnuncio.custom.begin}}
                     <div class="well">
                         <div class="row">
-                            <div class="col-md-5">
+                            <div class="col-md-4">
                                 {{=formAnuncio.custom.label.familia}}
                                 {{=formAnuncio.custom.widget.familia}}
                             </div>
-                            <div class="col-md-7">
+                            <div class="col-md-8">
                                 {{=formAnuncio.custom.label.titulo}}
                                 {{=formAnuncio.custom.widget.titulo}}
                             </div>                
@@ -35,11 +36,19 @@
                                 {{=formAnuncio.custom.label.tipo}}
                                 {{=formAnuncio.custom.widget.tipo}}
                             </div>
-                        
-                       
                             <div class="col-md-4">
-                                {{=formAnuncio.custom.label.condicao}}
-                                {{=formAnuncio.custom.widget.condicao}}
+                                {{=formAnuncio.custom.label.frete}}
+                                {{=formAnuncio.custom.widget.frete}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                {{=formAnuncio.custom.label.desconto}}
+                                {{=formAnuncio.custom.widget.desconto}}
+                            </div>
+                            <div class="col-md-8">
+                                {{=formAnuncio.custom.label.garantia}}
+                                {{=formAnuncio.custom.widget.garantia}}
                             </div>
                         </div>
                         <div class="row">
@@ -50,6 +59,10 @@
                             <div class="col-md-4">
                                 {{=formAnuncio.custom.label.status}}
                                 {{=formAnuncio.custom.widget.status}}
+                            </div>
+                              <div class="col-md-4">
+                                {{=formAnuncio.custom.label.item_id}}
+                                {{=formAnuncio.custom.widget.item_id}}
                             </div>
                         </div>
                     </div>
@@ -64,13 +77,16 @@
                 <div id="menu2" class="tab-pane fade">
                     {{=formAnuncioProdutos}}
                 </div>
-                <div id="menu3" class="tab-pane fade">                    
+                <div id="menu3" class="tab-pane fade">
+                    {{=formAnuncioAtributos}}
+                </div>
+                <div id="menu4" class="tab-pane fade">                    
                     {{=formAnuncioImagem}}
                 </div>
-                <div id="menu4" class="tab-pane fade">    
+                <div id="menu5" class="tab-pane fade">    
                     {{=formAnuncioPreco}}
                 </div>
-                <div id="menu5" class="tab-pane fade">    
+                <div id="menu6" class="tab-pane fade">    
                     {{=formAnuncioPublicar}}
                 </div>
                 <div class="right">
@@ -87,4 +103,8 @@
 $(document).on("click","#preco", function(){
     $('#anunciospreco').get(0).reload()
 });
+$(document).on("click","#publicar", function(){
+    $('#anunciospublicar').get(0).reload()
+});
+
 </script>

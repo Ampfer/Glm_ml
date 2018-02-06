@@ -34,15 +34,18 @@ response.menu = [
 
 response.menu+=[
     (T('Arquivos'), False, URL(request.application,'default','index'), [
+    ('Empresa', False, URL(r=request, c='cadastro', f='empresa')),
     ('Cliente', False, URL(r=request, c='cadastro', f='clientes')),
     ('Marcas', False, URL(r=request, c='cadastro', f='marcas')),
     ('Familia de Produtos', False, URL(r=request, c='cadastro', f='familias')),
     ('Produtos', False, URL(r=request, c='cadastro', f='produtos')),
+    ('Atributos', False, URL(r=request, c='cadastro', f='atributos')),
     ])]
 response.menu+=[
     (T('Anuncio'), False, URL(request.application,'default','index'), [
     ('Categoria', False, URL(r=request, c='anuncio', f='categorias')),
     ('Anuncio', False, URL(r=request, c='anuncio', f='anuncios')),
+    ('Importar', False, URL(r=request, c='anuncio', f='importar_anuncios')),
     ])]
 response.menu+=[
     (T('Vendas'), False, URL(request.application,'default','index'), [
@@ -50,9 +53,12 @@ response.menu+=[
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [
-    ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='estoque')),
+    ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
     ('Atualizar Preço', False, URL(r=request, c='ferramentas', f='preco')),
     ])]
+response.menu+=[
+    (T('Login ML'), False, URL(request.application,'default','login'),
+    )]
 
 DEVELOPMENT_MENU = True
 
