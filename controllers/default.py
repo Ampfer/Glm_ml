@@ -75,7 +75,6 @@ def autorize():
         meli.authorize(request.vars.code, REDIRECT_URI)
     session.ACCESS_TOKEN = meli.access_token
     session.REFRESH_TOKEN = meli.access_token
-    
     #meli = Meli(client_id=CLIENT_ID,client_secret=session.CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=REFRESH_TOKEN)
     return meli.access_token
 

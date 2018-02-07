@@ -1,5 +1,5 @@
 def categorias():
-    fields = (Categorias.categoria_id,Categorias.categoria)
+    fields = (Categorias.categoria_id,Categorias.categoria,Categorias.frete)
     formCategorias = grid(Categorias,150,formname="formCategorias",fields=fields, orderby=Categorias.categoria)
             
     formCategorias = DIV(formCategorias, _class="well")
@@ -32,7 +32,7 @@ def categoria():
     elif formCategoria.errors:
         response.flash = 'Erro no Formulário Principal!'
 
-    return dict(formCategoria=formCategoria, loadAtributos=loadAtributos, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
+    return dict(formCategoria=formCategoria, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
 
 def anuncios():
 
@@ -167,14 +167,14 @@ def anuncios_produtos():
         except:
             id = 0
         Anuncios_Produtos[id] = dict(anuncio = idAnuncio, produto = idProduto)
-        atualiza_anuncio(idAnuncio)
+        #atualiza_anuncio(idAnuncio)
 
     elif formProduto.errors:
         response.flash = 'Erro no Formulário'
     
     def delete_produto(table,id):
 		idAnuncio = Anuncios_Produtos[id].anuncio
-		atualiza_anuncio(idAnuncio)
+		#atualiza_anuncio(idAnuncio)
 
     query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==Produtos.id)
     fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao ,Produtos.preco, Produtos.estoque)
@@ -222,7 +222,10 @@ def remove_imagem():
     response.js = "$('#anunciosimagens').get(0).reload()"
 
 def sugerido(id):
-    anuncio = Anuncios(id)
+   
+    anuncio = Anuncios(int(id))
+    desconto = Anuncios.desconto
+    
     preco = estoque = 0
     q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==id)
     if anuncio.forma == 'Individual':
@@ -251,10 +254,10 @@ def sugerido(id):
     categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
     
     if anuncio.frete == 'gratis':
-        frete = categoria.frete * (1 - empresa.desconto/100)
+        frete = int(categoria.frete) * (1 - anuncio.desconto/100)
     else:
         frete = 0
-    
+
     preco = preco * (1 - anuncio.desconto/100)
     preco = preco + frete
     preco = preco/ (1-tarifa/100)
@@ -267,7 +270,7 @@ def anuncios_preco():
     xsugerido = sugerido(idAnuncio)
     anuncio = Anuncios[idAnuncio]
     es = xsugerido['estoque']
-    ep = xsugerido['preco']
+    ep = round(xsugerido['preco'],1)
     preco = anuncio.preco
     desconto = anuncio.desconto
     estoque = anuncio.estoque
@@ -315,7 +318,7 @@ def anuncios_publicar():
 
     atributos = []
     buscaAtributos = db(Anuncios_Atributos.anuncio == idAnuncio).select()
-    print buscaAtributos
+    
     for atributo in buscaAtributos:
     	atributo_id = Atributos(atributo.atributo).atributo_id
     	atributos.append(dict(id=atributo_id, value_name=atributo.valor))
@@ -398,13 +401,10 @@ def anunciar_item():
 def alterar_item():
 
     body = dict(title=session.anuncio['title'],
-                category_id=session.anuncio['category_id'],
                 price=session.anuncio['price'],
                 available_quantity=session.anuncio['available_quantity'],
                 shipping=session.anuncio['frete'],
                 attributes=session.anuncio['attributes']
-                #warranty=session.anuncio['warranty'], ## não altera com vendas 
-                #status=session.anuncio['status'],
                 )
     #bodyAtributo = dict(attributes=session.anuncio['attributes'])
     
@@ -414,19 +414,16 @@ def alterar_item():
     item_args = "items/%s" %(session.anuncio['item_id'])
     descricao_args = "%s/description" %(item_args)
     tipo_args = "%s/listing_type" %(item_args)
-     
     if session.ACCESS_TOKEN:
         from meli import Meli    
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-        #teste = meli.get("categories/MLB2527")
-        
         item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
         desc = meli.put(descricao_args,description, {'access_token':session.ACCESS_TOKEN})
         tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
         #atrib = meli.put(item_args, bodyAtributo, {'access_token':session.ACCESS_TOKEN})   
 
         if item.status_code != 200 or desc.status_code != 200:
-            status = 'Falha na Atualização do Item'
+            status = 'Falha na Atualização do Item : %s %s %s' %(item,desc,tipo)
         else:
             status = 'Anuncio Atualizado com Sucesso....'
     else:

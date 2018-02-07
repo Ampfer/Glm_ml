@@ -272,6 +272,7 @@
 'Stylesheet': 'Folha de estilo',
 'submit': 'enviar',
 'Submit': 'Salvar',
+'SUBMIT': 'Salvar',
 'Success!': 'Success!',
 'Support': 'Suporte',
 'Sure you want to delete this object?': 'Está certo(a) que deseja apagar este objeto?',

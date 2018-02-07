@@ -130,8 +130,15 @@ auth.settings.reset_password_requires_verification = True
 # after defining tables, uncomment below to enable auditing
 # -------------------------------------------------------------------------
 # auth.enable_record_versioning(db)
-CLIENT_ID = 8985760257369748
-CLIENT_SECRET = "iiRaQEEVWHyQvo2rzSaToHZQkOpkrS7k"
+
+## Usuário Teste
+#CLIENT_ID = 8985760257369748
+#CLIENT_SECRET = "iiRaQEEVWHyQvo2rzSaToHZQkOpkrS7k"
+
+# Usuário GLM Ferramentas
+CLIENT_ID = 911703094686182
+CLIENT_SECRET = "x7pGQceaNzerJ3hzVg1kddDp9DY4nikW"
+
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
 
