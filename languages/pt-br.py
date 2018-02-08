@@ -167,6 +167,7 @@
 'Internal State': 'Estado Interno',
 'Introduction': 'Introdução',
 'Invalid email': 'Email inválido',
+'Invalid login': 'Invalid login',
 'Invalid Query': 'Consulta Inválida',
 'invalid request': 'requisição inválida',
 'Key': 'Chave',
@@ -180,7 +181,10 @@
 'Log In': 'Log In',
 'Login': 'Autentique-se',
 'login': 'Entrar',
+<<<<<<< HEAD
+=======
 'Login ML': 'Login ML',
+>>>>>>> c6d77017137c528b21113c0dd17da968ca7f7f77
 'logo:': 'logo:',
 'Logomarca:': 'Logomarca:',
 'logout': 'Sair',
@@ -268,6 +272,7 @@
 'Stylesheet': 'Folha de estilo',
 'submit': 'enviar',
 'Submit': 'Salvar',
+'SUBMIT': 'Salvar',
 'Success!': 'Success!',
 'Support': 'Suporte',
 'Sure you want to delete this object?': 'Está certo(a) que deseja apagar este objeto?',

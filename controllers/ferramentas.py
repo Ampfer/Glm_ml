@@ -21,7 +21,7 @@ def importar_produtos():
 				btnAtualizar["_onclick"] = "return confirm('Confirma a Atualização dos Produtos?');"
 				if btnAtualizar:
 					atualiza_produtos()
-					response.js = "teste();"
+					#response.js = "teste();"
 
 				file = 'Arquivo Carregado: %s' %(request.vars.csvfile.filename)
 			except:
@@ -49,15 +49,19 @@ def atualiza_produtos():
                 id = row.codigo,
                 nome=row.nome if row.nome else nome,
                 preco = row.preco if row.preco else preco,
-                estoque=row.estoque if row.estoque else 0,
+                estoque=row.estoque if row.estoque>0 else 0,
                 marca = row.marca if row.marca else marca,
                 ean = row.ean if row.ean else ean,
                 )
 
-def atualizar_anuncios():
-	gridAnuncios = grid(Anuncios)
-	pass
+def atualizar_estoque():
 	
+	anuncios = db(Anuncios.id > 0).select()
+	for anuncio in anuncios:
+		estoque =  sugerido(int(anuncio.id))['estoque']
+		Anuncios[anuncio.id] = dict(estoque=estoque)
+
+
 
 
 
