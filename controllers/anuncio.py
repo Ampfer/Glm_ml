@@ -221,6 +221,8 @@ def remove_imagem():
     del Anuncios_Imagens[idImagem]
     response.js = "$('#anunciosimagens').get(0).reload()"
 
+
+'''
 def sugerido(id):
    
     anuncio = Anuncios(int(id))
@@ -265,7 +267,10 @@ def sugerido(id):
 
     return dict(estoque=estoque,preco=preco)
 
+'''    
+
 def anuncios_preco():
+    
     idAnuncio = int(request.args(0))
     xsugerido = sugerido(idAnuncio)
     anuncio = Anuncios[idAnuncio]

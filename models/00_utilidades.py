@@ -67,3 +67,46 @@ def lista_arquivos_imagem(caminho):
     # filtar somente os arquivos que contenham as extensões de imagens compatíves com opencv
     arquivos = ['%s%s.%s' % f for f in arquivos_tmp if f[2] in image_extensions]
     return arquivos
+
+def sugerido(id):
+   
+    anuncio = Anuncios(int(id))
+    desconto = Anuncios.desconto
+    
+    preco = estoque = 0
+    q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==id)
+    if anuncio.forma == 'Individual':
+        max = Produtos.estoque.max()
+        estoque = db(q).select(max).first()[max]
+        max = Produtos.preco.max()
+        preco = db(q).select(max).first()[max] 
+    elif anuncio.forma =='Multiplos':
+        sum = Produtos.estoque.sum()
+        estoque = db(q).select(sum).first()[sum]
+        max = Produtos.preco.max()
+        preco = db(q).select(max).first()[max]
+    elif anuncio.forma =='Kit':
+        min = Produtos.estoque.min()
+        estoque = db(q).select(min).first()[min]
+        sum = Produtos.preco.sum()
+        preco = db(q).select(sum).first()[sum]
+
+    empresa = db(Empresa.id==1).select().first()
+
+    if anuncio.tipo == 'gold_pro':
+        tarifa = empresa.premium
+    elif anuncio.tipo == 'gold_special':
+        tarifa = empresa.classico
+
+    categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
+    
+    if anuncio.frete == 'gratis':
+        frete = int(categoria.frete) * (1 - anuncio.desconto/100)
+    else:
+        frete = 0
+    preco = preco * (1 - anuncio.desconto/100)
+    preco = preco + frete
+    preco = preco/ (1-tarifa/100)
+    preco = round(preco,2)
+
+    return dict(estoque=estoque,preco=preco)

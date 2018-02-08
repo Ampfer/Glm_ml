@@ -140,7 +140,7 @@ def produto():
 def familias():
 
     fields = (Familias.id,Familias.nome)
-    formFamilias = grid(Familias,formname="familias",fields=fields,create=False,deletable=False, orderby= Familias.nome)
+    formFamilias = grid(Familias,formname="familias",fields=fields,deletable=False, orderby= Familias.nome)
     session.teste = False
             
     formFamilias = DIV(formFamilias, _class="well")
@@ -174,7 +174,9 @@ def familia():
         imagem = A(IMG(_src=url,_class="img-responsive"),)
     
     btnVoltar = voltar("familias")
+    btnProximo=btnAnterior=''
 
+    '''
     # id Próxima Familia
     query1 = (Familias.nome > Familias[idFamilia].nome)
     if session.keywords:
@@ -200,9 +202,11 @@ def familia():
     
     btnProximo = proximo('familia',idProximo)
     btnAnterior = anterior('familia',idAnterior)
-
-    formFamilia.element(_name='nome')['_readonly'] = "readonly"
-    formFamilia.element(_name='atributos')['_readonly'] = "readonly"
+    '''
+    
+    
+    #formFamilia.element(_name='nome')['_readonly'] = "readonly"
+    #formFamilia.element(_name='atributos')['_readonly'] = "readonly"
 
     if formFamilia.process().accepted:
         response.flash = 'familia Salvo com Sucesso!'
