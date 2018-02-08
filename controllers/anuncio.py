@@ -130,17 +130,7 @@ def anuncios_descricao():
         response.flash = 'Erro no Formulário !' 
 
     return dict(formDescricao=formDescricao)        
-
-def atualiza_anuncio(id):
-    db.commit()
-    idAnuncio = int(id)
-    max = Produtos.preco.max()
-    sum = Produtos.estoque.sum()
-    query = (Anuncios_Produtos.anuncio == idAnuncio) & (Anuncios_Produtos.produto == Produtos.id)
-    preco = float(db(query).select(max).first()[max] or 0)
-    estoque = float(db(query).select(sum).first()[sum] or 0)
-    Anuncios[idAnuncio] = dict(preco=preco,estoque=estoque)
-    
+   
 def anuncios_produtos():
     idAnuncio = int(request.args(0))
 
@@ -167,22 +157,15 @@ def anuncios_produtos():
         except:
             id = 0
         Anuncios_Produtos[id] = dict(anuncio = idAnuncio, produto = idProduto)
-        atualiza_anuncio(idAnuncio)
 
     elif formProduto.errors:
         response.flash = 'Erro no Formulário'
     
-    def delete_produto(table,id):
-		idAnuncio = Anuncios_Produtos[id].anuncio
-		atualiza_anuncio(idAnuncio)
-
     query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==Produtos.id)
     fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao ,Produtos.preco, Produtos.estoque)
     formProdutos = grid(query,50,args=[idAnuncio],fields=fields,
                    create=False, editable=False, searchable=False, 
-                   orderby = Produtos.nome,onvalidation=delete_produto)
-    
-    
+                   orderby = Produtos.nome)
     
     return dict(formProdutos=formProdutos,formProduto=formProduto,)
 

@@ -53,6 +53,10 @@ def atualiza_produtos():
                 marca = row.marca if row.marca else marca,
                 ean = row.ean if row.ean else ean,
                 )
+
+def atualizar_anuncios():
+	gridAnuncios = grid(Anuncios)
+	pass
 	
 
 
