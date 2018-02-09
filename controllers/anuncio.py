@@ -37,8 +37,9 @@ def categoria():
 def anuncios():
 
     def delete_anuncio(table,id):
-      idDescricao = Anuncios[id].descricao
-      del Descricoes[idDescricao] 
+        idDescricao = Anuncios[id].descricao
+        del Descricoes[idDescricao] 
+    
     fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.status, Anuncios.preco, Anuncios.estoque)
     formAnuncios = grid(Anuncios,80,formname="formAnuncios",fields=fields, ondelete = delete_anuncio,orderby=Anuncios.titulo)
             
@@ -206,54 +207,6 @@ def remove_imagem():
     idImagem = int(request.args(0))
     del Anuncios_Imagens[idImagem]
     response.js = "$('#anunciosimagens').get(0).reload()"
-
-
-'''
-def sugerido(id):
-   
-    anuncio = Anuncios(int(id))
-    desconto = Anuncios.desconto
-    
-    preco = estoque = 0
-    q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==id)
-    if anuncio.forma == 'Individual':
-        max = Produtos.estoque.max()
-        estoque = db(q).select(max).first()[max]
-        max = Produtos.preco.max()
-        preco = db(q).select(max).first()[max] 
-    elif anuncio.forma =='Multiplos':
-        sum = Produtos.estoque.sum()
-        estoque = db(q).select(sum).first()[sum]
-        max = Produtos.preco.max()
-        preco = db(q).select(max).first()[max]
-    elif anuncio.forma =='Kit':
-        min = Produtos.estoque.min()
-        estoque = db(q).select(min).first()[min]
-        sum = Produtos.preco.sum()
-        preco = db(q).select(sum).first()[sum]
-
-    empresa = db(Empresa.id==1).select().first()
-
-    if anuncio.tipo == 'gold_pro':
-        tarifa = empresa.premium
-    elif anuncio.tipo == 'gold_special':
-        tarifa = empresa.classico
-
-    categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
-    
-    if anuncio.frete == 'gratis':
-        frete = int(categoria.frete) * (1 - anuncio.desconto/100)
-    else:
-        frete = 0
-
-    preco = preco * (1 - anuncio.desconto/100)
-    preco = preco + frete
-    preco = preco/ (1-tarifa/100)
-    preco = round(preco,2)
-
-    return dict(estoque=estoque,preco=preco)
-
-'''    
 
 def anuncios_preco():
     

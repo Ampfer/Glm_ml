@@ -21,8 +21,7 @@ def importar_produtos():
 				btnAtualizar["_onclick"] = "return confirm('Confirma a Atualização dos Produtos?');"
 				if btnAtualizar:
 					atualiza_produtos()
-					#response.js = "teste();"
-
+					
 				file = 'Arquivo Carregado: %s' %(request.vars.csvfile.filename)
 			except:
 				response.flash = 'Arquivo Inválido'
@@ -61,6 +60,16 @@ def atualizar_estoque():
 		estoque =  sugerido(int(anuncio.id))['estoque']
 		Anuncios[anuncio.id] = dict(estoque=estoque)
 
+	form = FORM.confirm('Atualizar Estoque',{'Voltar':URL('default','index')})
+
+	if form.accepted:
+		anuncios = db(Anuncios.id > 0).select()
+		for anuncio in anuncios:
+			print anuncio.id
+
+		response.flash = 'Estoque Atualizado com Sucesso....'
+
+	return dict(form=form)
 
 
 

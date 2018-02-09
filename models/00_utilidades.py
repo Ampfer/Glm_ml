@@ -71,25 +71,25 @@ def lista_arquivos_imagem(caminho):
 def sugerido(id):
    
     anuncio = Anuncios(int(id))
-    desconto = Anuncios.desconto
+    desconto = anuncio.desconto or 0
     
     preco = estoque = 0
     q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==id)
     if anuncio.forma == 'Individual':
         max = Produtos.estoque.max()
-        estoque = db(q).select(max).first()[max]
+        estoque = db(q).select(max).first()[max] or 0
         max = Produtos.preco.max()
-        preco = db(q).select(max).first()[max] 
+        preco = db(q).select(max).first()[max] or 0
     elif anuncio.forma =='Multiplos':
         sum = Produtos.estoque.sum()
-        estoque = db(q).select(sum).first()[sum]
-        max = Produtos.preco.max()
-        preco = db(q).select(max).first()[max]
+        estoque = db(q).select(sum).first()[sum] or 0
+        max = Produtos.preco.max() 
+        preco = db(q).select(max).first()[max] or 0
     elif anuncio.forma =='Kit':
         min = Produtos.estoque.min()
-        estoque = db(q).select(min).first()[min]
-        sum = Produtos.preco.sum()
-        preco = db(q).select(sum).first()[sum]
+        estoque = db(q).select(min).first()[min] or 0
+        sum = Produtos.preco.sum() 
+        preco = db(q).select(sum).first()[sum]  or 0
 
     empresa = db(Empresa.id==1).select().first()
 
@@ -101,10 +101,11 @@ def sugerido(id):
     categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
     
     if anuncio.frete == 'gratis':
-        frete = int(categoria.frete) * (1 - anuncio.desconto/100)
+        frete = int(categoria.frete) * (1 - desconto/100)
     else:
         frete = 0
-    preco = preco * (1 - anuncio.desconto/100)
+    
+    preco = preco * (1 - desconto/100)
     preco = preco + frete
     preco = preco/ (1-tarifa/100)
     preco = round(preco,2)
