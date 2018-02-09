@@ -103,7 +103,7 @@ def marca():
 
 def produtos():
 
-    fields = (Produtos.id,Produtos.nome)
+    fields = (Produtos.id,Produtos.nome,Produtos.ean)
     formProdutos = grid(Produtos,formname="produtos",fields=fields,create=False,deletable=False)
             
     formProdutos = DIV(formProdutos, _class="well")

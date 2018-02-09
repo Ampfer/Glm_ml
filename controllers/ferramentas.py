@@ -63,11 +63,23 @@ def atualizar_estoque():
 	form = FORM.confirm('Atualizar Estoque',{'Voltar':URL('default','index')})
 
 	if form.accepted:
-		anuncios = db(Anuncios.id > 0).select()
-		for anuncio in anuncios:
-			print anuncio.id
+		if session.ACCESS_TOKEN:
+			from meli import Meli 
+			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-		response.flash = 'Estoque Atualizado com Sucesso....'
+			anuncios = db(Anuncios.id > 0).select()
+			for anuncio in anuncios:
+				if anuncio['item_id']:
+					body = dict(available_quantity=float(anuncio['estoque']))
+					item_args = "items/%s" %(anuncio['item_id'])	
+					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+					if item.status_code != 200:
+						print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+
+			response.flash = 'Estoque Atualizado com Sucesso....'
+
+		else:
+			status = 'Antes Faça o Login....'
 
 	return dict(form=form)
 
