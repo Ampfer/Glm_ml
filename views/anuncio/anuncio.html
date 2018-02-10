@@ -1,4 +1,5 @@
 {{extend 'layout.html'}}
+{{include 'modal.html'}}
 <div class="container">
     <div class="panel panel-info">
         <div class="panel-heading"><h4>Cadastro de Anuncios</h4></div>
@@ -27,9 +28,9 @@
                             </div>                
                         </div>
                         <div class="row">
-                            <div class="col-md-4">
-                                {{=formAnuncio.custom.label.categoria}}
-                                {{=formAnuncio.custom.widget.categoria}}
+                          <div class="col-md-4">
+                                {{=formAnuncio.custom.label.desconto}}
+                                {{=formAnuncio.custom.widget.desconto}}
                             </div>
 
                             <div class="col-md-4">
@@ -42,11 +43,12 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4">
-                                {{=formAnuncio.custom.label.desconto}}
-                                {{=formAnuncio.custom.widget.desconto}}
+                          <div class="col-md-6">
+                                {{=formAnuncio.custom.label.categoria}}
+                                {{=formAnuncio.custom.widget.categoria}}
                             </div>
-                            <div class="col-md-8">
+
+                            <div class="col-md-6">
                                 {{=formAnuncio.custom.label.garantia}}
                                 {{=formAnuncio.custom.widget.garantia}}
                             </div>

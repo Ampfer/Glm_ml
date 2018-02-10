@@ -87,9 +87,9 @@ def anuncio():
 
     btnVoltar = voltar("anuncios")
 
-    formAnuncio.element(_name='familia')['_onchange'] = "if ($('#anuncios_titulo').val() == '' ) {jQuery('#anuncios_titulo').val($('#anuncios_familia option:selected').text())};"
+    formAnuncio.element(_name='familia')['_onchange'] = "if ($('#anuncios_titulo').val() == '' ) {jQuery('#anuncios_titulo').val($('#anuncios_familia option:selected').text())};jQuery('#anuncios_titulo').focus();"
     formAnuncio.element(_name='item_id')['_readonly'] = "readonly"
-
+    formAnuncio.element(_name='titulo')['_onblur']   = "ajax('%s', ['titulo','categoria'], ':eval');" % URL('anuncio', 'sugerir_categoria')
 
     if formAnuncio.process().accepted:
         response.flash = 'Anuncio Salvo com Sucesso!'
@@ -101,7 +101,28 @@ def anuncio():
     return dict(formAnuncio=formAnuncio,btnExcluir=btnExcluir, btnVoltar=btnVoltar, btnNovo=btnNovo, 
                 formAnuncioProdutos=formAnuncioProdutos,formAnuncioDescricao=formAnuncioDescricao,
                 formAnuncioImagem=formAnuncioImagem, formAnuncioPublicar=formAnuncioPublicar,
-                formAnuncioPreco=formAnuncioPreco,formAnuncioAtributos=formAnuncioAtributos)
+                formAnuncioPreco=formAnuncioPreco,formAnuncioAtributos=formAnuncioAtributos,)
+
+def sugerir_categoria():
+    if request.vars.categoria == '':
+        from meli import Meli
+        args = "sites/MLB/category_predictor/predict?title=%s" %(request.vars.titulo)
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+        busca = meli.get(args) 
+        import json
+        if busca.status_code == 200:
+            categoria = json.loads(busca.content)
+            nomeCategoria = ''
+            for r in categoria['path_from_root']:
+                if nomeCategoria:
+                    nomeCategoria = nomeCategoria + '/' + r['name']
+                else:
+                    nomeCategoria = r['name']
+
+            Categorias.update_or_insert(Categorias.categoria_id==categoria['id'],
+                categoria = nomeCategoria,
+                categoria_id = categoria['id'])
+            return "jQuery('#anuncios_categoria').append(new Option('%s', '%s')).val('%s');" % (nomeCategoria,categoria['id'],categoria['id'])
 
 def anuncios_descricao():
 
