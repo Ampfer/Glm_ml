@@ -90,6 +90,7 @@ def anuncio():
     formAnuncio.element(_name='familia')['_onchange'] = "if ($('#anuncios_titulo').val() == '' ) {jQuery('#anuncios_titulo').val($('#anuncios_familia option:selected').text())};"
     formAnuncio.element(_name='item_id')['_readonly'] = "readonly"
 
+
     if formAnuncio.process().accepted:
         response.flash = 'Anuncio Salvo com Sucesso!'
         redirect(URL('anuncio', args=formAnuncio.vars.id))
@@ -137,7 +138,7 @@ def anuncios_produtos():
 
     Anuncios_Produtos.anuncio.writable = False
     Anuncios_Produtos.anuncio.default = idAnuncio
-
+    
     idFamilia = Anuncios[idAnuncio].familia
 
     q1 = db(Produtos.familia == idFamilia)
@@ -149,18 +150,35 @@ def anuncios_produtos():
         submit_button='Adicionar',
         )
     
-    if formProduto.process().accepted:
-        response.flash = 'Salvo !'
+    def validar_forma(form,idAnuncio=idAnuncio):
+        forma = Anuncios[idAnuncio].forma
+        query1 = (Anuncios_Produtos.anuncio == idAnuncio)
+        vazio = db(query1).isempty()
+        if vazio == False and forma == 'Individual':
+            form.errors.produto = 'Permitido Somente um Produto para Anuncio Individual'
+        
+    if formProduto.process(onvalidation=validar_forma).accepted:
         idProduto = formProduto.vars.produto
-        q = (Anuncios_Produtos.anuncio == idAnuncio) & (Anuncios_Produtos.produto == idProduto)
-        try:      
-            id = db(q).select().first()['id']
-        except:
-            id = 0
-        Anuncios_Produtos[id] = dict(anuncio = idAnuncio, produto = idProduto)
+        
+        ### Adiciona Produtos ###
+        query = (Anuncios_Produtos.anuncio == idAnuncio) & (Anuncios_Produtos.produto == idProduto)
+        Anuncios_Produtos.update_or_insert(query, anuncio = idAnuncio, produto = idProduto)
+
+        #### Atualiza Atributos ####
+        marca = Produtos[idProduto].marca
+        ean = Produtos[idProduto].ean
+        if marca:
+            query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 1)
+            Anuncios_Atributos.update_or_insert(query, atributo = 1, valor= marca)
+        if ean:
+            query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 3)
+            Anuncios_Atributos.update_or_insert(query, atributo = 3, valor= ean)
+
+        response.flash = 'Produto Adicionado com Sucesso.... !'
 
     elif formProduto.errors:
-        response.flash = 'Erro no Formulário'
+        response.flash = 'Erro no Formulário...'
+    
     
     def delete_produto(table,id):
 		idAnuncio = Anuncios_Produtos[id].anuncio
@@ -382,7 +400,7 @@ def importar_anuncios():
 	# Cunsulta de itens na Api do mercado livre
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    busca = meli.get("sites/MLB/search?seller_id=158428813&offset=0&limit=300")
+    busca = meli.get("sites/MLB/search?seller_id=158428813&offset=100&limit=100")
     import json
     if busca.status_code == 200:
         itens = json.loads(busca.content)    
@@ -443,4 +461,4 @@ def importar_anuncios():
         		valor =  atributo['value_name']
         		)
 
-    return
+    return busca
