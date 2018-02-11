@@ -66,6 +66,7 @@ Produtos = db.define_table('produtos',
     Field('preco','decimal(7,2)',label='Preço'),
     Field('estoque','decimal(7,2)',label='Estoque'),
     Field('ean','string',label='Ean:',length=13),
+    Field('variacao_id','string', label='Id Variação:', length=20),
     format='%(nome)s',
     )
 Produtos.preco.requires = IS_DECIMAL_IN_RANGE(dot=',')

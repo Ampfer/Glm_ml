@@ -111,18 +111,15 @@ def sugerir_categoria():
         busca = meli.get(args) 
         import json
         if busca.status_code == 200:
-            categoria = json.loads(busca.content)
-            nomeCategoria = ''
-            for r in categoria['path_from_root']:
-                if nomeCategoria:
-                    nomeCategoria = nomeCategoria + '/' + r['name']
-                else:
-                    nomeCategoria = r['name']
+            sugestao = json.loads(busca.content)
+            categoria = buscar_categoria(sugestao['id'])
 
-            Categorias.update_or_insert(Categorias.categoria_id==categoria['id'],
-                categoria = nomeCategoria,
-                categoria_id = categoria['id'])
-            return "jQuery('#anuncios_categoria').append(new Option('%s', '%s')).val('%s');" % (nomeCategoria,categoria['id'],categoria['id'])
+            Categorias.update_or_insert(Categorias.categoria_id==sugestao['id'],
+                categoria_id = sugestao['id'],
+                categoria = categoria['categoria'],
+                frete = categoria['valorFrete'],)
+            
+            return "jQuery('#anuncios_categoria').append(new Option('%s', '%s')).val('%s');" % (categoria['categoria'],sugestao['id'],sugestao['id'])
 
 def anuncios_descricao():
 
@@ -313,6 +310,21 @@ def anuncios_publicar():
     for imagem in imagensIds:
         img = str(Imagens[imagem.imagem].imagem)
         imagens.append(dict(source=url+img))
+
+    #### Buscar Variações ####
+    variacao = []
+    if anuncio.forma == 'Multiplos':
+        rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
+        for row in rows:
+            produto = Produtos[row.produto]
+            variacaoProduto = dict(id=produto.variacao_id,
+                                   price=produto.preco,
+                                   attribute_combinations = dict(name = produto.atributo,value_name=produto.variacao),
+                                   available_quantity=produto.estoque,
+                                   seller_custom_field = produto.id
+                                   )
+            variacao.append(variacaoProduto)
+        
     
     #### Montando Dicionário com Dados do Anuncio ####
     session.anuncio = dict(id=anuncio.id,
@@ -331,7 +343,11 @@ def anuncios_publicar():
                     description = descricao,
                     pictures=imagens,
                     attributes=atributos,
+                    variations=variacao,
                     )
+    if session.anuncio['variations']:
+        print  'ok'
+
     #### Verificando se Item Novo ou Alteração ####
     if anuncio.item_id:
         btnPublicar = publicar('alterar_item',' Atualizar Item','anunciospublicar')
@@ -409,6 +425,10 @@ def alterar_item():
             status = 'Falha na Atualização do Item : %s %s %s' %(item,desc,tipo)
         else:
             status = 'Anuncio Atualizado com Sucesso....'
+
+        if session.anuncio['variations']:
+            pass
+
     else:
         status = 'Antes Faça o Login....'
         item = ''   
@@ -421,7 +441,7 @@ def importar_anuncios():
 	# Cunsulta de itens na Api do mercado livre
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,0,50)
+    argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,50,50)
     busca = meli.get(argsItem)
     import json
     if busca.status_code == 200:
