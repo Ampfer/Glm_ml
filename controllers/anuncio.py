@@ -421,7 +421,8 @@ def importar_anuncios():
 	# Cunsulta de itens na Api do mercado livre
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    busca = meli.get("sites/MLB/search?seller_id=158428813&offset=100&limit=100")
+    argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,0,50)
+    busca = meli.get(argsItem)
     import json
     if busca.status_code == 200:
         itens = json.loads(busca.content)    
@@ -435,27 +436,17 @@ def importar_anuncios():
             frete = 'comprador'
         else:
             frete = 'gratis'
-		# Busca Categorias       
-        args = "categories/%s" %(item['category_id'])
-        categoria = meli.get(args) 
-        if categoria.status_code == 200:
-            categoria = json.loads(categoria.content) 
-        
-        nomeCategoria = ''
-        for r in categoria['path_from_root']:
-            if nomeCategoria:
-                nomeCategoria = nomeCategoria + '/' + r['name']
-            else:
-                nomeCategoria = r['name']
-        valorFrete = 0 ### Fazer Rotina para Buscar valor do Frete por Categoria
+		
+        # Buscar Categorias
+        categoria = buscar_categoria(item['category_id'])  
 
-        # Salva Categorias
+        # Salvar Categorias
         Categorias.update_or_insert(Categorias.categoria_id == item['category_id'],
-                categoria = nomeCategoria,
+                categoria = categoria['categoria'],
                 categoria_id = item['category_id'],
-                frete = valorFrete,
+                frete = categoria['valorFrete'],
                 )
-        # Salva Anuncios
+        # Salvar Anuncios
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
                 item_id=item['id'],
                 titulo=item['title'],
@@ -466,7 +457,7 @@ def importar_anuncios():
                 frete = frete,
                 status = 'active',
                 )
-        # Salva Atributos
+        # Salvar Atributos
         for atributo in item['attributes'] :
         	#salva atributos na tabele atributos
         	id = Atributos.update_or_insert(Atributos.atributo_id == atributo['id'],
@@ -475,7 +466,7 @@ def importar_anuncios():
         		)
         	idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
         	idAtributo = int(db(Atributos.atributo_id==atributo['id']).select().first()['id'])
-        	#salva atributos na tabela anucios_atributos
+        	#salvar atributos na tabela anucios_atributos
         	Anuncios_Atributos.update_or_insert((Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == idAtributo),
         		anuncio = idAnuncio,
         		atributo = idAtributo,

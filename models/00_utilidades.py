@@ -111,3 +111,61 @@ def sugerido(id):
     preco = round(preco,2)
 
     return dict(estoque=estoque,preco=preco)
+
+def buscar_categoria(categoriaId):
+    import json
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    ### Buscar Categoria ###
+    args = "categories/%s" %(categoriaId)
+    categoria = meli.get(args) 
+    if categoria.status_code == 200:
+        categoria = json.loads(categoria.content) 
+    
+    ### Concatena Nome da Categoria ###
+    nomeCategoria = ''
+    for r in categoria['path_from_root']:
+        if nomeCategoria:
+            nomeCategoria = nomeCategoria + '/' + r['name']
+        else:
+            nomeCategoria = r['name']
+
+    ### Buscar Dimensoes por Categoria ###
+    argsDimensoes = '%s/shipping' %(args)
+    categoriaDimensoes = meli.get(argsDimensoes)
+    if categoriaDimensoes.status_code == 200:
+        dimensoes = json.loads(categoriaDimensoes.content) 
+       
+        ### Buscar Valor de Frete pelas Dimensoes da Categoria ###
+        argsFrete = '/users/%s/shipping_options/free?dimensions=%sx%sx%s,%s' \
+        %(USER_ID,dimensoes['height'],dimensoes['width'],dimensoes['length'],dimensoes['weight'])
+        categoriaFrete = categoria = meli.get(argsFrete) 
+
+        if categoriaFrete.status_code == 200:
+            frete = json.loads(categoriaFrete.content)
+            valorFrete = frete['coverage']['all_country']['list_cost']
+
+    return dict(categoria = nomeCategoria, categoriaId=categoriaId,valorFrete=valorFrete)
+
+  
+
+  
+'''
+        args = "categories/%s" %(item['category_id'])
+        categoria = meli.get(args) 
+        if categoria.status_code == 200:
+            categoria = json.loads(categoria.content) 
+        
+        nomeCategoria = ''
+        for r in categoria['path_from_root']:
+            if nomeCategoria:
+                nomeCategoria = nomeCategoria + '/' + r['name']
+            else:
+                nomeCategoria = r['name']
+        ### Buscar valor do Frete por Categoria ###
+        categoriaFrete = meli.get('args/shipping')
+                if categoriaFrete.status_code == 200:
+                valorFrete = json.loads(categoria.content) 
+'''
+
+

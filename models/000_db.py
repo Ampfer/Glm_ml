@@ -138,6 +138,7 @@ auth.settings.reset_password_requires_verification = True
 # Usuário GLM Ferramentas
 CLIENT_ID = 911703094686182
 CLIENT_SECRET = "x7pGQceaNzerJ3hzVg1kddDp9DY4nikW"
+USER_ID = 158428813
 
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
