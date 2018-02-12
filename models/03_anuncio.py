@@ -45,6 +45,7 @@ Anuncios.forma.requires = IS_IN_SET(FORMA,zero=None)
 Anuncios_Produtos = db.define_table('anuncios_produtos',
     Field('anuncio', 'reference anuncios'),
     Field('produto', 'reference produtos'),
+    Field.Virtual('preco_sugerido',lambda row: sugerido(int(row.anuncio),int(row.produto)))
     )
 Anuncios_Atributos = db.define_table('anuncios_atributos',
     Field('anuncio', 'reference anuncios'),

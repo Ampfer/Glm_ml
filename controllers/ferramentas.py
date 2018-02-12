@@ -54,7 +54,7 @@ def atualiza_produtos():
                 )
 
 def atualizar_estoque():
-	
+
 	anuncios = db(Anuncios.id > 0).select()
 	for anuncio in anuncios:
 		estoque =  sugerido(int(anuncio.id))['estoque']

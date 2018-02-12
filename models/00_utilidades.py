@@ -68,28 +68,34 @@ def lista_arquivos_imagem(caminho):
     arquivos = ['%s%s.%s' % f for f in arquivos_tmp if f[2] in image_extensions]
     return arquivos
 
-def sugerido(id):
-   
-    anuncio = Anuncios(int(id))
+def sugerido(idAnuncio,idProduto = 0):
+
+    anuncio = Anuncios[idAnuncio]
     desconto = anuncio.desconto or 0
     
     preco = estoque = 0
-    q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==id)
-    if anuncio.forma == 'Individual':
-        max = Produtos.estoque.max()
-        estoque = db(q).select(max).first()[max] or 0
-        max = Produtos.preco.max()
-        preco = db(q).select(max).first()[max] or 0
-    elif anuncio.forma =='Multiplos':
-        sum = Produtos.estoque.sum()
-        estoque = db(q).select(sum).first()[sum] or 0
-        max = Produtos.preco.max() 
-        preco = db(q).select(max).first()[max] or 0
-    elif anuncio.forma =='Kit':
-        min = Produtos.estoque.min()
-        estoque = db(q).select(min).first()[min] or 0
-        sum = Produtos.preco.sum() 
-        preco = db(q).select(sum).first()[sum]  or 0
+
+    if idProduto == 0:
+
+        q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==idAnuncio)
+        if anuncio.forma == 'Individual':
+            max = Produtos.estoque.max()
+            estoque = db(q).select(max).first()[max] or 0
+            max = Produtos.preco.max()
+            preco = db(q).select(max).first()[max] or 0
+        elif anuncio.forma =='Multiplos':
+            sum = Produtos.estoque.sum()
+            estoque = db(q).select(sum).first()[sum] or 0
+            max = Produtos.preco.max() 
+            preco = db(q).select(max).first()[max] or 0
+        elif anuncio.forma =='Kit':
+            min = Produtos.estoque.min()
+            estoque = db(q).select(min).first()[min] or 0
+            sum = Produtos.preco.sum() 
+            preco = db(q).select(sum).first()[sum]  or 0
+
+    else:
+        preco = Produtos[idProduto].preco
 
     empresa = db(Empresa.id==1).select().first()
 
@@ -110,7 +116,10 @@ def sugerido(id):
     preco = preco/ (1-tarifa/100)
     preco = round(preco,2)
 
-    return dict(estoque=estoque,preco=preco)
+    if idProduto == 0:
+        return dict(estoque=estoque,preco=preco)
+    else:
+        return preco
 
 def buscar_categoria(categoriaId):
     import json
@@ -146,26 +155,3 @@ def buscar_categoria(categoriaId):
             valorFrete = frete['coverage']['all_country']['list_cost']
 
     return dict(categoria = nomeCategoria, categoriaId=categoriaId,valorFrete=valorFrete)
-
-  
-
-  
-'''
-        args = "categories/%s" %(item['category_id'])
-        categoria = meli.get(args) 
-        if categoria.status_code == 200:
-            categoria = json.loads(categoria.content) 
-        
-        nomeCategoria = ''
-        for r in categoria['path_from_root']:
-            if nomeCategoria:
-                nomeCategoria = nomeCategoria + '/' + r['name']
-            else:
-                nomeCategoria = r['name']
-        ### Buscar valor do Frete por Categoria ###
-        categoriaFrete = meli.get('args/shipping')
-                if categoriaFrete.status_code == 200:
-                valorFrete = json.loads(categoria.content) 
-'''
-
-

@@ -106,6 +106,7 @@ def anuncio():
 def sugerir_categoria():
     if request.vars.categoria == '':
         from meli import Meli
+
         args = "sites/MLB/category_predictor/predict?title=%s" %(request.vars.titulo)
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
         busca = meli.get(args) 
@@ -197,12 +198,10 @@ def anuncios_produtos():
     elif formProduto.errors:
         response.flash = 'Erro no Formulário...'
     
-    
-    def delete_produto(table,id):
-		idAnuncio = Anuncios_Produtos[id].anuncio
-
     query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==Produtos.id)
-    fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao ,Produtos.preco, Produtos.estoque)
+
+    fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao,Produtos.preco, Produtos.estoque, Anuncios_Produtos.preco_sugerido)
+
     formProdutos = grid(query,50,args=[idAnuncio],fields=fields,
                    create=False, editable=False, searchable=False, 
                    orderby = Produtos.nome)
@@ -440,6 +439,7 @@ def alterar_item():
 def importar_anuncios():
 	# Cunsulta de itens na Api do mercado livre
     from meli import Meli
+        
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
     argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,50,50)
     busca = meli.get(argsItem)

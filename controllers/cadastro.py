@@ -126,9 +126,6 @@ def produto():
 
     btnVoltar = voltar("produtos")
     formProduto.element(_name='nome')['_readonly'] = "readonly"
-    formProduto.element(_name='preco')['_readonly'] = "readonly"
-    formProduto.element(_name='estoque')['_readonly'] = "readonly"
-    formProduto.element(_name='nome')['_readonly'] = "readonly"
 
     if formProduto.process().accepted:
         response.flash = 'Produto Salvo com Sucesso!'
