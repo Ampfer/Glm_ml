@@ -63,18 +63,33 @@ def atualizar_estoque():
 	form = FORM.confirm('Atualizar Estoque',{'Voltar':URL('default','index')})
 
 	if form.accepted:
+
 		if session.ACCESS_TOKEN:
+			print 'teste aqui'
 			from meli import Meli 
 			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-			anuncios = db(Anuncios.id > 0).select()
+			#anuncios = db(Anuncios.id > 0).select()
+			anuncios = db(Anuncios.forma == 'Multiplos').select()
 			for anuncio in anuncios:
 				if anuncio['item_id']:
-					body = dict(available_quantity=float(anuncio['estoque']))
+					variacao = []
+					if anuncio.forma == 'Multiplos':
+						rows = db(Anuncios_Produtos.anuncio==anuncio.id).select()
+						for row in rows:
+							produto = Produtos[row.produto]
+							variacaoProduto = dict(id=row.variacao_id,
+							available_quantity=float(produto.estoque))
+							variacao.append(variacaoProduto)
+
+						body = dict(variations=variacao)
+					else:
+						body = dict(available_quantity=float(anuncio['estoque']))
+
 					item_args = "items/%s" %(anuncio['item_id'])	
 					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-					if item.status_code != 200:
-						print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+					#if item.status_code != 200:
+					print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
 
 			response.flash = 'Estoque Atualizado com Sucesso....'
 

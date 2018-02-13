@@ -37,9 +37,12 @@ def categoria():
 def anuncios():
 
     def delete_anuncio(table,id):
-        idDescricao = Anuncios[id].descricao
-        del Descricoes[idDescricao] 
-    
+        try:
+            idDescricao = Anuncios[id].descricao
+            del Descricoes[idDescricao] 
+        except:
+            pass
+
     fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.status, Anuncios.preco, Anuncios.estoque)
     formAnuncios = grid(Anuncios,80,formname="formAnuncios",fields=fields, ondelete = delete_anuncio,orderby=Anuncios.titulo)
             
@@ -323,8 +326,6 @@ def anuncios_publicar():
                                    seller_custom_field = str(produto.id)
                                    )
             variacao.append(variacaoProduto)
-        print variacao
-        
     
     #### Montando Dicionário com Dados do Anuncio ####
     session.anuncio = dict(id=anuncio.id,
@@ -441,26 +442,63 @@ def alterar_item():
     return
 
 def importar_anuncios():
-	# Cunsulta de itens na Api do mercado livre
-    from meli import Meli
-        
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,0,100)
-    busca = meli.get(argsItem)
-    import json
-    if busca.status_code == 200:
-        itens = json.loads(busca.content)    
 
-    xitens = itens['results']
-  
+    import json
+
+    form = SQLFORM.factory(
+        Field('anuncio_id','string',label='Id do Anuncio:'),
+        Field('offset','integer',label='Inicio:', default=0),
+        Field('limit','integer',label='Quantidade:',default=50),
+        table_name='importaranuncio',
+        submit_button='Carregar Anuncios',
+        )
+
+    xitens = []
+    btnAtualizar = ''
+
+    if form.process().accepted:
+
+        anuncio_id = form.vars.anuncio_id
+        offset = form.vars.offset
+        limit = form.vars.limit 
+
+        # Cunsulta de itens na Api do mercado livre
+        from meli import Meli
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+
+        if anuncio_id:
+            argsItem = "items/%s" %(anuncio_id)
+            busca = meli.get(argsItem)
+            
+            if busca.status_code == 200:
+                itens = json.loads(busca.content)    
+                xitens.append(itens)
+        else:
+            argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,offset,limit)
+            busca = meli.get(argsItem)
+            
+            if busca.status_code == 200:
+                itens = json.loads(busca.content)    
+                xitens = itens['results']
+        
+        atualizar_anuncios(xitens)
+        
+        
+    elif form.errors:
+        response.flash = 'Erro no Formulário'
+
+    return dict(form=form,itens = xitens,btnAtualizar=btnAtualizar)
+
+def atualizar_anuncios(xitens):
+    print 'aqui'  
     #Loop nos itens encontrados
     for item in xitens: 
-    	# Verifica Tipo de Frete
+        # Verifica Tipo de Frete
         if item['shipping']['free_shipping'] == False:
             frete = 'comprador'
         else:
             frete = 'gratis'
-		
+        
         # Buscar Categorias
         categoria = buscar_categoria(item['category_id'])  
 
@@ -483,18 +521,16 @@ def importar_anuncios():
                 )
         # Salvar Atributos
         for atributo in item['attributes'] :
-        	#salva atributos na tabele atributos
-        	id = Atributos.update_or_insert(Atributos.atributo_id == atributo['id'],
-        		atributo_id = atributo['id'],
-        		nome = atributo['name'],
-        		)
-        	idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
-        	idAtributo = int(db(Atributos.atributo_id==atributo['id']).select().first()['id'])
-        	#salvar atributos na tabela anucios_atributos
-        	Anuncios_Atributos.update_or_insert((Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == idAtributo),
-        		anuncio = idAnuncio,
-        		atributo = idAtributo,
-        		valor =  atributo['value_name']
-        		)
-
-    return busca
+            #salva atributos na tabele atributos
+            id = Atributos.update_or_insert(Atributos.atributo_id == atributo['id'],
+                atributo_id = atributo['id'],
+                nome = atributo['name'],
+                )
+            idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
+            idAtributo = int(db(Atributos.atributo_id==atributo['id']).select().first()['id'])
+            #salvar atributos na tabela anucios_atributos
+            Anuncios_Atributos.update_or_insert((Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == idAtributo),
+                anuncio = idAnuncio,
+                atributo = idAtributo,
+                valor =  atributo['value_name']
+                )

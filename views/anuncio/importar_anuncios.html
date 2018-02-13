@@ -1,0 +1,58 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout.html'}}
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading"><h4>Categorias</h4></div>
+            <div class="panel-body">
+                <div class="well">
+				    {{=form.custom.begin}}
+				    <div class="row">
+				        <div class="col-md-4">
+				            {{=form.custom.label.anuncio_id}}
+				            {{=form.custom.widget.anuncio_id}}
+				        </div>
+				        <div class="col-md-2">
+				            {{=form.custom.label.offset}}
+				            {{=form.custom.widget.offset}}
+				        </div>
+				        <div class="col-md-2">
+				            {{=form.custom.label.limit}}
+				            {{=form.custom.widget.limit}}
+				        </div>
+				        <div class="col-md-2">
+				            <div style="margin-top: 22px;">{{=form.custom.submit}}</div>
+				        </div>
+				        <div class="col-md-2">
+				            <div style="margin-top: 22px;">{{=btnAtualizar}}</div>
+				        </div>
+				    </div>
+				    <div class="row">
+				    	<p></p>
+				    </div>
+				    {{=form.custom.end}}
+				<table class="table table-striped">
+					<tr>
+						<th>Item</th>
+						<th>Id Anuncio</th>
+						<th>Titulo</th>
+						<th>Estoque</th>
+						<th>Preço</th>
+					</tr>
+					{{row = 0}}
+					{{for item in itens:}}
+						{{row += 1}}
+						<tr>
+							<td>{{=row}}</td>
+							<td>{{=item['id']}}</td>
+							<td>{{=item['title']}}</td>
+							<td>{{=item['available_quantity']}}</td>
+							<td>{{=item['price']}}</td>
+						</tr>
+					{{pass}}
+				</table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
