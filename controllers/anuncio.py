@@ -197,7 +197,7 @@ def anuncios_produtos():
 
     elif formProduto.errors:
         response.flash = 'Erro no Formulário...'
-    
+ 
     query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==Produtos.id)
 
     fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao,Produtos.preco, Produtos.estoque, Anuncios_Produtos.preco_sugerido)
@@ -316,13 +316,14 @@ def anuncios_publicar():
         rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
         for row in rows:
             produto = Produtos[row.produto]
-            variacaoProduto = dict(id=produto.variacao_id,
-                                   price=produto.preco,
-                                   attribute_combinations = dict(name = produto.atributo,value_name=produto.variacao),
-                                   available_quantity=produto.estoque,
-                                   seller_custom_field = produto.id
+            variacaoProduto = dict(id=row.variacao_id,
+                                   price=float(row.preco_sugerido),
+                                   attribute_combinations = [dict(name = produto.atributo,value_name=produto.variacao)],
+                                   available_quantity=float(produto.estoque),
+                                   seller_custom_field = str(produto.id)
                                    )
             variacao.append(variacaoProduto)
+        print variacao
         
     
     #### Montando Dicionário com Dados do Anuncio ####
@@ -344,8 +345,6 @@ def anuncios_publicar():
                     attributes=atributos,
                     variations=variacao,
                     )
-    if session.anuncio['variations']:
-        print  'ok'
 
     #### Verificando se Item Novo ou Alteração ####
     if anuncio.item_id:
@@ -404,7 +403,10 @@ def alterar_item():
                 shipping=session.anuncio['frete'],
                 attributes=session.anuncio['attributes']
                 )
-    #bodyAtributo = dict(attributes=session.anuncio['attributes'])
+    bodyvariacao = dict(title=session.anuncio['title'],
+                        shipping=session.anuncio['frete'],
+                        attributes=session.anuncio['attributes'],
+                        variations=session.anuncio['variations'])
     
     listing_type_id = dict(id=session.anuncio['listing_type_id']) 
     description = session.anuncio['description']
@@ -412,36 +414,38 @@ def alterar_item():
     item_args = "items/%s" %(session.anuncio['item_id'])
     descricao_args = "%s/description" %(item_args)
     tipo_args = "%s/listing_type" %(item_args)
+    
     if session.ACCESS_TOKEN:
         from meli import Meli    
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-        item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-        desc = meli.put(descricao_args,description, {'access_token':session.ACCESS_TOKEN})
-        tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
-        #atrib = meli.put(item_args, bodyAtributo, {'access_token':session.ACCESS_TOKEN})   
-
-        if item.status_code != 200 or desc.status_code != 200:
-            status = 'Falha na Atualização do Item : %s %s %s' %(item,desc,tipo)
-        else:
-            status = 'Anuncio Atualizado com Sucesso....'
 
         if session.anuncio['variations']:
-            pass
+            item = meli.put(item_args, bodyvariacao, {'access_token':session.ACCESS_TOKEN})
+        else:
+            item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+        
+        desc = meli.put(descricao_args,description, {'access_token':session.ACCESS_TOKEN})
+        tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
+
+        if item.status_code != 200 or desc.status_code != 200 or tipo.status_code != 200:
+            status = 'Falha na Atualização do Item : item:%s Descrição:%s Tipo:%s' %(item,desc,tipo)
+        else:
+            status = 'Anuncio Atualizado com Sucesso....'
 
     else:
         status = 'Antes Faça o Login....'
         item = ''   
-       
+
     response.flash = status
     response.js = "$('#anunciospublicar').get(0).reload()"
-    return 
+    return
 
 def importar_anuncios():
 	# Cunsulta de itens na Api do mercado livre
     from meli import Meli
         
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,50,50)
+    argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,0,100)
     busca = meli.get(argsItem)
     import json
     if busca.status_code == 200:
