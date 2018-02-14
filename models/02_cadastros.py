@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
-ATRIBUTO = ('Medida','Tamanho','Modelo','Tensão','Cor')
+ATRIBUTO = ('Medida','Tamanho','Modelo','Voltagem','Cor')
 
 Empresa = db.define_table('empresa',
     Field('nome','string',label='Nome:',length=60),

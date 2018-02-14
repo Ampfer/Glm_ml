@@ -69,8 +69,8 @@ def atualizar_estoque():
 			from meli import Meli 
 			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-			#anuncios = db(Anuncios.id > 0).select()
-			anuncios = db(Anuncios.forma == 'Multiplos').select()
+			anuncios = db(Anuncios.id > 0).select()
+			#anuncios = db(Anuncios.forma == 'Multiplos').select()
 			for anuncio in anuncios:
 				if anuncio['item_id']:
 					variacao = []
@@ -88,8 +88,8 @@ def atualizar_estoque():
 
 					item_args = "items/%s" %(anuncio['item_id'])	
 					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-					#if item.status_code != 200:
-					print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+					if item.status_code != 200:
+						print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
 
 			response.flash = 'Estoque Atualizado com Sucesso....'
 

@@ -25,7 +25,7 @@ Anuncios = db.define_table('anuncios',
     Field('estoque','decimal(7,2)',label='Estoque'),
     Field('frete','string',label='Tipo de Frete:',length=30),
     Field('tipo','string',label='Tipo de Anuncio:', length=30),
-    Field('garantia','string',label='Garantia',length=30),
+    Field('garantia','string',label='Garantia',length=100),
     Field('status','string',label='Status:',length=30),
     Field('forma','string',label='Forma de Produtos:',length=30),
     Field('descricao','reference descricoes', label='Descrição:')

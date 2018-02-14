@@ -8,7 +8,7 @@
                 <li class="active"><a id='dados' data-toggle="tab" href="#home">Dados</a></li>
                     <li><a data-toggle="tab" href="#menu1">Descrição</a></li>
                     <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
-                    <li><a data-toggle="tab" href="#menu3">Atributos</a></li>
+                    <li><a id='atributos' data-toggle="tab" href="#menu3">Atributos</a></li>
                     <li><a data-toggle="tab" href="#menu4">Imagens</a></li>
                     <li><a id='preco' data-toggle="tab" href="#menu5">Preço</a></li>
                     <li><a id='publicar' data-toggle="tab" href="#menu6">Publicar</a></li>
@@ -108,7 +108,7 @@ $(document).on("click","#preco", function(){
 $(document).on("click","#publicar", function(){
     $('#anunciospublicar').get(0).reload()
 });
-$(document).on("click","#publicar", function(){
+$(document).on("click","#atributos", function(){
     $('#anunciosatributos').get(0).reload()
 });
 

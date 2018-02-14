@@ -158,6 +158,7 @@ def anuncios_descricao():
    
 def anuncios_produtos():
     idAnuncio = int(request.args(0))
+    forma = Anuncios[idAnuncio].forma
 
     Anuncios_Produtos.anuncio.writable = False
     Anuncios_Produtos.anuncio.default = idAnuncio
@@ -193,9 +194,9 @@ def anuncios_produtos():
         if marca:
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 1)
             Anuncios_Atributos.update_or_insert(query, atributo = 1, valor= marca)
-        if ean:
+        if ean and forma=='Individual':
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 3)
-            Anuncios_Atributos.update_or_insert(query, atributo = 3, valor= ean)
+            Anuncios_Atributos.update_or_insert(query,anuncio=idAnuncio, atributo = 3, valor= ean)
 
         response.flash = 'Produto Adicionado com Sucesso.... !'
 
@@ -207,7 +208,7 @@ def anuncios_produtos():
     fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao,Produtos.preco, Produtos.estoque, Anuncios_Produtos.preco_sugerido)
 
     formProdutos = grid(query,50,args=[idAnuncio],fields=fields,
-                   create=False, editable=False, searchable=False, 
+                   create=False, editable=True, searchable=False, 
                    orderby = Produtos.nome)
     
     return dict(formProdutos=formProdutos,formProduto=formProduto,)
@@ -491,11 +492,10 @@ def importar_anuncios():
     return dict(form=form,itens = xitens,btnAtualizar=btnAtualizar)
 
 def atualizar_anuncios(xitens):
-    print 'aqui'  
+
     #Loop nos itens encontrados
     for item in xitens: 
 
-        idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
         # Verifica Tipo de Frete
         if item['shipping']['free_shipping'] == False:
             frete = 'comprador'
@@ -524,6 +524,7 @@ def atualizar_anuncios(xitens):
                 )
         # Salvar Atributos
         for atributo in item['attributes'] :
+            idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
             #salva atributos na tabele atributos
             id = Atributos.update_or_insert(Atributos.atributo_id == atributo['id'],
                 atributo_id = atributo['id'],
@@ -537,7 +538,8 @@ def atualizar_anuncios(xitens):
                 valor =  atributo['value_name']
                 )
 
-         # Salvar Variações
+        '''
+        # Salvar Variações
         for variacao in item['variations'] :
             for atributo in variacao['attribute_combinations']:
                 query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto)     
@@ -545,3 +547,4 @@ def atualizar_anuncios(xitens):
                 for r in anunciosProdutos:
                     produto = db((Produtos.id.belongs(r['produto'])) & (Produtos.variacao == atributo['value_name'])).select().first()
                     print produto
+        '''
