@@ -63,7 +63,8 @@ def anuncio():
     Anuncios.preco.writable = False
     Anuncios.preco.default = 0
 
-    Anuncios.desconto.default = 12
+    Anuncios.desconto.default = 14
+    Anuncios.garantia.default = 'Garantia de 3 Meses contra Defeitos de Fabricação'
 
     Anuncios.estoque.writable = False
     Anuncios.estoque.default = 0
@@ -493,6 +494,8 @@ def atualizar_anuncios(xitens):
     print 'aqui'  
     #Loop nos itens encontrados
     for item in xitens: 
+
+        idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
         # Verifica Tipo de Frete
         if item['shipping']['free_shipping'] == False:
             frete = 'comprador'
@@ -526,7 +529,6 @@ def atualizar_anuncios(xitens):
                 atributo_id = atributo['id'],
                 nome = atributo['name'],
                 )
-            idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
             idAtributo = int(db(Atributos.atributo_id==atributo['id']).select().first()['id'])
             #salvar atributos na tabela anucios_atributos
             Anuncios_Atributos.update_or_insert((Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == idAtributo),
@@ -534,3 +536,12 @@ def atualizar_anuncios(xitens):
                 atributo = idAtributo,
                 valor =  atributo['value_name']
                 )
+
+         # Salvar Variações
+        for variacao in item['variations'] :
+            for atributo in variacao['attribute_combinations']:
+                query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto)     
+                anunciosProdutos = db(query).select(Anuncios_Produtos.produto).as_list()
+                for r in anunciosProdutos:
+                    produto = db((Produtos.id.belongs(r['produto'])) & (Produtos.variacao == atributo['value_name'])).select().first()
+                    print produto
