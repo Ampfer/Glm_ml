@@ -512,6 +512,7 @@ def atualizar_anuncios(xitens):
                 frete = categoria['valorFrete'],
                 )
         # Salvar Anuncios
+
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
                 item_id=item['id'],
                 titulo=item['title'],
@@ -521,7 +522,12 @@ def atualizar_anuncios(xitens):
                 tipo=item['listing_type_id'],
                 frete = frete,
                 status = 'active',
+                garantia = item['warranty']
                 )
+        # Salvar Atributos        
+        #for imagem in item['pictures']:
+
+
         # Salvar Atributos
         for atributo in item['attributes'] :
             idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
@@ -538,13 +544,16 @@ def atualizar_anuncios(xitens):
                 valor =  atributo['value_name']
                 )
 
-        '''
+        
         # Salvar Variações
         for variacao in item['variations'] :
             for atributo in variacao['attribute_combinations']:
-                query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto)     
-                anunciosProdutos = db(query).select(Anuncios_Produtos.produto).as_list()
-                for r in anunciosProdutos:
-                    produto = db((Produtos.id.belongs(r['produto'])) & (Produtos.variacao == atributo['value_name'])).select().first()
-                    print produto
-        '''
+                query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
+                anunciosProdutos = db(query).select().first()
+                try:
+                    anunciosProdutosId =  anunciosProdutos['anuncios_produtos']['id']
+                    Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'] )
+                except: 
+                    pass
+                
+        

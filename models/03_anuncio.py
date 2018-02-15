@@ -46,6 +46,7 @@ Anuncios_Produtos = db.define_table('anuncios_produtos',
     Field('anuncio', 'reference anuncios'),
     Field('produto', 'reference produtos'),
     Field('variacao_id','string', label='Id Variação:', length=20),
+    Field('imagens_ids','list:string'),
     Field.Virtual('preco_sugerido',lambda row: round(sugerido(int(row.anuncios_produtos.anuncio),int(row.anuncios_produtos.produto)),1))
     )
 Anuncios_Atributos = db.define_table('anuncios_atributos',
@@ -58,6 +59,7 @@ Anuncios_Atributos.atributo.requires = IS_IN_DB(db,"atributos.id",'%(nome)s',)
 Anuncios_Imagens = db.define_table('anuncios_imagens',
     Field('anuncio', 'reference anuncios'),
     Field('imagem','reference imagens'),
+    Field('imagem_id','string',length='50')
     )
 
 
