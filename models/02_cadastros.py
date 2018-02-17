@@ -37,7 +37,8 @@ Descricoes = db.define_table('descricoes',
     )
 
 Imagens = db.define_table('imagens',
-    Field('imagem','upload')
+    Field('imagem','upload'),
+    Field('imagem_id','string',length=50)
     )
 Imagens.imagem.requires = notempty
 

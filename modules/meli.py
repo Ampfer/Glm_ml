@@ -129,3 +129,10 @@ class Meli(object):
         if params:
             path = path + "?" + urlencode(params)
         return path
+
+    def imagem(self, path, body=None, params={}):
+        headers = {'Accept': 'application/json', 'User-Agent':self.SDK_VERSION, 'Content-type':'application/json'}
+        uri = self.make_path(path)
+        files = {'file': open(body,'rb')}
+        response = self._requests.post(uri, files=files, params=urlencode(params))
+        return response

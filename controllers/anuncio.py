@@ -284,6 +284,7 @@ def anuncios_preco():
         desc = round((1-(float(preco)*(1-float(desconto/100)))/float(ep))*100,2)
         
         Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque,desconto=desc)
+        response.js = "$('#anuncios_desconto').val(%s)" %(desc)
         if preco >= 120:
             Anuncios[idAnuncio] = dict(frete = 'gratis')
         response.js = "$('#anunciospreco').get(0).reload()"
@@ -318,12 +319,14 @@ def anuncios_publicar():
     	atributos.append(dict(id=atributo_id, value_name=atributo.valor))
     
     #### Buscando as Imagens do Anuncio ####
+    
     imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
     imagens = []
-    url = 'http://localhost:8000/glm_ml/uploads/'
+    #url = 'http://localhost:8000/glm_ml/uploads/'
     for imagem in imagensIds:
-        img = str(Imagens[imagem.imagem].imagem)
-        imagens.append(dict(source=url+img))
+        img = Imagens[imagem.imagem].imagem_id
+        imagens.append(dict(id=img))
+    print imagens
 
     #### Buscar Variações ####
     variacao = []
@@ -414,7 +417,8 @@ def alterar_item():
                 price=session.anuncio['price'],
                 available_quantity=session.anuncio['available_quantity'],
                 shipping=session.anuncio['frete'],
-                attributes=session.anuncio['attributes']
+                attributes=session.anuncio['attributes'],
+                pictures=session.anuncio['pictures'],
                 )
     bodyvariacao = dict(title=session.anuncio['title'],
                         shipping=session.anuncio['frete'],
@@ -566,4 +570,26 @@ def atualizar_anuncios(xitens):
                 except: 
                     pass
                 
-        
+def imagem_upload(idAnuncio):
+    #### Buscando as Imagens do Anuncio ####
+    import os
+    imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
+    imagens = []
+    for imagem in imagensIds:
+        img = str(Imagens[imagem.imagem].imagem)
+        image = os.path.join(request.folder,'uploads', img)
+        imagens.append(dict(file=image))
+    
+    if session.ACCESS_TOKEN:
+        from meli import Meli 
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+        for file in imagens:
+            item = meli.imagem("/pictures", file['file'], {'access_token':session.ACCESS_TOKEN})
+            status = 'Anunciado com Sucesso....'
+            
+        import json
+        xitem = json.loads(item.content)    
+        print xitem     
+    else:
+        status = 'Antes Faça o Login....'
+        item = ''    
