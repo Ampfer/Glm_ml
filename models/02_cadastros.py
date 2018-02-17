@@ -48,9 +48,10 @@ Familias = db.define_table('familias',
     Field('descricao','reference descricoes', label='Descrição:'),
     Field('atributos','string', label='Atributos:', length=100),
     Field('imagem','string',label='Imagem Destacada', length=50),
-
     format='%(nome)s',
     )
+Familias.descricao.writable = Familias.descricao.readable =  False
+
 
 Familias_Imagens = db.define_table('familias_imagens',
     Field('familia', 'reference familias'),

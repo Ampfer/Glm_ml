@@ -190,14 +190,21 @@ def anuncios_produtos():
 
         #### Atualiza Atributos ####
         marca = Produtos[idProduto].marca
+        print marca
         ean = Produtos[idProduto].ean
         if marca:
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 1)
-            Anuncios_Atributos.update_or_insert(query, atributo = 1, valor= marca)
+            Anuncios_Atributos.update_or_insert(query,anuncio=idAnuncio, atributo = 1, valor= marca)
         if ean and forma=='Individual':
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 3)
             Anuncios_Atributos.update_or_insert(query,anuncio=idAnuncio, atributo = 3, valor= ean)
 
+        #### Atualiza Preço e Estoque ####
+        sugerir = sugerido(idAnuncio)
+        if Anuncios[idAnuncio].preco == 0:
+            Anuncios[idAnuncio] = dict(preco=sugerir['preco'],estoque=sugerir['estoque'])
+        else:
+            Anuncios[idAnuncio] = dict(estoque=sugerir['estoque'])
         response.flash = 'Produto Adicionado com Sucesso.... !'
 
     elif formProduto.errors:
@@ -208,7 +215,7 @@ def anuncios_produtos():
     fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao,Produtos.preco, Produtos.estoque, Anuncios_Produtos.preco_sugerido)
 
     formProdutos = grid(query,50,args=[idAnuncio],fields=fields,
-                   create=False, editable=True, searchable=False, 
+                   create=False, editable=False, searchable=False, 
                    orderby = Produtos.nome)
     
     return dict(formProdutos=formProdutos,formProduto=formProduto,)
@@ -274,10 +281,13 @@ def anuncios_preco():
     if form.process().accepted: 
         preco = form.vars.preco
         estoque = form.vars.estoque
-        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque)
+        desc = round((1-(float(preco)*(1-float(desconto/100)))/float(ep))*100,2)
+        
+        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque,desconto=desc)
         if preco >= 120:
             Anuncios[idAnuncio] = dict(frete = 'gratis')
         response.js = "$('#anunciospreco').get(0).reload()"
+
     elif form.errors:
         response.flash = 'Erro no Formulário'
 

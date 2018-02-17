@@ -176,11 +176,11 @@ def familia():
     btnVoltar = voltar("familias")
     btnProximo=btnAnterior=''
 
-    '''
+
     # id Próxima Familia
     query1 = (Familias.nome > Familias[idFamilia].nome)
-    if session.keywords:
-        query1 = query1 & session.keywords
+    #if session.keywords:
+    #    query1 = query1 & session.keywords
 
     rowP = db(query1).select(orderby=Familias.nome).first()
     try:
@@ -191,7 +191,7 @@ def familia():
 
     # id Familia Anterior
     query2 = (Familias.nome < Familias[idFamilia].nome)
-    query2 = query2 & session.keywords if session.keywords else query2
+    #query2 = query2 & session.keywords if session.keywords else query2
     rowA = db(query2).select(orderby=~Familias.nome).first()
     try:
         idAnterior = rowA.id 
@@ -202,9 +202,7 @@ def familia():
     
     btnProximo = proximo('familia',idProximo)
     btnAnterior = anterior('familia',idAnterior)
-    '''
-    
-    
+   
     #formFamilia.element(_name='nome')['_readonly'] = "readonly"
     #formFamilia.element(_name='atributos')['_readonly'] = "readonly"
 

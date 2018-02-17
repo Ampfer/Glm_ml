@@ -114,7 +114,7 @@ def sugerido(idAnuncio,idProduto = 0):
     preco = preco * (1 - desconto/100)
     preco = preco + frete
     preco = preco/ (1-tarifa/100)
-    preco = round(preco,2)
+    preco = round(preco,1)
 
     if idProduto == 0:
         return dict(estoque=estoque,preco=preco)
