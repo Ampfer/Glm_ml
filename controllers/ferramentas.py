@@ -99,5 +99,39 @@ def atualizar_estoque():
 	return dict(form=form)
 
 
+def ean():
+    rows = db(Anuncios.id>0).select()
+    for row in rows:
+        if row.forma == 'Individual':
+            idProduto = db(Anuncios_Produtos.anuncio==row.id).select().first()['produto']
+            ean = db(Produtos.id==idProduto).select().first()['ean']
+            if ean:
+            	query = (Anuncios_Atributos.anuncio == row.id) & (Anuncios_Atributos.atributo == 3)
+            	Anuncios_Atributos.update_or_insert(query,anuncio=row.id, atributo = 3, valor= ean)
 
+def atualizar_ean():
+	rows = db(Anuncios.id>0).select()
+	for row in rows:
+		atributos = []
+		buscaAtributos = db(Anuncios_Atributos.anuncio == row.id).select()
+		for atributo in buscaAtributos:
+			atributo_id = Atributos(atributo.atributo).atributo_id
+			atributos.append(dict(id=atributo_id, value_name=atributo.valor))
+		if atributos:
+			body = dict(attributes=atributos)
+			item_id = Anuncios[int(row.id)].item_id
+			item_args = "items/%s" %(item_id)
 
+			if session.ACCESS_TOKEN:
+				from meli import Meli    
+				meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+
+				item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+
+				if item.status_code != 200:
+					status = 'Falha na Atualização do Item : item:%s Descrição:%s Tipo:%s' %(item,desc,tipo)
+				else:
+					status = 'Anuncio Atualizado com Sucesso....'
+			else:
+				status = 'Antes Faça o Login....'
+				item = ''   

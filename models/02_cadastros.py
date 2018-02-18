@@ -44,7 +44,8 @@ Imagens.imagem.requires = notempty
 
 Familias = db.define_table('familias',
     Field('codigo', 'integer', label='Código:'),
-    Field('nome', 'string', label='Nome:', length=60),   
+    Field('nome', 'string', label='Nome:', length=60),
+    Field('nome_catalogo', 'string', label='Nome Catálogo:', length=60),
     Field('marca', 'reference marcas', label='Marca:', ondelete='SET NULL'),
     Field('descricao','reference descricoes', label='Descrição:'),
     Field('atributos','string', label='Atributos:', length=100),

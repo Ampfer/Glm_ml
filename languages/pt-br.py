@@ -210,6 +210,7 @@
 'next 100 rows': 'próximas 100 linhas',
 'No databases in this application': 'Não há bancos de dados nesta aplicação',
 'No records found': 'Nenhum Reguistro Encontrado',
+'Nome Catálogo:': 'Nome Catálogo:',
 'Nome Fantasia:': 'Nome Fantasia:',
 'Nome:': 'Nome:',
 'not in': 'not in',

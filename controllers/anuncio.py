@@ -43,7 +43,7 @@ def anuncios():
         except:
             pass
 
-    fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.status, Anuncios.preco, Anuncios.estoque)
+    fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.desconto, Anuncios.preco, Anuncios.estoque)
     formAnuncios = grid(Anuncios,80,formname="formAnuncios",fields=fields, ondelete = delete_anuncio,orderby=Anuncios.titulo)
             
     formAnuncios = DIV(formAnuncios, _class="well")
@@ -317,16 +317,7 @@ def anuncios_publicar():
     for atributo in buscaAtributos:
     	atributo_id = Atributos(atributo.atributo).atributo_id
     	atributos.append(dict(id=atributo_id, value_name=atributo.valor))
-    
-    #### Buscando as Imagens do Anuncio ####
-    
-    anuncioImagens = db(Anuncios_Imagens.anuncio == idAnuncio).select()
-    imagens = []
-    for imagem in anuncioImagens:
-        if imagem.imagem_id:
-            img = imagem.imagem_id
-            imagens.append(dict(id=img))
-
+      
     #### Buscar Variações ####
     variacao = []
     if anuncio.forma == 'Multiplos':
@@ -356,7 +347,6 @@ def anuncios_publicar():
                     condition="new",
                     warranty=anuncio.garantia,
                     description = descricao,
-                    pictures=imagens,
                     attributes=atributos,
                     variations=variacao,
                     )
@@ -372,6 +362,9 @@ def anuncios_publicar():
 def anunciar_item():
     idAnuncio = session.anuncio['id']
 
+    ## Faz Uploads das imagens e retorna Ids
+    imagens = imagem_upload(idAnuncio)
+
     body = dict(title=session.anuncio['title'],
                 category_id=session.anuncio['category_id'],
                 price=session.anuncio['price'],
@@ -383,7 +376,7 @@ def anunciar_item():
                 warranty=session.anuncio['warranty'],
                 description=session.anuncio['description'],
                 shipping=session.anuncio['frete'],
-                pictures=session.anuncio['pictures'],
+                pictures=imagens,
                 )
     bodyAtributo = dict(attributes=session.anuncio['attributes'])
         
@@ -411,13 +404,17 @@ def anunciar_item():
     return atrib
 
 def alterar_item():
+    idAnuncio = session.anuncio['id']
+
+    ## Faz Uploads das imagens e retorna Ids
+    imagens = imagem_upload(idAnuncio)
 
     body = dict(title=session.anuncio['title'],
                 price=session.anuncio['price'],
                 available_quantity=session.anuncio['available_quantity'],
                 shipping=session.anuncio['frete'],
                 attributes=session.anuncio['attributes'],
-                pictures=session.anuncio['pictures'],
+                pictures=imagens,
                 )
     bodyvariacao = dict(title=session.anuncio['title'],
                         shipping=session.anuncio['frete'],
@@ -524,8 +521,16 @@ def atualizar_anuncios(xitens):
                 categoria_id = item['category_id'],
                 frete = categoria['valorFrete'],
                 )
-        # Salvar Anuncios
 
+        #### Calculando Desconto ####
+        anuncio = db(Anuncios.item_id == item['id']).select().first()
+        idAnuncio = anuncio.id
+        desconto = anuncio.desconto
+        preco = item['price']
+        precoSugerido = sugerido(idAnuncio)['preco']
+        desc = round((1-(float(preco)*(1-float(desconto/100)))/float(precoSugerido))*100,2)
+
+        # Salvar Anuncios
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
                 item_id=item['id'],
                 titulo=item['title'],
@@ -534,12 +539,9 @@ def atualizar_anuncios(xitens):
                 estoque=item['available_quantity'],
                 tipo=item['listing_type_id'],
                 frete = frete,
+                desconto = desc,
                 status = 'active',
-                garantia = item['warranty']
                 )
-        # Salvar Atributos        
-        #for imagem in item['pictures']:
-
 
         # Salvar Atributos
         for atributo in item['attributes'] :
@@ -556,20 +558,21 @@ def atualizar_anuncios(xitens):
                 atributo = idAtributo,
                 valor =  atributo['value_name']
                 )
-
         
+        '''
         # Salvar Variações
-        for variacao in item['variations'] :
-            for atributo in variacao['attribute_combinations']:
-                query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
-                anunciosProdutos = db(query).select().first()
-                try:
-                    anunciosProdutosId =  anunciosProdutos['anuncios_produtos']['id']
-                    Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'] )
-                except: 
-                    pass
-def teste_imagem():
-    imagem_upload(92)
+        if item['variations']:
+            for variacao in item['variations'] :
+                for atributo in variacao['attribute_combinations']:
+                    query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
+                    anunciosProdutos = db(query).select().first()
+                    try:
+                        anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
+                        Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'] )
+                    except: 
+                        pass
+        '''
+
                 
 def imagem_upload(idAnuncio):
     #### Buscando as Imagens do Anuncio ####
@@ -596,3 +599,15 @@ def imagem_upload(idAnuncio):
         status = 'Antes Faça o Login....'
         item = ''    
     
+    #### Buscando Ids das Imagens do Anuncio ####
+    anuncioImagens = db(Anuncios_Imagens.anuncio == idAnuncio).select()
+    imagens = []
+    for imagem in anuncioImagens:
+        if imagem.imagem_id:
+            img = imagem.imagem_id
+            imagens.append(dict(id=img))
+
+    return imagens
+
+
+            

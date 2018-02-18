@@ -139,6 +139,12 @@ def produto():
 
 def familias():
 
+    ### Temporário - Eliminiar essa linhas
+    rows = db(Familias.id>0).select()
+    for row in rows:
+        if not row.nome_catalogo:
+            Familias[row.id] = dict(nome_catalogo=row.nome)
+
     fields = (Familias.id,Familias.nome)
     formFamilias = grid(Familias,formname="familias",fields=fields,deletable=False, orderby= Familias.nome)
     session.teste = False
@@ -207,6 +213,14 @@ def familia():
     #formFamilia.element(_name='atributos')['_readonly'] = "readonly"
 
     if formFamilia.process().accepted:
+        import os
+        image = os.path.join(request.folder,'static','imagens', formFamilia.vars.imagem)
+        if db(Familias_Imagens.familia==idFamilia).count() == 0:
+            try:
+                id = Imagens.insert(imagem = open(image,'rb'))
+                Familias_Imagens[0] = dict(familia=idFamilia, imagem = id)
+            except:
+                pass
         response.flash = 'familia Salvo com Sucesso!'
         redirect(URL('familia', args=formFamilia.vars.id))
 
@@ -310,6 +324,23 @@ def atributos():
     fields = (Atributos.atributo_id, Atributos.nome,)
     formAtributos = grid(Atributos, formname = 'categoriaatributos',)
     return dict(formAtributos=formAtributos)
-    
 
+def nome_imagem():
+    rows = db(Familias.marca == 37).select()
+    for row in rows:
+        img = str(row.imagem)
+        imagem = img.replace('web','').replace('png','jpg')
+        Familias[row.id] = dict(imagem = imagem)
+
+def atualiza_imagem():
+    import os
+    rows = db(Familias.id > 0).select()
+    for row in rows:
+        image = os.path.join(request.folder,'static','imagens', row.imagem)
+        if db(Familias_Imagens.familia==row.id).count() == 0:
+            try:
+                id = Imagens.insert(imagem = open(image,'rb'))
+                Familias_Imagens[0] = dict(familia=row.id, imagem = id)
+            except:
+                pass
        
