@@ -320,13 +320,12 @@ def anuncios_publicar():
     
     #### Buscando as Imagens do Anuncio ####
     
-    imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
+    anuncioImagens = db(Anuncios_Imagens.anuncio == idAnuncio).select()
     imagens = []
-    #url = 'http://localhost:8000/glm_ml/uploads/'
-    for imagem in imagensIds:
-        img = Imagens[imagem.imagem].imagem_id
-        imagens.append(dict(id=img))
-    print imagens
+    for imagem in anuncioImagens:
+        if imagem.imagem_id:
+            img = imagem.imagem_id
+            imagens.append(dict(id=img))
 
     #### Buscar Variações ####
     variacao = []
@@ -569,27 +568,31 @@ def atualizar_anuncios(xitens):
                     Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'] )
                 except: 
                     pass
+def teste_imagem():
+    imagem_upload(92)
                 
 def imagem_upload(idAnuncio):
     #### Buscando as Imagens do Anuncio ####
     import os
     imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
     imagens = []
-    for imagem in imagensIds:
-        img = str(Imagens[imagem.imagem].imagem)
-        image = os.path.join(request.folder,'uploads', img)
-        imagens.append(dict(file=image))
-    
+    for anuncioImagem in imagensIds:
+        imagem = Imagens[anuncioImagem.imagem]
+        if not imagem.imagem_id:
+            img = str(imagem.imagem)
+            image = os.path.join(request.folder,'uploads', img)
+            imagens.append(dict(file=image, id = imagem.id))
+      
     if session.ACCESS_TOKEN:
         from meli import Meli 
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
         for file in imagens:
             item = meli.imagem("/pictures", file['file'], {'access_token':session.ACCESS_TOKEN})
-            status = 'Anunciado com Sucesso....'
-            
-        import json
-        xitem = json.loads(item.content)    
-        print xitem     
+            status = 'Anunciado com Sucesso....'         
+            import json
+            xitem = json.loads(item.content)    
+            Anuncios_Imagens[file['id']] = dict(imagem_id=xitem['id'])
     else:
         status = 'Antes Faça o Login....'
         item = ''    
+    
