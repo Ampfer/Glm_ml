@@ -521,7 +521,7 @@ def atualizar_anuncios(xitens):
                 categoria_id = item['category_id'],
                 frete = categoria['valorFrete'],
                 )
-
+        
         #### Calculando Desconto ####
         anuncio = db(Anuncios.item_id == item['id']).select().first()
         idAnuncio = anuncio.id
@@ -529,7 +529,7 @@ def atualizar_anuncios(xitens):
         preco = item['price']
         precoSugerido = sugerido(idAnuncio)['preco']
         desc = round((1-(float(preco)*(1-float(desconto/100)))/float(precoSugerido))*100,2)
-
+        
         # Salvar Anuncios
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
                 item_id=item['id'],
