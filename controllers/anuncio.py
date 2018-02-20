@@ -559,42 +559,41 @@ def atualizar_anuncios(xitens):
                 valor =  atributo['value_name']
                 )
         
-        '''
         # Salvar Variações
-        if item['variations']:
-            for variacao in item['variations'] :
-                for atributo in variacao['attribute_combinations']:
-                    query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
-                    anunciosProdutos = db(query).select().first()
-                    try:
-                        anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
-                        Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'] )
-                    except: 
-                        pass
-        '''
+        #f item['variations']:
+        #   for variacao in item['variations'] :
+        #       for atributo in variacao['attribute_combinations']:
+        #           query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
+        #           anunciosProdutos = db(query).select().first()
+        #           try:
+        #               anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
+        #               Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'] )
+        #           except: 
+        #              pass
 
-                
+
 def imagem_upload(idAnuncio):
     #### Buscando as Imagens do Anuncio ####
     import os
-    imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select(Anuncios_Imagens.imagem)
+    imagensIds = db(Anuncios_Imagens.anuncio == idAnuncio).select()
     imagens = []
     for anuncioImagem in imagensIds:
-        imagem = Imagens[anuncioImagem.imagem]
-        if not imagem.imagem_id:
+        if not anuncioImagem.imagem_id:
+            imagem = Imagens[anuncioImagem.imagem]
             img = str(imagem.imagem)
             image = os.path.join(request.folder,'uploads', img)
-            imagens.append(dict(file=image, id = imagem.id))
+            imagens.append(dict(file=image, id = anuncioImagem['id']))
       
     if session.ACCESS_TOKEN:
         from meli import Meli 
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
         for file in imagens:
-            item = meli.imagem("/pictures", file['file'], {'access_token':session.ACCESS_TOKEN})
+            imag = meli.imagem("/pictures", file['file'], {'access_token':session.ACCESS_TOKEN})
             status = 'Anunciado com Sucesso....'         
             import json
-            xitem = json.loads(item.content)    
-            Anuncios_Imagens[file['id']] = dict(imagem_id=xitem['id'])
+            ximg = json.loads(imag.content)    
+            Anuncios_Imagens[file['id']] = dict(imagem_id=ximg['id'])
+            print ximg
     else:
         status = 'Antes Faça o Login....'
         item = ''    
@@ -608,6 +607,3 @@ def imagem_upload(idAnuncio):
             imagens.append(dict(id=img))
 
     return imagens
-
-
-            

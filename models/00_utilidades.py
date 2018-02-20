@@ -140,6 +140,7 @@ def buscar_categoria(categoriaId):
             nomeCategoria = r['name']
 
     ### Buscar Dimensoes por Categoria ###
+    valorFrete = 0
     argsDimensoes = '%s/shipping' %(args)
     categoriaDimensoes = meli.get(argsDimensoes)
     if categoriaDimensoes.status_code == 200:
