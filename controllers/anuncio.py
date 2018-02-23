@@ -190,7 +190,7 @@ def anuncios_produtos():
 
         #### Atualiza Atributos ####
         marca = Produtos[idProduto].marca
-        print marca
+        
         ean = Produtos[idProduto].ean
         if marca:
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 1)
@@ -384,24 +384,26 @@ def anunciar_item():
         from meli import Meli 
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
         item = meli.post("/items", body, {'access_token':session.ACCESS_TOKEN})
-        status = 'Anunciado com Sucesso....'
-        #teste = meli.get("categories/MLB2527")    
     else:
         status = 'Antes Faça o Login....'
         item = ''    
 
     import json
     if item.status_code == 201:
+        status = 'Anunciado com Sucesso....'
     	### Salvando item_id no banco de dados
         xitem = json.loads(item.content)    
         Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'])
         ### Salvando Atributos no ML
         atrib_args = "items/%s" %(xitem['id'])
-        atrib = meli.put(atrib_args, bodyAtributo, {'access_token':session.ACCESS_TOKEN})   
-
-    #response.flash = status
-    #response.js = "$('#anunciospublicar').get(0).reload()"
-    return atrib
+        atrib = meli.put(atrib_args, bodyAtributo, {'access_token':session.ACCESS_TOKEN})
+        if atrib.status_code != 200:
+            status = 'Falha na Atualização do Item : item:%s ' %(atrib)        
+    else:
+        status = 'Falha na Atualização do Item : item:%s ' %(item)        
+    response.flash = status
+    response.js = "$('#anunciospublicar').get(0).reload()"
+    return 
 
 def alterar_item():
     idAnuncio = session.anuncio['id']
@@ -440,8 +442,8 @@ def alterar_item():
         desc = meli.put(descricao_args,description, {'access_token':session.ACCESS_TOKEN})
         tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
 
-        if item.status_code != 200 or desc.status_code != 200 or tipo.status_code != 200:
-            status = 'Falha na Atualização do Item : item:%s Descrição:%s Tipo:%s' %(item,desc,tipo)
+        if item.status_code != 200 or desc.status_code != 200:
+            status = 'Falha na Atualização do Item : item:%s Descrição:%s Tipo:%s' %(item,desc)
         else:
             status = 'Anuncio Atualizado com Sucesso....'
 
@@ -593,7 +595,7 @@ def imagem_upload(idAnuncio):
             import json
             ximg = json.loads(imag.content)    
             Anuncios_Imagens[file['id']] = dict(imagem_id=ximg['id'])
-            print ximg
+            
     else:
         status = 'Antes Faça o Login....'
         item = ''    

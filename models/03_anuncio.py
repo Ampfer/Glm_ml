@@ -30,7 +30,7 @@ Anuncios = db.define_table('anuncios',
     Field('forma','string',label='Forma de Produtos:',length=30),
     Field('descricao','reference descricoes', label='Descrição:')
     )
-Anuncios.titulo.requires = notempty
+Anuncios.titulo.requires = [notempty,IS_LENGTH(60)]
 Anuncios.preco.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.desconto.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.estoque.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
