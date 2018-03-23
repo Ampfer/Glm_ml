@@ -182,7 +182,7 @@ def familia():
     btnVoltar = voltar("familias")
     btnProximo=btnAnterior=''
 
-
+    '''
     # id Próxima Familia
     query1 = (Familias.nome > Familias[idFamilia].nome)
     #if session.keywords:
@@ -208,7 +208,7 @@ def familia():
     
     btnProximo = proximo('familia',idProximo)
     btnAnterior = anterior('familia',idAnterior)
-   
+    '''
     #formFamilia.element(_name='nome')['_readonly'] = "readonly"
     #formFamilia.element(_name='atributos')['_readonly'] = "readonly"
 
