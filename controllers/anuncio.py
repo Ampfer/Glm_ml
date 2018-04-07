@@ -317,21 +317,7 @@ def anuncios_publicar():
     for atributo in buscaAtributos:
     	atributo_id = Atributos(atributo.atributo).atributo_id
     	atributos.append(dict(id=atributo_id, value_name=atributo.valor))
-      
-    #### Buscar Variações ####
-    variacao = []
-    if anuncio.forma == 'Multiplos':
-        rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
-        for row in rows:
-            produto = Produtos[row.produto]
-            variacaoProduto = dict(id=row.variacao_id,
-                                   price=float(row.preco_sugerido),
-                                   attribute_combinations = [dict(name = produto.atributo,value_name=produto.variacao)],
-                                   available_quantity=float(produto.estoque),
-                                   seller_custom_field = str(produto.id)
-                                   )
-            variacao.append(variacaoProduto)
-    
+         
     #### Montando Dicionário com Dados do Anuncio ####
     session.anuncio = dict(id=anuncio.id,
                     title=anuncio.titulo,
@@ -348,7 +334,7 @@ def anuncios_publicar():
                     warranty=anuncio.garantia,
                     description = descricao,
                     attributes=atributos,
-                    variations=variacao,
+                    forma=anuncio.forma,
                     )
 
     #### Verificando se Item Novo ou Alteração ####
@@ -359,11 +345,33 @@ def anuncios_publicar():
     
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
 
+def buscar_variacao(idAnuncio,imagens):
+    variacao = []
+    if session.anuncio['forma'] == 'Multiplos':
+        imgs = []
+        for img in imagens:
+            imgs.append(img['id'])
+
+        rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
+        for row in rows:
+            produto = Produtos[row.produto]
+            variacaoProduto = dict(id=row.variacao_id,
+                                   price=float(row.preco_sugerido),
+                                   attribute_combinations = [dict(name = produto.atributo,value_name=produto.variacao)],
+                                   available_quantity=float(produto.estoque),
+                                   seller_custom_field = str(produto.id),
+                                   picture_ids = imgs
+                                   )
+            variacao.append(variacaoProduto)
+    return variacao
+
 def anunciar_item():
     idAnuncio = session.anuncio['id']
 
     ## Faz Uploads das imagens e retorna Ids
     imagens = imagem_upload(idAnuncio)
+    #### Buscar Variações ####
+    variacao = buscar_variacao(idAnuncio,imagens)
 
     body = dict(title=session.anuncio['title'],
                 category_id=session.anuncio['category_id'],
@@ -377,9 +385,11 @@ def anunciar_item():
                 description=session.anuncio['description'],
                 shipping=session.anuncio['frete'],
                 pictures=imagens,
+                variations = variacao,
                 )
+    
     bodyAtributo = dict(attributes=session.anuncio['attributes'])
-        
+
     if session.ACCESS_TOKEN:
         from meli import Meli 
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
@@ -403,7 +413,7 @@ def anunciar_item():
         status = 'Falha na Atualização do Item : item:%s ' %(item)        
     response.flash = status
     response.js = "$('#anunciospublicar').get(0).reload()"
-    return 
+    return
 
 def alterar_item():
     idAnuncio = session.anuncio['id']
@@ -418,10 +428,15 @@ def alterar_item():
                 attributes=session.anuncio['attributes'],
                 pictures=imagens,
                 )
+
+    #### Buscar Variações ####
+    variacao = buscar_variacao(idAnuncio,imagens)
+
     bodyvariacao = dict(title=session.anuncio['title'],
                         shipping=session.anuncio['frete'],
                         attributes=session.anuncio['attributes'],
-                        variations=session.anuncio['variations'])
+                        variations=variacao,
+                        )
     
     listing_type_id = dict(id=session.anuncio['listing_type_id']) 
     description = session.anuncio['description']
@@ -434,7 +449,7 @@ def alterar_item():
         from meli import Meli    
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-        if session.anuncio['variations']:
+        if session.anuncio['forma'] == 'Multiplos':
             item = meli.put(item_args, bodyvariacao, {'access_token':session.ACCESS_TOKEN})
         else:
             item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
@@ -443,7 +458,7 @@ def alterar_item():
         tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
 
         if item.status_code != 200 or desc.status_code != 200:
-            status = 'Falha na Atualização do Item : item:%s Descrição:%s Tipo:%s' %(item,desc)
+            status = 'Falha na Atualização do Item : item:%s Descrição:%s' %(item,desc)
         else:
             status = 'Anuncio Atualizado com Sucesso....'
 
@@ -453,7 +468,7 @@ def alterar_item():
 
     response.flash = status
     response.js = "$('#anunciospublicar').get(0).reload()"
-    return
+    return 
 
 def importar_anuncios():
 

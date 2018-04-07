@@ -107,7 +107,7 @@ def sugerido(idAnuncio,idProduto = 0):
     categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
     
     if anuncio.frete == 'gratis':
-        frete = int(categoria.frete) * (1 - desconto/100)
+        frete = int(categoria.frete) * (1 - empresa.desconto/100)
     else:
         frete = 0
     
