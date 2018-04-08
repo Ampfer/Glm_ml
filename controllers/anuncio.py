@@ -158,7 +158,8 @@ def anuncios_descricao():
    
 def anuncios_produtos():
     idAnuncio = int(request.args(0))
-    forma = Anuncios[idAnuncio].forma
+    anuncio = Anuncios[idAnuncio]
+    forma = anuncio.forma
 
     Anuncios_Produtos.anuncio.writable = False
     Anuncios_Produtos.anuncio.default = idAnuncio
@@ -200,7 +201,7 @@ def anuncios_produtos():
             Anuncios_Atributos.update_or_insert(query,anuncio=idAnuncio, atributo = 3, valor= ean)
 
         #### Atualiza Preço e Estoque ####
-        sugerir = sugerido(idAnuncio)
+        sugerir = sugerido(anuncio)
         if Anuncios[idAnuncio].preco == 0:
             Anuncios[idAnuncio] = dict(preco=sugerir['preco'],estoque=sugerir['estoque'])
         else:
@@ -258,8 +259,10 @@ def remove_imagem():
 def anuncios_preco():
     
     idAnuncio = int(request.args(0))
-    xsugerido = sugerido(idAnuncio)
     anuncio = Anuncios[idAnuncio]
+
+    xsugerido = sugerido(anuncio)
+    
     es = xsugerido['estoque']
     ep = round(xsugerido['preco'],1)
     preco = anuncio.preco
@@ -541,11 +544,14 @@ def atualizar_anuncios(xitens):
         
         #### Calculando Desconto ####
         anuncio = db(Anuncios.item_id == item['id']).select().first()
-        idAnuncio = anuncio.id
-        desconto = anuncio.desconto
-        preco = item['price']
-        precoSugerido = sugerido(idAnuncio)['preco']
-        desc = round((1-(float(preco)*(1-float(desconto/100)))/float(precoSugerido))*100,2)
+        try:
+            idAnuncio = anuncio.id
+            desconto = anuncio.desconto
+            preco = item['price']
+            precoSugerido = sugerido(anuncio)['preco']
+            desc = round((1-(float(preco)*(1-float(desconto/100)))/float(precoSugerido))*100,2)
+        except:
+            desc = 0
         
         # Salvar Anuncios
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],

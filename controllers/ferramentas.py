@@ -57,7 +57,7 @@ def atualizar_estoque():
 
 	anuncios = db(Anuncios.id > 0).select()
 	for anuncio in anuncios:
-		estoque =  sugerido(int(anuncio.id))['estoque']
+		estoque =  sugerido(anuncio)['estoque']
 		Anuncios[anuncio.id] = dict(estoque=estoque)
 
 	form = FORM.confirm('Atualizar Estoque',{'Voltar':URL('default','index')})
@@ -65,7 +65,6 @@ def atualizar_estoque():
 	if form.accepted:
 
 		if session.ACCESS_TOKEN:
-			print 'teste aqui'
 			from meli import Meli 
 			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
@@ -97,6 +96,27 @@ def atualizar_estoque():
 			status = 'Antes Faça o Login....'
 
 	return dict(form=form)
+
+def atualizar_preco():
+
+	Anuncios.sugerido = Field.Virtual('sugerido',lambda row: sugerido(row.anuncios)['preco'], label='Sugerido')
+	fields = (Anuncios.id,Anuncios.titulo,Anuncios.categoria,Anuncios.tipo,Anuncios.forma,Anuncios.frete,Anuncios.desconto,Anuncios.preco,Anuncios.sugerido)
+
+	formPrecos = grid(Anuncios,60,paginate=200,formname="formPrecos",fields=fields,orderby=Anuncios.titulo, deletable=False)
+
+	btnSugerido = A(SPAN(_class="glyphicon glyphicon-cog"), ' Atualizar Sugerido ', _class="btn btn-default",_id='atualizarsugerido', _onclick="if (confirm('Deseja Atualizar Preços com Sugeridos ?')) ajax('%s', [], 'despesas');" %URL('atualizar_sugerido'))
+	btnPreco = A(SPAN(_class="glyphicon glyphicon-cog"), ' Atualizar Preços ', _class="btn btn-default",_id='atualizarsugerido', _onclick="if (confirm('Deseja Atualizar Preços do Mercado Livre ?')) ajax('%s', [], 'despesas');" %URL('atualizar_preco'))
+	
+	formPrecos[0].insert(-1, btnSugerido)
+	formPrecos[0].insert(-1, btnPreco)
+	        
+	formPrecos = DIV(formPrecos, _class="well")
+
+	if request.args(-3) == 'edit':
+	   idAnuncio = request.args(-1)
+	   redirect(URL('anuncio','anuncio', args=idAnuncio,))
+
+	return dict(formPrecos=formPrecos)
 
 
 def ean():

@@ -21,13 +21,13 @@ Anuncios = db.define_table('anuncios',
     Field('item_id', 'string', label='ID do /Anuncio:', length=30),
     Field('categoria', 'string',label='Categoria:', length=30),
     Field('preco','decimal(7,2)',label='Preço'),
-    Field('desconto','decimal(7,2)',label='Desconto Tabela'),
+    Field('desconto','decimal(7,2)',label='Desconto'),
     Field('estoque','decimal(7,2)',label='Estoque'),
-    Field('frete','string',label='Tipo de Frete:',length=30),
-    Field('tipo','string',label='Tipo de Anuncio:', length=30),
+    Field('frete','string',label='Frete:',length=30),
+    Field('tipo','string',label='Tipo:', length=30),
     Field('garantia','string',label='Garantia',length=100),
     Field('status','string',label='Status:',length=30),
-    Field('forma','string',label='Forma de Produtos:',length=30),
+    Field('forma','string',label='Forma:',length=30),
     Field('descricao','reference descricoes', label='Descrição:')
     )
 Anuncios.titulo.requires = [notempty,IS_LENGTH(60)]
@@ -47,7 +47,7 @@ Anuncios_Produtos = db.define_table('anuncios_produtos',
     Field('produto', 'reference produtos'),
     Field('variacao_id','string', label='Id Variação:', length=20),
     Field('imagens_ids','list:string'),
-    Field.Virtual('preco_sugerido',lambda row: round(sugerido(int(row.anuncios_produtos.anuncio),int(row.anuncios_produtos.produto)),1))
+    Field.Virtual('preco_sugerido',lambda row: round(sugerido(Anuncios[int(row.anuncios_produtos.anuncio)],int(row.anuncios_produtos.produto)),1))
     )
 Anuncios_Atributos = db.define_table('anuncios_atributos',
     Field('anuncio', 'reference anuncios'),

@@ -34,7 +34,7 @@ def publicar(funcao,titulo,target):
     return A(SPAN(_class="glyphicon glyphicon-cloud-upload"),titulo,_class="btn btn-success",_id='publicar',
     _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao),target))
 
-def grid(query,maxtextlength=50,**kwargs):
+def grid(query,maxtextlength=50,paginate=100,**kwargs):
     
     grid = SQLFORM.grid(query,
                         user_signature=False,
@@ -42,7 +42,7 @@ def grid(query,maxtextlength=50,**kwargs):
                         csv=None,
                         maxtextlength=maxtextlength,
                         details=False,
-                        paginate=100,
+                        paginate=paginate,
                         **kwargs)
     try:
         grid.element('.web2py_grid .web2py_table .web2py_htmltable')['_style'] = 'overflow: scroll; height:300px;'
@@ -68,9 +68,9 @@ def lista_arquivos_imagem(caminho):
     arquivos = ['%s%s.%s' % f for f in arquivos_tmp if f[2] in image_extensions]
     return arquivos
 
-def sugerido(idAnuncio,idProduto = 0):
+def sugerido(anuncio,idProduto = 0):
 
-    anuncio = Anuncios[idAnuncio]
+    idAnuncio = anuncio.id
     desconto = anuncio.desconto or 0
     
     preco = estoque = 0
