@@ -176,6 +176,7 @@
 'Invalid email': 'Email inválido',
 'Invalid login': 'Invalid login',
 'Invalid Query': 'Consulta Inválida',
+'Invalid query': 'Invalid query',
 'invalid request': 'requisição inválida',
 'Key': 'Chave',
 'Last name': 'Sobrenome',

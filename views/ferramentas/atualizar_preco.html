@@ -3,10 +3,89 @@
     <div class="panel panel-info">
         <div class="panel-heading"><h4>Atualizar Preços</h4></div>
             <div class="panel-body">
-				<div class="well">
+				<div class="well" id ='teste'>
 	                {{=formPrecos}}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+  $('td:nth-child(7)').dblclick(function() {
+      if ($('td > input').length > 0) {
+        return;
+      }
+      var conteudoOriginal = $(this).text();
+      var novoElemento = $('<input/>', {
+        type: 'number',
+        value: parseFloat(conteudoOriginal.replace(',','.')).toFixed(2),
+        class: 'decimal form-control',
+        style: 'width:100px;margin:auto;text-align:center'
+      });
+      $(this).html(novoElemento.bind('blur keydown', function(e) {
+        var keyCode = e.which;
+        var conteudoNovo = $(this).val();
+        if (keyCode == 13 && conteudoNovo != '') {
+          var objeto = $(this);
+          $.ajax({
+            type: "POST",
+            url: "{{=URL('ferramentas','alterar_desconto')}}",
+            data: {
+              id: $(this).parent().parent().attr('id'),
+              valor: conteudoNovo
+            }, 
+            success: function(result) {
+              location.reload(true)
+            }
+          })
+        } else if (keyCode == 27 || e.type == 'blur'){
+          $(this).parent().html(conteudoOriginal);
+          }
+      }));
+      $(this).children().select();
+    });
+  $('td:nth-child(8)').dblclick(function() {
+      if ($('td > input').length > 0) {
+        return;
+      }
+      var conteudoOriginal = $(this).text();
+      var novoElemento = $('<input/>', {
+        type: 'number',
+        value: parseFloat(conteudoOriginal.replace(',','.')).toFixed(2),
+        class: 'decimal form-control',
+        style: 'width:100px;margin:auto;text-align:center'
+      });
+      $(this).html(novoElemento.bind('blur keydown', function(e) {
+        var keyCode = e.which;
+        var conteudoNovo = $(this).val();
+        if (keyCode == 13 && conteudoNovo != '') {
+          var objeto = $(this);
+          $.ajax({
+            type: "POST",
+            url: "{{=URL('ferramentas','alterar_preco')}}",
+            data: {
+              id: $(this).parent().parent().attr('id'),
+              valor: conteudoNovo
+            }, 
+            success: function(result) {
+              location.reload(true)
+            }
+          })
+        } else if (keyCode == 27 || e.type == 'blur'){
+          $(this).parent().html(conteudoOriginal);
+          }
+      }));
+      $(this).children().select();
+    });
+  });
+  $(document).ready(function(){
+    $('input[type="text"]').each(function(){
+        var val = $(this).val().replace('.',',');
+        $(this).val(val);
+    });
+});
+
+</script>
