@@ -38,7 +38,7 @@ $(document).ready(function() {
               valor: conteudoNovo
             }, 
             success: function(result) {
-              location.reload(true)
+              objeto.parent().html(parseFloat(conteudoNovo).toFixed(2).replace('.',','));              
             }
           })
         } else if (keyCode == 27 || e.type == 'blur'){
@@ -71,7 +71,7 @@ $(document).ready(function() {
               valor: conteudoNovo
             }, 
             success: function(result) {
-              location.reload(true)
+              objeto.parent().html(parseFloat(conteudoNovo).toFixed(2).replace('.',',')); 
             }
           })
         } else if (keyCode == 27 || e.type == 'blur'){
@@ -79,12 +79,6 @@ $(document).ready(function() {
           }
       }));
       $(this).children().select();
-    });
-  });
-  $(document).ready(function(){
-    $('input[type="text"]').each(function(){
-        var val = $(this).val().replace('.',',');
-        $(this).val(val);
     });
 });
 
