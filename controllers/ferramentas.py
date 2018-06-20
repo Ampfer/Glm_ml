@@ -123,20 +123,22 @@ def sincronizar_preco():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-
-		anuncios = db(Anuncios.id > 0).select()
-		#anuncios = db(Anuncios.forma == 'Multiplos').select()
-		for anuncio in anuncios:
+		anuncios = db(Anuncios.status == 'active').select()
+		for anuncio in anuncios:		
 			if anuncio['item_id']:
-				body = dict(price=float(anuncio['preco']))
-				item_args = "items/%s" %(anuncio['item_id'])	
-				item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-				if item.status_code != 200:
-					print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+				if anuncio['forma'] == 'Multiplos':
+					pass
+				else:
+					body = dict(price=float(anuncio['preco']))
+					item_args = "items/%s" %(anuncio['item_id'])	
+					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+					if item.status_code != 200:
+						print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
 
-		response.flash = 'Preços Atualizados com Sucesso....'
+		session.flash = 'Preços Atualizado com Sucesso'
 	else:
-		status = 'Antes Faça o Login....'
+		session.flash = 'Antes Faça o Login....'
+	response.js = "location.reload(true)"
 
 def atualizar_preco():
 	Anuncios.sugerido = Field.Virtual('sugerido',lambda row: sugerido(row.anuncios)['preco'], label='Sugerido')
@@ -145,11 +147,11 @@ def atualizar_preco():
 	formPrecos = grid(Anuncios,60,paginate=200,formname="formPrecos",fields=fields,orderby=Anuncios.titulo, deletable=False)
 
 	btnSugerido = A(SPAN(_class="glyphicon glyphicon-cog"), ' Atualizar Sugerido ', _class="btn btn-default",_id='atualizarsugerido', _onclick="if (confirm('Deseja Atualizar Preços com Sugeridos ?')) ajax('%s',[], 'formPrecos');" %URL('atualizar_sugerido',args=request.vars.keywords))
-	btnPreco = A(SPAN(_class="glyphicon glyphicon-cog"), ' Atualizar Preços ', _class="btn btn-default",_id='sincronizarpreco', _onclick="if (confirm('Deseja Atualizar Preços do Mercado Livre ?')) ajax('%s', [], 'formPrecos');" %URL('sincronizar_preco'))
+	btnPreco = A(SPAN(_class="glyphicon glyphicon-cog"), ' Atualizar Preços ', _class="btn btn-default",_id='sincronizarpreco', _onclick="if (confirm('Deseja Atualizar Preços do Mercado Livre ?')) ajax('%s', [], 'formPrecosMl');" %URL('sincronizar_preco'))
 
 	formPrecos[0].insert(-1, btnSugerido)
 	formPrecos[0].insert(-1, btnPreco)
-	        
+	
 	formPrecos = DIV(formPrecos, _class="well")
 
 	if request.args(-3) == 'edit':
