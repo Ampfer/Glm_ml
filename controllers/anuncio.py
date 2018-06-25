@@ -63,7 +63,7 @@ def anuncio():
     Anuncios.preco.writable = False
     Anuncios.preco.default = 0
 
-    Anuncios.desconto.default = 14
+    Anuncios.desconto.default = 0
     Anuncios.garantia.default = 'Garantia de 3 Meses contra Defeitos de Fabricação'
 
     Anuncios.estoque.writable = False
@@ -347,6 +347,7 @@ def anuncios_publicar():
         btnPublicar = publicar('anunciar_item',' Anunciar Item','anunciospublicar')
     
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
+
 
 def buscar_variacao(idAnuncio,imagens):
     variacao = []

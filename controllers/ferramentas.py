@@ -73,18 +73,10 @@ def atualizar_estoque():
 			for anuncio in anuncios:
 				if anuncio['item_id']:
 					variacao = []
-					if anuncio.forma == 'Multiplos':
-						rows = db(Anuncios_Produtos.anuncio==anuncio.id).select()
-						for row in rows:
-							produto = Produtos[row.produto]
-							variacaoProduto = dict(id=row.variacao_id,
-							available_quantity=float(produto.estoque))
-							variacao.append(variacaoProduto)
-
-						body = dict(variations=variacao)
+					if anuncio['forma'] == 'Multiplos':
+						body = dict(variations=buscar_variacao_estoque(anuncio['id']))
 					else:
 						body = dict(available_quantity=float(anuncio['estoque']))
-
 					item_args = "items/%s" %(anuncio['item_id'])	
 					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
 					if item.status_code != 200:
@@ -123,17 +115,18 @@ def sincronizar_preco():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-		anuncios = db(Anuncios.status == 'active').select()
+		#anuncios = db(Anuncios.status == 'active').select()
+		anuncios = db(Anuncios.id == 841).select()
 		for anuncio in anuncios:		
 			if anuncio['item_id']:
 				if anuncio['forma'] == 'Multiplos':
-					pass
+					body = dict(variations=buscar_variacao_preco(anuncio['id'],anuncio['preco']))
 				else:
 					body = dict(price=float(anuncio['preco']))
-					item_args = "items/%s" %(anuncio['item_id'])	
-					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-					if item.status_code != 200:
-						print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+				item_args = "items/%s" %(anuncio['item_id'])	
+				item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+				if item.status_code != 200:
+					print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
 
 		session.flash = 'Preços Atualizado com Sucesso'
 	else:
@@ -159,6 +152,27 @@ def atualizar_preco():
 	   redirect(URL('anuncio','anuncio', args=idAnuncio,))
 
 	return dict(formPrecos=formPrecos)
+
+def buscar_variacao_preco(idAnuncio,preco):
+    variacao = []
+    rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
+    for row in rows:
+        variacaoProduto = dict(id=row.variacao_id,
+                               price=float(preco),
+                               )
+        variacao.append(variacaoProduto)
+    return variacao
+
+def buscar_variacao_estoque(idAnuncio):
+    variacao = [] 
+    rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
+    for row in rows:
+        produto = Produtos[row.produto]
+        variacaoProduto = dict(id=row.variacao_id,
+                               available_quantity=float(produto.estoque),
+                               )
+        variacao.append(variacaoProduto)
+    return variacao
 
 
 def ean():
