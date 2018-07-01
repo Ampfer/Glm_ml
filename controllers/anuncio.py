@@ -169,8 +169,8 @@ def anuncios_produtos():
     q1 = db(Produtos.familia == idFamilia)
 
     formProduto = SQLFORM.factory(
-        Field('produto',label='Produto:', 
-             requires=IS_IN_DB(q1,Produtos.id,'%(nome)s',zero='Selecione um Produto')),
+        Field('produto',label='Produto:',requires=IS_IN_DB(q1,Produtos.id,'%(nome)s',zero='Selecione um Produto')),
+        Field('quantidade','integer',default=1,label='Quantidade:'),
         table_name='pesquisarproduto',
         submit_button='Adicionar',
         )
@@ -184,10 +184,10 @@ def anuncios_produtos():
         
     if formProduto.process(onvalidation=validar_forma).accepted:
         idProduto = formProduto.vars.produto
-        
+        qtde = formProduto.vars.quantidade
         ### Adiciona Produtos ###
         query = (Anuncios_Produtos.anuncio == idAnuncio) & (Anuncios_Produtos.produto == idProduto)
-        Anuncios_Produtos.update_or_insert(query, anuncio = idAnuncio, produto = idProduto)
+        Anuncios_Produtos.update_or_insert(query, anuncio = idAnuncio, produto = idProduto, quantidade = qtde)
 
         #### Atualiza Atributos ####
         marca = Produtos[idProduto].marca
@@ -213,7 +213,7 @@ def anuncios_produtos():
  
     query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==Produtos.id)
 
-    fields = (Anuncios_Produtos.id,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao,Produtos.preco, Produtos.estoque, Anuncios_Produtos.preco_sugerido)
+    fields = (Anuncios_Produtos.quantidade,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao,Produtos.preco, Produtos.estoque, Anuncios_Produtos.preco_sugerido)
 
     formProdutos = grid(query,50,args=[idAnuncio],fields=fields,
                    create=False, editable=False, searchable=False, 

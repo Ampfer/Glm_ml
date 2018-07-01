@@ -116,6 +116,11 @@ def sugerido(anuncio,idProduto = 0):
     preco = preco/ (1-tarifa/100)
     preco = round(preco,1)
 
+    if preco < 115:
+        preco += 5
+    elif preco >= 115 and preco < 120 :
+        preco = 119.90
+
     if idProduto == 0:
         return dict(estoque=estoque,preco=preco)
     else:
