@@ -115,8 +115,8 @@ def sincronizar_preco():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-		#anuncios = db(Anuncios.status == 'active').select()
-		anuncios = db(Anuncios.id == 841).select()
+		anuncios = db(Anuncios.status == 'active').select()
+		#anuncios = db(Anuncios.id == 841).select()
 		for anuncio in anuncios:		
 			if anuncio['item_id']:
 				if anuncio['forma'] == 'Multiplos':
