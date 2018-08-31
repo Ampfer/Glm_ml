@@ -108,17 +108,17 @@ def sugerido(anuncio,idProduto = 0):
     
     if anuncio.frete == 'gratis':
         frete = int(categoria.frete) * (1 - empresa.desconto/100)
+        frete2 = 0
     else:
         frete = 0
+        frete2 = 5
     
     preco = preco * (1 - desconto/100)
-    preco = preco + frete
+    preco = preco + frete + frete2
     preco = preco/ (1-tarifa/100)
     preco = round(preco,1)
 
-    if preco < 115:
-        preco += 5
-    elif preco >= 115 and preco < 120 :
+    if preco >= (120-frete2) and preco < 126:
         preco = 119.90
 
     if idProduto == 0:

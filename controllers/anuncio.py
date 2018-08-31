@@ -357,6 +357,7 @@ def buscar_variacao(idAnuncio,imagens):
             imgs.append(img['id'])
 
         rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
+        print rows
         for row in rows:
             produto = Produtos[row.produto]
             variacaoProduto = dict(id=row.variacao_id,
@@ -417,6 +418,7 @@ def anunciar_item():
         status = 'Falha na Atualização do Item : item:%s ' %(item)        
     response.flash = status
     response.js = "$('#anunciospublicar').get(0).reload()"
+
     return
 
 def alterar_item():
@@ -472,6 +474,7 @@ def alterar_item():
 
     response.flash = status
     response.js = "$('#anunciospublicar').get(0).reload()"
+
     return 
 
 def importar_anuncios():
@@ -521,6 +524,27 @@ def importar_anuncios():
         response.flash = 'Erro no Formulário'
 
     return dict(form=form,itens = xitens,btnAtualizar=btnAtualizar)
+
+
+def multiplos():
+    # Cunsulta de itens na Api do mercado livre
+    import json
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    xitens = []
+    rows = db(Anuncios.forma == 'Multiplos').select()
+    for row in rows:
+        anuncio_id = row.item_id
+        argsItem = "items/%s" %(anuncio_id)
+        busca = meli.get(argsItem)
+        
+        if busca.status_code == 200:
+            itens = json.loads(busca.content)    
+            xitens.append(itens)
+    
+    atualizar_anuncios(xitens)
+    return
+
 
 def atualizar_anuncios(xitens):
 
@@ -584,16 +608,17 @@ def atualizar_anuncios(xitens):
                 )
         
         # Salvar Variações
-        #f item['variations']:
-        #   for variacao in item['variations'] :
-        #       for atributo in variacao['attribute_combinations']:
-        #           query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
-        #           anunciosProdutos = db(query).select().first()
-        #           try:
-        #               anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
-        #               Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'] )
-        #           except: 
-        #              pass
+        if item['variations']:
+            print item['variations']
+            for variacao in item['variations'] :
+                for atributo in variacao['attribute_combinations']:
+                    query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
+                    anunciosProdutos = db(query).select().first()
+                    try:
+                        anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
+                        Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'],quantidade = variacao['available_quantity'] )
+                    except: 
+                        pass
 
 
 def imagem_upload(idAnuncio):
