@@ -115,8 +115,9 @@ def sincronizar_preco():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-		#anuncios = db(Anuncios.status == 'active').select()
-		anuncios = db(Anuncios.id == 841).select()
+		anuncios = db(Anuncios.status == 'active').select()
+		#anuncios = db(Anuncios.id == 841).select()
+		#anuncios = db(Anuncios.forma == 'Multiplos').select()
 		for anuncio in anuncios:		
 			if anuncio['item_id']:
 				if anuncio['forma'] == 'Multiplos':
@@ -132,6 +133,7 @@ def sincronizar_preco():
 	else:
 		session.flash = 'Antes Faça o Login....'
 	response.js = "location.reload(true)"
+	return
 
 def atualizar_preco():
 	Anuncios.sugerido = Field.Virtual('sugerido',lambda row: sugerido(row.anuncios)['preco'], label='Sugerido')
@@ -156,6 +158,7 @@ def atualizar_preco():
 def buscar_variacao_preco(idAnuncio,preco):
     variacao = []
     rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
+    print rows
     for row in rows:
         variacaoProduto = dict(id=row.variacao_id,
                                price=float(preco),
