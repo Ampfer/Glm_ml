@@ -1,0 +1,29 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout.html'}}
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading"><h4>Vendas</h4></div>
+            <div class="panel-body">
+                <div class="well">
+					<table class="table table-striped">
+						<tr>
+							<th>ID</th>
+							<th>Data</th>
+							<th>Produto</th>
+							<th>Status</th>
+						</tr>
+						{{for item in itens:}}
+
+							<tr>
+								<td>{{=item['id']}}</td>
+								<td>{{=item['date_created']}}</td>
+								<td>{{=item['order_items'][0]['item']['title']}}</td>
+								<td>{{=item['status']}}</td>
+							</tr>
+						{{pass}}
+					</table>
+				</div>	
+            </div>
+        </div>
+    </div>
+</div>

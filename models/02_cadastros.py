@@ -8,6 +8,8 @@ Empresa = db.define_table('empresa',
     Field('desconto','decimal(7,2)',label='Desconto Frete'),
     Field('premium','decimal(7,2)',label='Tarifa Premium'),
     Field('classico','decimal(7,2)',label='Tarifa Clássico'),
+    Field('token1','string',label='Token acesso:'),
+    Field('token2','string',label='Token atualizar:'),
     )
 Empresa.desconto.requires = IS_DECIMAL_IN_RANGE(dot=',')
 

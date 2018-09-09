@@ -10,6 +10,8 @@
 
 
 def index():
+    session.ACCESS_TOKEN = Empresa[1].token1
+    session.REFRESH_TOKEN = Empresa[1].token2
     """
     example action using the internationalization operator T and flash
     rendered by views/default/index.html or views/generic.html
@@ -64,6 +66,7 @@ def call():
 
 
 def login():
+    print session.ACCESS_TOKEN
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
     return "<a href='"+meli.auth_url(redirect_URI=REDIRECT_URI)+"'> Click para Fazer Login na conta do Mercado Livre </a>"
@@ -75,6 +78,7 @@ def autorize():
         meli.authorize(request.vars.code, REDIRECT_URI)
     session.ACCESS_TOKEN = meli.access_token
     session.REFRESH_TOKEN = meli.access_token
+    Empresa[1] = dict(token1 = session.ACCESS_TOKEN, token2=session.REFRESH_TOKEN)
     #meli = Meli(client_id=CLIENT_ID,client_secret=session.CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=REFRESH_TOKEN)
     return meli.access_token
 
