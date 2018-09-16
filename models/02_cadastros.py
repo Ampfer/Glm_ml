@@ -13,21 +13,6 @@ Empresa = db.define_table('empresa',
     )
 Empresa.desconto.requires = IS_DECIMAL_IN_RANGE(dot=',')
 
-Clientes = db.define_table('clientes',
-	Field('nome','string',label='Nome:',length=60),
-	Field('cnpj_cpf','string',label='CNPJ/CPF:',length=20),
-	Field('ie_rg','string',label='I.E./RG:',length=20),	
-	Field('endereco','string',label='Endereço:',length=60),
-	Field('bairro','string',label='Bairro:',length=40),
-	Field('cidade','string',label='Cidade:',length=40),
-	Field('estado','string',label='Estado:',length=2),
-	Field('cep','string',label='Cep:',length=9),
-    Field('fone','string',label='Fone:',length=30),
-    Field('email','string',label='Email:',length=50),
-	)
-Clientes.id.label = 'Código'
-Clientes.nome.requires = notempty
-
 Marcas = db.define_table('marcas',
     Field('marca', 'string', label='Marca:', length=30),
     Field('logo','string',label='logo:',length=100),

@@ -18,7 +18,7 @@ Categorias.frete.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios = db.define_table('anuncios',
     Field('familia', 'reference familias'),
     Field('titulo', 'string', label='Título:', length=60),
-    Field('item_id', 'string', label='ID do /Anuncio:', length=30),
+    Field('item_id', 'string', label='ID do Anuncio:', length=30),
     Field('categoria', 'string',label='Categoria:', length=30),
     Field('preco','decimal(7,2)',label='Preço'),
     Field('desconto','decimal(7,2)',label='Desconto'),

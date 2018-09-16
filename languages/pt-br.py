@@ -64,6 +64,7 @@
 'Categoria': 'Categoria',
 'Categoria:': 'Categoria:',
 'Cep:': 'Cep:',
+'CEP:': 'CEP:',
 'change password': 'mudar senha',
 'Check to delete': 'Marque para apagar',
 'Cidade:': 'Cidade:',

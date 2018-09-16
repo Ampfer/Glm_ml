@@ -10,6 +10,7 @@
 							<th>ID</th>
 							<th>Data</th>
 							<th>Produto</th>
+							<th>ID Entrega</th>
 							<th>Status</th>
 						</tr>
 						{{for item in itens:}}
@@ -18,6 +19,7 @@
 								<td>{{=item['id']}}</td>
 								<td>{{=item['date_created']}}</td>
 								<td>{{=item['order_items'][0]['item']['title']}}</td>
+								<td>{{=item['shipping']['id']}}</td>
 								<td>{{=item['status']}}</td>
 							</tr>
 						{{pass}}
