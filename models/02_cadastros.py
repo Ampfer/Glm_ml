@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+data = IS_NULL_OR(IS_DATE(format=T("%d/%m/%Y")))
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 ATRIBUTO = ('Medidas','Tamanho','Modelo','Voltagem','Cor')
 

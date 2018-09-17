@@ -5,7 +5,7 @@ def vendas():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-		busca = meli.get("/orders/search/recent?seller=158428813&sort=date_desc", {'access_token':session.ACCESS_TOKEN})
+		busca = meli.get("/orders/search/recent?seller=158428813&sort=date_desc&order.status=paid", {'access_token':session.ACCESS_TOKEN})
 		if busca.status_code == 200:
 			itens = json.loads(busca.content)    
 			itens = itens['results']
@@ -33,10 +33,12 @@ def vendas():
                 apelido = item['buyer']['nickname'],
                 )
 			
+			
 			Pedidos.update_or_insert(Pedidos.id == item['shipping']['id'],
 				id = item['shipping']['id'],
 				buyer_id = item['buyer']['id'],
-				#date_created = (item['date_created'][:10],'%Y-%m-%d')
+				date_created = datetime.strptime(item['date_created'][:10],'%Y-%m-%d'),
+				status = shipping['status']
 				)
 
 			Pedidos_Itens.update_or_insert(Pedidos_Itens.id == item['id'],
@@ -54,3 +56,16 @@ def vendas():
 		status = 'Antes Faça o Login....'
 
 	return dict(itens=itens)
+
+def exportar(ids):
+	print ids
+
+def exportar_vendas():
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.status)
+	selectable = lambda ids: exportar(ids)
+	gridPedidos = grid(Pedidos,create=False, editable=False,deletable=False,formname="pedidos",
+		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar',)
+        
+	gridPedidos = DIV(gridPedidos, _class="well")
+
+	return dict(gridPedidos=gridPedidos)
