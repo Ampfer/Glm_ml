@@ -36,6 +36,7 @@ Pedidos = db.define_table('pedidos',
 
 Pedidos_Itens = db.define_table('pedidos_itens',
 	Field('shipping_id','reference pedidos',label='Id Pedido:',length=20),
+	Field('payments_id','string',label='Id Pedido:',length=20),
 	Field('item','string', label='Item:',length=60),
 	Field('item_id','string', label='Item:',length=30),
 	Field('quantidade','integer',label='quantidade:'),
