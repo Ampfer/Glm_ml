@@ -40,7 +40,6 @@ Familias = db.define_table('familias',
     )
 Familias.descricao.writable = Familias.descricao.readable =  False
 
-
 Familias_Imagens = db.define_table('familias_imagens',
     Field('familia', 'reference familias'),
     Field('imagem','reference imagens'),

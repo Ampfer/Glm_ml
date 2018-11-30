@@ -161,8 +161,11 @@ def familias():
 
     return dict(formFamilias=formFamilias)
 
+
 def familia():
+
     idFamilia = request.args(0) or "0"
+
 
     if idFamilia == "0":
         formFamilia = SQLFORM(Familias,field_id='id', _id='formFamilia')
@@ -212,7 +215,7 @@ def familia():
     #formFamilia.element(_name='nome')['_readonly'] = "readonly"
     #formFamilia.element(_name='atributos')['_readonly'] = "readonly"
 
-    if formFamilia.process().accepted:
+    if formFamilia.process().accepted and completar(formFamilia):
         import os
         image = os.path.join(request.folder,'static','imagens', formFamilia.vars.imagem)
         if db(Familias_Imagens.familia==idFamilia).count() == 0:
@@ -221,6 +224,7 @@ def familia():
                 Familias_Imagens[0] = dict(familia=idFamilia, imagem = id)
             except:
                 pass
+        
         response.flash = 'familia Salvo com Sucesso!'
         redirect(URL('familia', args=formFamilia.vars.id))
 
