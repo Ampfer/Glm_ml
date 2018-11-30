@@ -85,7 +85,7 @@ class Meli(object):
 
     # REQUEST METHODS
     def get(self, path, params={}):
-        headers = {'Accept': 'application/json', 'User-Agent':self.SDK_VERSION, 'Content-type':'application/json'}
+        headers = {'Accept': 'application/json', 'User-Agent':self.SDK_VERSION, 'Content-type':'application/json','x-format-new':'true'}
         uri = self.make_path(path)
         response = self._requests.get(uri, params=urlencode(params), headers=headers)
         return response
