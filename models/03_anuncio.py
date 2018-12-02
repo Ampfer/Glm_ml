@@ -3,7 +3,7 @@
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 TIPOANUNCIO = {'gold_pro':'Premium','gold_special':'Clássico'}
 STATUS = {'active':'Ativo','paused':'Pausado'}
-FORMA = ('Individual','Multiplos','Kit')
+FORMA = ('Individual','Multiplos','Kit','Pack')
 FRETE = {'comprador':'Por conta do Comprador','gratis':'Frete Grátis'}
 
 Categorias = db.define_table('categorias',

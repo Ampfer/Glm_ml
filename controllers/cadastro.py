@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-
+def produtos_atualizar():
+    produtos = db(Produtos.familia != None).select()
+    for produto in produtos:
+        print produto
+        Familias_Produtos.update_or_insert(Familias_Produtos.familia==produto.familia and Familias_Produtos.produto == produto.id,
+            familia=produto.familia,
+            produto= produto.id)
+    
 def empresa():
     idEmpresa = db(Empresa.id == 1).select().first() or "0"
 
@@ -139,12 +146,6 @@ def produto():
 
 def familias():
 
-    ### Temporário - Eliminiar essa linhas
-    rows = db(Familias.id>0).select()
-    for row in rows:
-        if not row.nome_catalogo:
-            Familias[row.id] = dict(nome_catalogo=row.nome)
-
     fields = (Familias.id,Familias.nome)
     formFamilias = grid(Familias,formname="familias",fields=fields,deletable=False, orderby= Familias.nome)
     session.teste = False
@@ -165,7 +166,8 @@ def familias():
 def familia():
 
     idFamilia = request.args(0) or "0"
-
+    img = "%s.png" %(str(db(Familias.id>0).select().last()['id']+1).zfill(4))
+    Familias.imagem.default = img
 
     if idFamilia == "0":
         formFamilia = SQLFORM(Familias,field_id='id', _id='formFamilia')
@@ -185,37 +187,7 @@ def familia():
     btnVoltar = voltar("familias")
     btnProximo=btnAnterior=''
 
-    '''
-    # id Próxima Familia
-    query1 = (Familias.nome > Familias[idFamilia].nome)
-    #if session.keywords:
-    #    query1 = query1 & session.keywords
-
-    rowP = db(query1).select(orderby=Familias.nome).first()
-    try:
-        idProximo = rowP.id
-    except:
-        idProximo = idFamilia
-        response.flash = 'Último Registro...'    
-
-    # id Familia Anterior
-    query2 = (Familias.nome < Familias[idFamilia].nome)
-    #query2 = query2 & session.keywords if session.keywords else query2
-    rowA = db(query2).select(orderby=~Familias.nome).first()
-    try:
-        idAnterior = rowA.id 
-    except:
-        idAnterior = idFamilia
-        response.flash = 'Primeiro Registro...'
-
-    
-    btnProximo = proximo('familia',idProximo)
-    btnAnterior = anterior('familia',idAnterior)
-    '''
-    #formFamilia.element(_name='nome')['_readonly'] = "readonly"
-    #formFamilia.element(_name='atributos')['_readonly'] = "readonly"
-
-    if formFamilia.process().accepted and completar(formFamilia):
+    if formFamilia.process().accepted:
         import os
         image = os.path.join(request.folder,'static','imagens', formFamilia.vars.imagem)
         if db(Familias_Imagens.familia==idFamilia).count() == 0:
@@ -224,6 +196,7 @@ def familia():
                 Familias_Imagens[0] = dict(familia=idFamilia, imagem = id)
             except:
                 pass
+
         
         response.flash = 'familia Salvo com Sucesso!'
         redirect(URL('familia', args=formFamilia.vars.id))
@@ -252,7 +225,7 @@ def familias_descricao():
         response.flash = 'Erro no Formulário !' 
 
     return dict(formDescricao=formDescricao)
-
+'''
 def familia_produtos():
 
     session.idFamilia = int(request.args(0))
@@ -265,6 +238,21 @@ def familia_produtos():
     formProdutos = grid(query,orderby=Produtos.nome,args=[session.idFamilia],fields=fields,
                              create=False,editable=False,deletable = False,searchable=False,
                              links=links,formname="familiaprodutos")
+    
+    return dict(btnAdicionar=btnAdicionar,formProdutos=formProdutos)
+'''
+def familia_produtos():
+
+    session.idFamilia = int(request.args(0))
+
+    btnAdicionar = adicionar('cadastro','selecionar_produtos',' Adicionar Produtos')
+      
+    query = (Familias_Produtos.familia == session.idFamilia) & (Produtos.id == Familias_Produtos.produto)
+    fields= [Produtos.id,Produtos.nome,Produtos.preco, Produtos.estoque]
+    #links = [lambda row: A('remover',_onclick="return confirm('Deseja Remover Produto ?');",callback=URL('cadastro', 'remove_produto', args=[row.id]))]
+    formProdutos = grid(db(query),orderby=Produtos.nome,args=[session.idFamilia],fields=fields,
+                             create=False,editable=False,deletable = True,searchable=False,
+                             formname="familiaprodutos")
     
     return dict(btnAdicionar=btnAdicionar,formProdutos=formProdutos)
 
@@ -287,12 +275,14 @@ def adiciona_produto():
         ids = []
         ids.append(request.vars.ids)
 
-
     for idProduto in ids:
-        Produtos[idProduto] = dict(familia=session.idFamilia)
+        Familias_Produtos.update_or_insert(Familias_Produtos.familia==session.idFamilia and Familias_Produtos.produto == idProduto,
+            familia=session.idFamilia,
+            produto=idProduto)
+
+#    for idProduto in ids:
+#        Produtos[idProduto] = dict(familia=session.idFamilia)
     
-    #response.js = "$('#janela-modal').modal('hide');$('#familiaprodutos').get(0).reload();"
-    #response.js = "web2py_component('%s','familiaprodutos')" %(URL('familia_produtos',args=session.idFamilia))
     redirect(request.env.http_web2py_component_location,client_side=True)    
    
 def remove_produto():

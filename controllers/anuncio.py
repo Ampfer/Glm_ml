@@ -166,10 +166,11 @@ def anuncios_produtos():
     
     idFamilia = Anuncios[idAnuncio].familia
 
-    q1 = db(Produtos.familia == idFamilia)
+    #q1 = db(Produtos.familia == idFamilia)
+    q1 = (Produtos.id == Familias_Produtos.produto) & (Familias_Produtos.familia == idFamilia)
 
     formProduto = SQLFORM.factory(
-        Field('produto',label='Produto:',requires=IS_IN_DB(q1,Produtos.id,'%(nome)s',zero='Selecione um Produto')),
+        Field('produto',label='Produto:',requires=IS_IN_DB(db(q1),Produtos.id,'%(nome)s',zero='Selecione um Produto')),
         Field('quantidade','integer',default=1,label='Quantidade:'),
         table_name='pesquisarproduto',
         submit_button='Adicionar',

@@ -2,6 +2,7 @@
 data = IS_NULL_OR(IS_DATE(format=T("%d/%m/%Y")))
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 ATRIBUTO = ('Medidas','Tamanho','Modelo','Voltagem','Cor')
+CATALOGO = {'S':"Sim","N":"Não"}
 
 Empresa = db.define_table('empresa',
     Field('nome','string',label='Nome:',length=60),
@@ -18,6 +19,27 @@ Marcas = db.define_table('marcas',
     Field('logo','string',label='logo:',length=100),
     format='%(marca)s',
     )
+Produtos = db.define_table('produtos',
+    Field('nome', 'string', label='Descrição:', length=100),
+    Field('familia','integer'),
+    Field('atributo', 'string', label='Atributo:', length=20),
+    Field('variacao', 'string', label='Variação:', length=30),
+    Field('marca', 'string', label='Marca:', length=30),
+    Field('preco','decimal(7,2)',label='Preço'),
+    Field('estoque','decimal(7,2)',label='Estoque'),
+    Field('ean','string',label='Ean:',length=13),
+    Field('variacao_id','string', label='Id Variação:', length=20),
+    format='%(nome)s',
+    )
+Produtos.preco.requires = IS_DECIMAL_IN_RANGE(dot=',')
+Produtos.estoque.requires = IS_DECIMAL_IN_RANGE(dot=',')
+Produtos.nome.requires = IS_UPPER()
+Produtos.atributo.requires= IS_IN_SET(ATRIBUTO,zero=None)
+#Produtos.familia.requires = IS_EMPTY_OR(IS_IN_DB(db,'familias.id','%(nome)s'))
+#Produtos.familia.widget = SQLFORM.widgets.autocomplete(request, Familias.nome, id_field=Familias.id,
+#                     limitby=(0,10), min_length=0, orderby=Familias.nome, at_beginning=False,
+#                     )
+                     #help_fields=[Familias.nome,Familias.id], help_string= '%(id)s - %(nome)s '
 
 Descricoes = db.define_table('descricoes',
     Field('descricao','text',label='Descrição:')
@@ -36,36 +58,22 @@ Familias = db.define_table('familias',
     Field('descricao','reference descricoes', label='Descrição:'),
     Field('atributos','string', label='Atributos:', length=100),
     Field('imagem','string',label='Imagem Destacada', length=50),
+    Field('catalogo','string',label='Catálogo:', length=1),
     format='%(nome)s',
     )
 Familias.descricao.writable = Familias.descricao.readable =  False
+Familias.catalogo.requires = IS_IN_SET(CATALOGO,zero=None)
 
 Familias_Imagens = db.define_table('familias_imagens',
     Field('familia', 'reference familias'),
     Field('imagem','reference imagens'),
     )
-
-Produtos = db.define_table('produtos',
-    Field('nome', 'string', label='Descrição:', length=100),
-    Field('familia','integer'),
-    Field('atributo', 'string', label='Atributo:', length=20),
-    Field('variacao', 'string', label='Variação:', length=30),
-    Field('marca', 'string', label='Marca:', length=30),
-    Field('preco','decimal(7,2)',label='Preço'),
-    Field('estoque','decimal(7,2)',label='Estoque'),
-    Field('ean','string',label='Ean:',length=13),
-    Field('variacao_id','string', label='Id Variação:', length=20),
-    format='%(nome)s',
+Familias_Produtos = db.define_table('familias_produtos',
+    Field('familia','reference familias'),
+    Field('produto','reference produtos'),
     )
-Produtos.preco.requires = IS_DECIMAL_IN_RANGE(dot=',')
-Produtos.estoque.requires = IS_DECIMAL_IN_RANGE(dot=',')
-Produtos.nome.requires = IS_UPPER()
-Produtos.atributo.requires= IS_IN_SET(ATRIBUTO,zero=None)
-Produtos.familia.requires = IS_EMPTY_OR(IS_IN_DB(db,'familias.id','%(nome)s'))
-Produtos.familia.widget = SQLFORM.widgets.autocomplete(request, Familias.nome, id_field=Familias.id,
-                     limitby=(0,10), min_length=0, orderby=Familias.nome, at_beginning=False,
-                     )
-                     #help_fields=[Familias.nome,Familias.id], help_string= '%(id)s - %(nome)s '
+
+
 def buscaProduto(id):
     if not id:
         raise HTTP(404, 'ID produto não encontrado')
