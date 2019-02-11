@@ -24,6 +24,7 @@ Anuncios = db.define_table('anuncios',
     Field('desconto','decimal(7,2)',label='Desconto'),
     Field('estoque','decimal(7,2)',label='Estoque'),
     Field('frete','string',label='Frete:',length=30),
+    Field('fretegratis','decimal(7,2)',label='Valor Frete Grátis'),
     Field('tipo','string',label='Tipo:', length=30),
     Field('garantia','string',label='Garantia',length=100),
     Field('status','string',label='Status:',length=30),
@@ -37,6 +38,7 @@ Anuncios.estoque.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.tipo.requires = IS_IN_SET(TIPOANUNCIO,zero=None)
 Anuncios.tipo.represent = lambda tipo, row: TIPOANUNCIO[tipo]
 Anuncios.frete.requires = IS_IN_SET(FRETE,zero=None)
+#Anuncios.fretegratis.writable = Anuncios.fretegratis.readable = False
 Anuncios.categoria.requires = IS_IN_DB(db,"categorias.categoria_id",'%(categoria)s',)
 Anuncios.status.requires = IS_IN_SET(STATUS,zero=None)
 Anuncios.status.represent = lambda status, row: STATUS[status]

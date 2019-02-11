@@ -101,7 +101,6 @@ def sugerido(anuncio,idProduto = 0):
 
     else:
         preco = Produtos[idProduto].preco
-    print preco
 
     empresa = db(Empresa.id==1).select().first()
 
@@ -111,19 +110,24 @@ def sugerido(anuncio,idProduto = 0):
         tarifa = empresa.classico
 
     categoria = db(Categorias.categoria_id == anuncio.categoria).select().first()
-    
+
+    frete = 0
+    frete2 = 5
+
     if anuncio.frete == 'gratis':
-        frete = int(categoria.frete) * (1 - empresa.desconto/100)
-        frete2 = 0
-    else:
-        frete = 0
-        frete2 = 5
+        print anuncio.fretegratis
+        if anuncio.fretegratis == 0:
+            frete = int(categoria.frete) * (1 - empresa.desconto/100)
+        else:
+            frete = anuncio.fretegratis
+            frete2 = 0
+
     
     preco = preco * (1 - desconto/100)
     preco = preco + frete + frete2
     preco = preco/ (1-tarifa/100)
     preco = round(preco,1)
-    print preco
+
     if preco >= (120-frete2) and preco < 126:
         preco = 119.90
 
@@ -144,11 +148,15 @@ def buscar_categoria(categoriaId):
     
     ### Concatena Nome da Categoria ###
     nomeCategoria = ''
-    for r in categoria['path_from_root']:
-        if nomeCategoria:
-            nomeCategoria = nomeCategoria + '/' + r['name']
-        else:
-            nomeCategoria = r['name']
+    try:
+        for r in categoria['path_from_root']:
+        
+            if nomeCategoria:
+                nomeCategoria = nomeCategoria + '/' + r['name']
+            else:
+                nomeCategoria = r['name']
+    except:
+        print categoriaId
 
     ### Buscar Dimensoes por Categoria ###
     valorFrete = 0

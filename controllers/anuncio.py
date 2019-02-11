@@ -4,6 +4,9 @@ def categorias():
             
     formCategorias = DIV(formCategorias, _class="well")
 
+    btnAtualizar = atualizar('atualizar_categorias', 'Atualizar Categoria', 'formCategorias')
+    formCategorias[0].insert(-1, btnAtualizar)
+
     if request.args(-2) == 'new':
        redirect(URL('categoria'))
     elif request.args(-3) == 'edit':
@@ -34,6 +37,19 @@ def categoria():
 
     return dict(formCategoria=formCategoria, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
 
+def atualizar_categorias():
+    categorias = db(Categorias.id > 0).select()
+    for item in categorias:
+         # Buscar Categorias
+        categoria = buscar_categoria(item['categoria_id'])
+        
+        # Salvar Categorias
+        Categorias.update_or_insert(Categorias.categoria_id == item.categoria_id,
+                categoria = categoria['categoria'],
+                categoria_id = item['categoria_id'],
+                frete = categoria['valorFrete'],
+                )
+        
 def anuncios():
 
     def delete_anuncio(table,id):
@@ -93,6 +109,7 @@ def anuncio():
 
     formAnuncio.element(_name='familia')['_onchange'] = "if ($('#anuncios_titulo').val() == '' ) {jQuery('#anuncios_titulo').val($('#anuncios_familia option:selected').text())};jQuery('#anuncios_titulo').focus();"
     formAnuncio.element(_name='item_id')['_readonly'] = "readonly"
+    formAnuncio.element(_name='fretegratis')['_readonly'] = "readonly"
     formAnuncio.element(_name='titulo')['_onblur']   = "ajax('%s', ['titulo','categoria'], ':eval');" % URL('anuncio', 'sugerir_categoria')
 
     if formAnuncio.process().accepted:
@@ -358,7 +375,6 @@ def buscar_variacao(idAnuncio,imagens):
             imgs.append(img['id'])
 
         rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
-        print rows
         for row in rows:
             produto = Produtos[row.produto]
             variacaoProduto = dict(id=row.variacao_id,
@@ -578,6 +594,8 @@ def atualizar_anuncios(xitens):
             desc = round((1-(float(preco)*(1-float(desconto/100)))/float(precoSugerido))*100,2)
         except:
             desc = 0
+
+        valorfrete = buscar_valor_frete(item['id'])
         
         # Salvar Anuncios
         Anuncios.update_or_insert(Anuncios.item_id == item['id'],
@@ -590,6 +608,7 @@ def atualizar_anuncios(xitens):
                 frete = frete,
                 desconto = desc,
                 status = 'active',
+                fretegratis = valorfrete,
                 )
 
         # Salvar Atributos
@@ -610,7 +629,6 @@ def atualizar_anuncios(xitens):
         
         # Salvar Variações
         if item['variations']:
-            print item['variations']
             for variacao in item['variations'] :
                 for atributo in variacao['attribute_combinations']:
                     query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
@@ -620,6 +638,18 @@ def atualizar_anuncios(xitens):
                         Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'],quantidade = variacao['available_quantity'] )
                     except: 
                         pass
+
+def buscar_valor_frete(item_id):
+    import json
+    valorfrete = 0
+    from meli import Meli
+    args = "/items/%s/shipping_options/free" %(item_id)
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    busca = meli.get(args)
+    if busca.status_code == 200:
+        frete = json.loads(busca.content)
+        valorfrete = frete['coverage']['all_country']['list_cost']
+    return valorfrete
 
 
 def imagem_upload(idAnuncio):
@@ -657,3 +687,31 @@ def imagem_upload(idAnuncio):
             imagens.append(dict(id=img))
 
     return imagens
+
+def sincronizar_anuncios():
+    import json
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+    
+    form = FORM.confirm('Sincronizar Anuncios',{'Voltar':URL('default','index')})
+    if form.accepted:
+        anuncios = db(Anuncios.id >0).select()
+        for anuncio in anuncios:
+            xitens = []
+            # Cunsulta de itens na Api do mercado livre
+            argsItem = "items/%s" %(anuncio.item_id)
+            busca = meli.get(argsItem)
+            
+            if busca.status_code == 200:
+                itens = json.loads(busca.content)    
+                xitens.append(itens)
+                try:
+                    atualizar_anuncios(xitens)
+                except Exception as e:
+                    print itens               
+
+        response.flash = 'Estoque Atualizado com Sucesso....'
+
+    return dict(form=form)
+
+
