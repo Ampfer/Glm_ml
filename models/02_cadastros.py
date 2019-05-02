@@ -29,10 +29,21 @@ Produtos = db.define_table('produtos',
     Field('estoque','decimal(7,2)',label='Estoque'),
     Field('ean','string',label='Ean:',length=13),
     Field('variacao_id','string', label='Id Variação:', length=20),
+    Field('peso','decimal(7,3)',label='Peso'),
+    Field('origem','string',label='Origem',length=1),
+    Field('ncm', 'string', label='NCM:', length=8),
+    Field('largura','decimal(7,3)',label='Largura'),
+    Field('altura','decimal(7,3)',label='Altura'),
+    Field('comprimento','decimal(7,3)',label='Comprimento'),
+
     format='%(nome)s',
     )
 Produtos.preco.requires = IS_DECIMAL_IN_RANGE(dot=',')
 Produtos.estoque.requires = IS_DECIMAL_IN_RANGE(dot=',')
+Produtos.peso.requires = IS_DECIMAL_IN_RANGE(dot=',')
+Produtos.altura.requires = IS_DECIMAL_IN_RANGE(dot=',')
+Produtos.largura.requires = IS_DECIMAL_IN_RANGE(dot=',')
+Produtos.comprimento.requires = IS_DECIMAL_IN_RANGE(dot=',')
 Produtos.nome.requires = IS_UPPER()
 Produtos.atributo.requires= IS_IN_SET(ATRIBUTO,zero=None)
 #Produtos.familia.requires = IS_EMPTY_OR(IS_IN_DB(db,'familias.id','%(nome)s'))
