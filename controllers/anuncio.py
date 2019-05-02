@@ -88,6 +88,7 @@ def anuncio():
     Anuncios.descricao.writable = False
 
     Anuncios.tipo.default = 'gold_pro'
+    Anuncios.fretegratis.default = 0
 
     if idAnuncio == "0":
         formAnuncio = SQLFORM(Anuncios,field_id='id', _id='dados')

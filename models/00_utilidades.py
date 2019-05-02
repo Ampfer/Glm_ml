@@ -113,16 +113,14 @@ def sugerido(anuncio,idProduto = 0):
 
     frete = 0
     frete2 = 5
-
+    
     if anuncio.frete == 'gratis':
-        print anuncio.fretegratis
         if anuncio.fretegratis == 0:
             frete = int(categoria.frete) * (1 - empresa.desconto/100)
         else:
             frete = anuncio.fretegratis
             frete2 = 0
-
-    
+            
     preco = preco * (1 - desconto/100)
     preco = preco + frete + frete2
     preco = preco/ (1-tarifa/100)
