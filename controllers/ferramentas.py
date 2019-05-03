@@ -213,3 +213,18 @@ def atualizar_ean():
 			else:
 				status = 'Antes Faça o Login....'
 				item = ''   
+
+def exportar_produtos():
+	familias = db(Familias.id < 10).select()
+	bling = []
+	for familia in familias:
+		produtos = db(Familias_Produtos.familia == familia.id).select()
+		if len(produtos) == 1:
+			bling.append(dict(codigo=produto.produto,tipo = 'produto'))
+		else:
+			bling.append(dict(codigo=familia.id,nome = familia.nome,tipo = 'variacao'))
+			for produto in produtos:
+				print produto
+				bling.append(dict(codigo=produto.produto,tipo = 'produto'))
+	#print bling
+	return dict(bling=bling)
