@@ -214,6 +214,18 @@ def atualizar_ean():
 				status = 'Antes Faça o Login....'
 				item = ''   
 
+def buscar_descricao(produtoId):
+
+	try:
+		anuncioId = db(Anuncios_Produtos.produto == produtoId).select().first()['anuncio']	
+	except Exception as e:
+		print '1'
+		descricao_curta = ''
+	else:
+		descricao_curta = Descricoes[Anuncios[int(anuncioId)].descricao].descricao
+
+	return descricao_curta
+
 def exportar_produtos():
 	familias = db(Familias.id < 10).select()
 	bling = []
@@ -237,7 +249,7 @@ def exportar_produtos():
 					  marca = prod.marca,
 					  tipo = 'Produto',
 					  pai = '',
-					  descricao_curta = descricao_curta
+					  descricao_curta = buscar_descricao(produtos[0].produto)
 					  )
 			bling.append(lista_bling(b))
 		elif len(produtos) == 0:
@@ -280,7 +292,7 @@ def exportar_produtos():
 						  marca = prod.marca,
 						  tipo = 'Produto',
 						  pai = codigo,
-						  descricao_curta = descricao_curta
+						  descricao_curta = buscar_descricao(produto.produto)
 						  )
 				
 				bling.append(lista_bling(b))
