@@ -231,11 +231,12 @@ def exportar_produtos():
 	bling = []
 	for familia in familias:
 		produtos = db(Familias_Produtos.familia == familia.id).select()
-		codigo = 'F%s' %(familia.id)
+		codigo = '1%s' %('{:0>4}'.format(familia.id))
 		descricao_curta = Descricoes[familia.descricao].descricao
 		if len(produtos) == 1:
 			prod = Produtos[produtos[0].produto]
-			b = dict (codigo = produtos[0].produto,
+			codigo = '{:0>5}'.format(prod.id)
+			b = dict (codigo = codigo,
 					  descricao= (prod.nome).upper(),
 					  ncm =  prod.ncm,
 					  origem =  prod.origem,
@@ -278,7 +279,8 @@ def exportar_produtos():
 
 			for produto in produtos:
 				prod = Produtos[produto.produto]
-				b = dict (codigo = produto.produto,
+				codigo = '{:0>5}'.format(prod.id)
+				b = dict (codigo = codigo,
 						  descricao=  '%s:%s' % (prod.atributo,prod.variacao),
 						  ncm =  prod.ncm,
 						  origem =  prod.origem,
@@ -304,8 +306,61 @@ def exportar_produtos():
 	c.writerow(head)
 	for row in bling:
 		c.writerow(row)
+	
+    #head= ['Código do produto (ID Tray)';'Referência (código fornecedor)';'Nome do produto';'Marca;Preço de venda em reais';'Nome da categoria - nível 1';'Estoque do produto';'Código EAN/GTIN/UPC';'NCM do produto';'Peso do produto (gramas)';'Largura (cm)';'Altura (cm)';'Comprimento (cm)';'HTML da descrição completa';'Endereço da imagem principal do produto';'Endereço da imagem do produto 2';'Endereço da imagem do produto 3';'Endereço da imagem do produto 4';'Endereço da imagem do produto 5';'Endereço da imagem do produto 6']
+
+	import xlwt
+	wb = xlwt.Workbook(encoding='utf-8')
+	ws = wb.add_sheet('Produtos')
+
+	# Sheet header, first row
+	row_num = 0
+
+	font_style = xlwt.XFStyle()
+	font_style.font.bold = True
+
+	columns = ['Código do produto (ID Tray)','Referência (código fornecedor)','Nome do produto','Marca,Preço de venda em reais','Nome da categoria - nível 1','Estoque do produto','Código EAN/GTIN/UPC','NCM do produto','Peso do produto (gramas)','Largura (cm)','Altura (cm)','Comprimento (cm)','HTML da descrição completa','Endereço da imagem principal do produto','Endereço da imagem do produto 2','Endereço da imagem do produto 3','Endereço da imagem do produto 4','Endereço da imagem do produto 5','Endereço da imagem do produto 6']
+
+	for col_num in range(len(columns)):
+	    ws.write(row_num, col_num, columns[col_num], font_style)
+
+	# Sheet body, remaining rows
+	font_style = xlwt.XFStyle()
+
+	rows = bling
+	for row in rows:
+	    row_num += 1
+	    for col_num in range(len(row)):
+	        ws.write(row_num, col_num, row[col_num], font_style)
+
+	wb.save('tray_produtos.xls')
+	#********************************
+
 	return dict(bling=bling)
 
+def lista_tray(b):
+	peso =  b['peso'] * 1000
+	tray_produtos = []
+	tray_produtos.append('')#Código do produto (ID Tray)
+	tray_produtos.append(b['codigo'])#Referência (código fornecedor)
+	tray_produtos.append(b['descricao'])#Nome do produto
+	tray_produtos.append(b['marca'])#Marca
+	tray_produtos.append(b['preco'])#Preço de venda em reais
+	tray_produtos.append('Ferramentas')#Nome da categoria - nível 1
+	tray_produtos.append(b['estoque'])#Estoque do produto
+	tray_produtos.append(b['ean'])#Código EAN/GTIN/UPC
+	tray_produtos.append('ncm')#NCM do produto;Peso do produto (gramas)
+	tray_produtos.append(b['largura'])#Largura (cm)
+	tray_produtos.append(['altura'])#Altura (cm)
+	tray_produtos.append(b['comprimento'])#Comprimento (cm)
+	tray_produtos.append(b['descricao_curta'])#HTML da descrição completa
+	tray_produtos.append('')#Endereço da imagem principal do produto
+	tray_produtos.append('')#Endereço da imagem do produto 2
+	tray_produtos.append('')#Endereço da imagem do produto 3
+	tray_produtos.append('')#Endereço da imagem do produto 4
+	tray_produtos.append('')#Endereço da imagem do produto 5
+	tray_produtos.append('')#Endereço da imagem do produto 6
+	return tray_produtos
 
 def lista_bling(b):
 	bling_produtos = []
