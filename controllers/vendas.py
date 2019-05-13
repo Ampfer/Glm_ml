@@ -88,9 +88,6 @@ def importar_vendas():
 
 	return dict(itens=itens,form=form)
 
-def exportar(ids):
-	print ids
-
 def exportar_vendas():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.status)
 	selectable = lambda ids: exportar(ids)
@@ -100,3 +97,48 @@ def exportar_vendas():
 	gridPedidos = DIV(gridPedidos, _class="well")
 
 	return dict(gridPedidos=gridPedidos)
+
+def exportar(ids):
+	pedidos = db(Pedidos.id.belongs(ids)).select()
+	itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
+	clientesIds = []
+	for pedido in pedidos:
+		clientesIds.append(pedido.buyer_id)
+	clientes = db(Clientes.id.belongs(clientesIds)).select()
+	salvar_cliente(clientes)
+	#salvar_pedidos(pedidos)
+	#salvar_itens(itens)
+	return
+
+def salvar_cliente(clientes):
+	import fdb
+	con = fdb.connect(host='localhost', database='c:/erp.fdb',user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	for c in clientes:
+		select = "select codcli from clientes where cgccpf = '%s'" %(c.cnpj_cpf)
+		id = cur.execute(select).fetchone()
+		if id:
+			update = """
+			UPDATE CLIENTES SET 
+    		NOMCLI = '{}',
+    		NOMFAN = '{}',
+    		ENDCLI = '{}',
+    		BAICLI = '{}',
+    		CIDCLI = '{}',
+    		ESTCLI = '{}',
+    		CEPCLI = '{}',
+    		TELCLI = '{}'
+			WHERE (CGCCPF = '{}');
+			""".format(c.nome.upper(),
+				c.apelido.upper().encode('utf-8'),
+				c.endereco.upper().encode('utf-8'),
+				c.bairro.upper().encode('utf-8'),
+				c.cidade.upper().encode('utf-8'),
+				c.estado.upper().encode('utf-8'),
+				c.cep,
+				c.fone,
+				c.cnpj_cpf)
+			cur.execute(update)
+			con.commit()
+			print update		
+		con.close()
