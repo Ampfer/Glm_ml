@@ -334,6 +334,7 @@
 'Videos': 'Vídeos',
 'View': 'Visualização',
 'Web2py': 'Web2py',
+'web:': 'web:',
 'Welcome': 'Bem-vindo',
 'Welcome %s': 'Bem-vindo %s',
 'Welcome to web2py': 'Bem-vindo ao web2py',

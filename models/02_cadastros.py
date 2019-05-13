@@ -19,6 +19,17 @@ Marcas = db.define_table('marcas',
     Field('logo','string',label='logo:',length=100),
     format='%(marca)s',
     )
+
+Descricoes = db.define_table('descricoes',
+    Field('descricao','text',label='Descrição:')
+    )
+
+Imagens = db.define_table('imagens',
+    Field('imagem','upload'),
+    )
+Imagens.imagem.requires = notempty
+
+
 Produtos = db.define_table('produtos',
     Field('nome', 'string', label='Descrição:', length=100),
     Field('familia','integer'),
@@ -35,6 +46,8 @@ Produtos = db.define_table('produtos',
     Field('largura','decimal(7,3)',label='Largura'),
     Field('altura','decimal(7,3)',label='Altura'),
     Field('comprimento','decimal(7,3)',label='Comprimento'),
+    Field('descricao','reference descricoes', label='Descrição:'),
+    
 
     format='%(nome)s',
     )
@@ -52,14 +65,10 @@ Produtos.atributo.requires= IS_IN_SET(ATRIBUTO,zero=None)
 #                     )
                      #help_fields=[Familias.nome,Familias.id], help_string= '%(id)s - %(nome)s '
 
-Descricoes = db.define_table('descricoes',
-    Field('descricao','text',label='Descrição:')
+Produtos_Imagens = db.define_table('produtos_imagens',
+    Field('produto', 'reference produtos'),
+    Field('imagem','reference imagens'),
     )
-
-Imagens = db.define_table('imagens',
-    Field('imagem','upload'),
-    )
-Imagens.imagem.requires = notempty
 
 Familias = db.define_table('familias',
     Field('codigo', 'integer', label='Código:'),
@@ -70,10 +79,12 @@ Familias = db.define_table('familias',
     Field('atributos','string', label='Atributos:', length=100),
     Field('imagem','string',label='Imagem Destacada', length=50),
     Field('catalogo','string',label='Catálogo:', length=1),
+    Field('web','string',label='web:', length=1),
     format='%(nome)s',
     )
 Familias.descricao.writable = Familias.descricao.readable =  False
 Familias.catalogo.requires = IS_IN_SET(CATALOGO,zero=None)
+Familias.web.requires = IS_IN_SET(CATALOGO,zero=None)
 
 Familias_Imagens = db.define_table('familias_imagens',
     Field('familia', 'reference familias'),
