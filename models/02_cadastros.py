@@ -3,6 +3,7 @@ data = IS_NULL_OR(IS_DATE(format=T("%d/%m/%Y")))
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 ATRIBUTO = ('Medidas','Tamanho','Modelo','Voltagem','Cor')
 CATALOGO = {'S':"Sim","N":"Não"}
+Estados = {'SP':'São Paulo','RJ':'Rio de Janeiro','MG':'Minas Gerais','RS':'Rio Grande do Sul','SC':'Santa Catarina','PR':'Paraná'}
 
 Empresa = db.define_table('empresa',
     Field('nome','string',label='Nome:',length=60),
@@ -47,8 +48,6 @@ Produtos = db.define_table('produtos',
     Field('altura','decimal(7,3)',label='Altura'),
     Field('comprimento','decimal(7,3)',label='Comprimento'),
     Field('descricao','reference descricoes', label='Descrição:'),
-    
-
     format='%(nome)s',
     )
 Produtos.preco.requires = IS_DECIMAL_IN_RANGE(dot=',')

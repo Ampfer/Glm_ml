@@ -118,27 +118,29 @@ def salvar_cliente(clientes):
 		select = "select codcli from clientes where cgccpf = '%s'" %(c.cnpj_cpf)
 		id = cur.execute(select).fetchone()
 		if id:
-			update = """
-			UPDATE CLIENTES SET 
-    		NOMCLI = '{}',
-    		NOMFAN = '{}',
-    		ENDCLI = '{}',
-    		BAICLI = '{}',
-    		CIDCLI = '{}',
-    		ESTCLI = '{}',
-    		CEPCLI = '{}',
-    		TELCLI = '{}'
-			WHERE (CGCCPF = '{}');
+			update = """UPDATE CLIENTES 
+			SET NOMCLI = '{}',
+			NOMFAN = '{}',
+			ENDCLI = '{}',
+			BAICLI = '{}',
+			CIDCLI = '{}',
+			
+			CEPCLI = '{}',
+			TELCLI = '{}'
+			WHERE CGCCPF = '{}'
 			""".format(c.nome.upper(),
-				c.apelido.upper().encode('utf-8'),
-				c.endereco.upper().encode('utf-8'),
-				c.bairro.upper().encode('utf-8'),
-				c.cidade.upper().encode('utf-8'),
-				c.estado.upper().encode('utf-8'),
+				c.apelido.upper(),
+				c.endereco.upper(),
+				c.bairro.upper(),
+				c.cidade.upper(),			
 				c.cep,
 				c.fone,
 				c.cnpj_cpf)
+			print update
 			cur.execute(update)
 			con.commit()
-			print update		
+					
 		con.close()
+
+#ESTCLI = '{}',
+#c.estado.upper(),
