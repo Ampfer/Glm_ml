@@ -128,8 +128,11 @@ def produto():
 
     if idProduto == "0":
         formProduto = SQLFORM(Produtos,field_id='id', _id='formProduto')
+        formProdutoDescricao  = formProdutoImagem = 'Primeiro Cadastre uma Familia'
     else:
         formProduto = SQLFORM(Produtos,idProduto,_id='formProduto',field_id='id')
+        formProdutoDescricao = LOAD(c='cadastro',f='produtos_descricao',args=[idProduto], target='produtosdescricao', ajax=True,)       
+        formProdutoImagem = LOAD(c='cadastro', f='produtos_imagens',args=[idProduto], target='produtoimagem', ajax=True)
 
     btnVoltar = voltar("produtos")
     formProduto.element(_name='nome')['_readonly'] = "readonly"
@@ -142,7 +145,45 @@ def produto():
         formProduto.element('#produtos_familia')['_class'] += ' form-control'
         response.flash = 'Erro no Formulário Principal!'
 
-    return dict(formProduto=formProduto,btnVoltar=btnVoltar)
+    return dict(formProduto=formProduto,formProdutoDescricao = formProdutoDescricao,
+                formProdutoImagem=formProdutoImagem,btnVoltar=btnVoltar)
+
+def produtos_descricao():
+    
+    idProduto = int(request.args(0))
+    idDescricao = Produtos[idProduto].descricao
+    if idDescricao == None:
+      formDescricao = SQLFORM(Descricoes,field_id='id', _id='formdescricao')
+    else:
+      formDescricao = SQLFORM(Descricoes,idDescricao,field_id='id', _id='formdescricao')
+
+    if formDescricao.process().accepted:
+        response.flash = 'Salvo !'
+        Produtos[idProduto] = dict(descricao=int(formDescricao.vars.id))
+        response.js = "$('#produtsdescricao').get(0).reload()"
+
+    elif formDescricao.errors:
+        response.flash = 'Erro no Formulário !' 
+
+    return dict(formDescricao=formDescricao)
+
+def produtos_imagens():
+    idProduto = int(request.args(0))
+    formImagem = SQLFORM(Imagens)
+    if formImagem.process().accepted:
+        Produtos_Imagens[0] = dict(familia=idProduto, imagem = formImagem.vars.id)
+        response.flash = 'Salvo !'
+    elif formImagem.errors:
+        response.flash = 'Erro no Formulário !' 
+    query = (Produtos_Imagens.produto == idProduto) & (Produtos_Imagens.imagem==Imagens.id)
+    imagens = db(query).select()
+
+    return dict(formImagem=formImagem, imagens=imagens)
+    
+def remove_imagem_produto():
+    idImagem = int(request.args(0))
+    del Produtos_Imagens[idImagem]
+    response.js = "$('#produtoimagem').get(0).reload()"
 
 def familias():
 
@@ -168,6 +209,8 @@ def familia():
     idFamilia = request.args(0) or "0"
     img = "%s.png" %(str(db(Familias.id>0).select().last()['id']+1).zfill(4))
     Familias.imagem.default = img
+    Familias.catalogo.default = 'S'
+    Familias.web.default = 'S'
 
     if idFamilia == "0":
         formFamilia = SQLFORM(Familias,field_id='id', _id='formFamilia')

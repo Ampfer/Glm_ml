@@ -3,9 +3,16 @@
 <div class="container">
     <div class="panel panel-info">
         <div class="panel-heading">
-        	<h4>Cadastro de Produtos</h4>
+            <h4>Cadastro de Produtos</h4>
         </div>
         <div class="panel-body">
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#home">Dados</a></li>
+                <li><a data-toggle="tab" href="#menu1">Descrição</a></li>
+                <li><a data-toggle="tab" href="#menu2">Imagens</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active"> 
         	{{=formProduto.custom.begin}}
             <div class="well">
                 <div class="row">
@@ -71,6 +78,14 @@
                     <p></p>
                 </div>
             </div>
+            </div>
+            <div id="menu1" class="tab-pane fade">
+                {{=formProdutoDescricao}}
+            </div>
+            <div id="menu2" class="tab-pane fade">
+                {{=formProdutoImagem}}
+            </div>
+
             <div class="right">
                 {{=formProduto.custom.submit}}
                 {{=btnVoltar}}
