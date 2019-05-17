@@ -3,7 +3,40 @@ data = IS_NULL_OR(IS_DATE(format=T("%d/%m/%Y")))
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 ATRIBUTO = ('Medidas','Tamanho','Modelo','Voltagem','Cor')
 CATALOGO = {'S':"Sim","N":"Não"}
-Estados = {'SP':'São Paulo','RJ':'Rio de Janeiro','MG':'Minas Gerais','RS':'Rio Grande do Sul','SC':'Santa Catarina','PR':'Paraná'}
+
+estados = []
+estados.append(dict(estado = 'Acre',uf = 'AC'))
+estados.append(dict(estado = 'Alagoas',uf = 'AL'))
+estados.append(dict(estado = 'Amapá',uf = 'AP'))    
+estados.append(dict(estado = 'Amazonas',uf = 'AM'))
+estados.append(dict(estado = 'Bahia',uf = 'BA'))
+estados.append(dict(estado = 'Ceará',uf = 'CE'))
+estados.append(dict(estado = 'Distrito Federal',uf = 'DF'))
+estados.append(dict(estado = 'Espírito Santo',uf = 'ES')) 
+estados.append(dict(estado = 'Goiás',uf = 'GO'))
+estados.append(dict(estado = 'Maranhão',uf = 'MA'))
+estados.append(dict(estado = 'Mato Grosso',uf = 'MT'))
+estados.append(dict(estado = 'Mato Grosso do Sul',uf = 'MS'))
+estados.append(dict(estado = 'Minas Gerais',uf = 'MG'))
+estados.append(dict(estado = 'Pará',uf = 'PA'))
+estados.append(dict(estado = 'Paraíba',uf = 'PB'))
+estados.append(dict(estado = 'Paraná',uf = 'PR'))  
+estados.append(dict(estado = 'Pernambuco',uf = 'PE'))
+estados.append(dict(estado = 'Piauí',uf = 'PI'))
+estados.append(dict(estado = 'Rio de Janeiro',uf = 'RJ'))
+estados.append(dict(estado = 'Rio Grande do Norte',uf = 'RN'))
+estados.append(dict(estado = 'Rio Grande do Sul',uf = 'RS'))
+estados.append(dict(estado = 'Rondônia',uf = 'RO'))
+estados.append(dict(estado = 'Roraima',uf = 'RR'))
+estados.append(dict(estado = 'Santa Catarina',uf = 'SC'))
+estados.append(dict(estado = 'São Paulo',uf = 'SP'))     
+estados.append(dict(estado = 'Sergipe',uf = 'SE'))
+estados.append(dict(estado = 'Tocantins',uf = 'TO'))
+
+def buscar_uf(estado):
+    for e in estados:
+        if e['estado'] == estado:
+            return e['uf']
 
 Empresa = db.define_table('empresa',
     Field('nome','string',label='Nome:',length=60),

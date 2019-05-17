@@ -115,7 +115,10 @@ def salvar_cliente(clientes):
 	con = fdb.connect(host='localhost', database='c:/erp.fdb',user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
 	for c in clientes:
+		estado =  buscar_uf(c.estado)
 		select = "select codcli from clientes where cgccpf = '%s'" %(c.cnpj_cpf)
+		pessoa = 'J' if c.tipo == 'CNPJ' else 'F'
+		print estado,pessoa
 		id = cur.execute(select).fetchone()
 		if id:
 			update = """UPDATE CLIENTES 
@@ -124,23 +127,48 @@ def salvar_cliente(clientes):
 			ENDCLI = '{}',
 			BAICLI = '{}',
 			CIDCLI = '{}',
-			
+			ESTCLI = '{}',
 			CEPCLI = '{}',
-			TELCLI = '{}'
+			TELCLI = '{}',
+			DATALT = '{}'
 			WHERE CGCCPF = '{}'
 			""".format(c.nome.upper(),
 				c.apelido.upper(),
 				c.endereco.upper(),
 				c.bairro.upper(),
-				c.cidade.upper(),			
+				c.cidade.upper(),
+				estado,
 				c.cep,
 				c.fone,
-				c.cnpj_cpf)
-			print update
-			cur.execute(update)
-			con.commit()
-					
+				request.now.date(),
+				c.cnpj_cpf)	
+		else:
+			insere = " INSERT INTO CLIENTES (CDOCLI,NOMCLI) VALUES ({},{})".format(10125,c.nome)
+			cur.execute(insere)
+
+		con.commit()
 		con.close()
 
-#ESTCLI = '{}',
-#c.estado.upper(),
+#
+#
+'''
+insere = """INSERT INTO CLIENTES (
+NOMCLI,NOMFAN,FISJUR,ENDCLI,BAICLI,CIDCLI,ESTCLI,CEPCLI,EMACLI,
+TELCLI,FAXCLI,CELCLI,CONTAT,CGCCPF,INSNRG,DATCAD,DATALT,CLIBLO,
+MENAVI,CODVEN,CODCON,CODCOR,CODTRA,CODTIP,PORCOM,PDENOR,ENDCOB,
+BAICOB,CIDCOB,ESTCOB,CEPCOB,REGALT,EMANFE,CALSUB,ENVPDF,RETPIS,
+RETCOF,REGESP,PDEQNT)
+VALUES (
+{},{},{},{},{},{},{},{},{},
+{},{},{},{},{},{},{},{},{},
+{},{},{},{},{},{},{},{},{},
+{},{},{},{},{},{},{},{},{},
+{},{},{}
+)""".format(
+c.mome,c.apelido,pessoa,c.endereco,c.bairro,c.cidade,estado,c.cep,'',
+c.fone,'','','',c.cnpj_cpf,'',request.now.date(),request.now.date(),'',
+'',99,31,15,273,5,2,0,'',
+'','','','','N','','S','S','N',
+'N','',100
+)
+			'''
