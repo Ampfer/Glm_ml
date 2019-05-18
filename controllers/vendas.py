@@ -118,7 +118,8 @@ def salvar_cliente(clientes):
 		estado =  buscar_uf(c.estado)
 		select = "select codcli from clientes where cgccpf = '%s'" %(c.cnpj_cpf)
 		pessoa = 'J' if c.tipo == 'CNPJ' else 'F'
-		print estado,pessoa
+		cep = c.cep[:5] + '-' + c.cep[-3:]
+
 		id = cur.execute(select).fetchone()
 		if id:
 			update = """UPDATE CLIENTES 
@@ -138,37 +139,56 @@ def salvar_cliente(clientes):
 				c.bairro.upper(),
 				c.cidade.upper(),
 				estado,
-				c.cep,
+				cep,
 				c.fone,
 				request.now.date(),
 				c.cnpj_cpf)	
 		else:
-			insere = " INSERT INTO CLIENTES (CDOCLI,NOMCLI) VALUES ({},{})".format(10125,c.nome)
+			campo = """(CODCLI,NOMCLI,NOMFAN,FISJUR,ENDCLI,BAICLI,CIDCLI,ESTCLI,CEPCLI,EMACLI,
+						TELCLI,CGCCPF,DATCAD,DATALT,CODVEN,CODCON,CODCOR,CODTRA,CODTIP,PORCOM,
+						PDENOR,NUMCLI,COCCLI,REGALT,EMANFE,CALSUB,ENVPDF,RETPIS,RETCOF,REGESP,
+						PDEQNT)"""
+
+			valor = "(GEN_ID(GEN_CLIENTES,1)" #CODCLI
+			valor = valor + ",'{}'".format(c.nome.upper()) #NOMCLI
+			valor = valor + ",'{}'".format(c.apelido) #NOMFAN
+			valor = valor + ",'{}'".format(pessoa) #FISJUR
+			valor = valor + ",'{}'".format(c.endereco) #ENDCLI
+			valor = valor + ",'{}'".format(c.bairro) #BAICLI
+			valor = valor + ",'{}'".format(c.cidade) #CIDCLI
+			valor = valor + ",'{}'".format(estado) #ESTCLI
+			valor = valor + ",'{}'".format(cep) #CEPCLI
+			valor = valor + ",''" #EMACLI
+
+			valor = valor + ",'{}'".format(c.fone) #TELCLI
+			valor = valor + ",'{}'".format(c.cnpj_cpf) #CGCCPF
+			valor = valor + ",'{}'".format(request.now.date()) #DATCAD
+			valor = valor + ",'{}'".format(request.now.date()) #DATALT
+			valor = valor + ",99" #CODVEN
+			valor = valor + ",31" #CODCON
+			valor = valor + ",15" #CODCOR
+			valor = valor + ",273" #CODTRA
+			valor = valor + ",5" #CODTIP
+			valor = valor + ",1" #PORCOM
+
+			valor = valor + ",0" #PDENOR
+			valor = valor + ",''" #NUMCLI
+			valor = valor + ",''" #COCLCI
+			valor = valor + ",'S'" #REGALT
+			valor = valor + ",''" #EMANFE
+			valor = valor + ",'S'" #CALSUB
+			valor = valor + ",'S'" #ENVPDF
+			valor = valor + ",'N'" #RETPIS
+			valor = valor + ",'N'" #RETCOF
+			valor = valor + ",''" #REGESP
+			
+			valor = valor + ",100" #PDEQNT
+
+			valor = valor + ')'
+
+			insere = "INSERT INTO CLIENTES {} VALUES {}".format(campo,valor)
+
 			cur.execute(insere)
 
 		con.commit()
 		con.close()
-
-#
-#
-'''
-insere = """INSERT INTO CLIENTES (
-NOMCLI,NOMFAN,FISJUR,ENDCLI,BAICLI,CIDCLI,ESTCLI,CEPCLI,EMACLI,
-TELCLI,FAXCLI,CELCLI,CONTAT,CGCCPF,INSNRG,DATCAD,DATALT,CLIBLO,
-MENAVI,CODVEN,CODCON,CODCOR,CODTRA,CODTIP,PORCOM,PDENOR,ENDCOB,
-BAICOB,CIDCOB,ESTCOB,CEPCOB,REGALT,EMANFE,CALSUB,ENVPDF,RETPIS,
-RETCOF,REGESP,PDEQNT)
-VALUES (
-{},{},{},{},{},{},{},{},{},
-{},{},{},{},{},{},{},{},{},
-{},{},{},{},{},{},{},{},{},
-{},{},{},{},{},{},{},{},{},
-{},{},{}
-)""".format(
-c.mome,c.apelido,pessoa,c.endereco,c.bairro,c.cidade,estado,c.cep,'',
-c.fone,'','','',c.cnpj_cpf,'',request.now.date(),request.now.date(),'',
-'',99,31,15,273,5,2,0,'',
-'','','','','N','','S','S','N',
-'N','',100
-)
-			'''
