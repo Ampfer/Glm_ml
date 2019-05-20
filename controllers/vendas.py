@@ -1,7 +1,7 @@
-#ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
-#SERVERNAME = "mpfrserv"
-ERPFDB = "C:/ERP.FDB"
-SERVERNAME = "localhost"
+ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
+SERVERNAME = "mpfrserv"
+#ERPFDB = "C:/ERP.FDB"
+#SERVERNAME = "localhost"
 
 
 def importar_vendas():
@@ -74,7 +74,7 @@ def importar_vendas():
 					buyer_id = item['buyer']['id'],
 					date_created = datetime.strptime(item['date_created'][:10],'%Y-%m-%d'),
 					status = shipping['status'],
-					numdoc = 0
+					
 					)
 
 				Pedidos_Itens.update_or_insert(Pedidos_Itens.id == item['id'],
@@ -224,6 +224,7 @@ def salvar_pedidos(pedidos):
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
 	for pedido in pedidos:
+		numdoc = pedido.numdoc or 0
 		# Retorna último Ida Tabela ORCAMENTOS1
 		select = 'SELECT NUMDOC FROM ORCAMENTOS1 ORDER BY NUMDOC DESC'
 		lastId = cur.execute(select).fetchone()[0]
@@ -235,7 +236,7 @@ def salvar_pedidos(pedidos):
 		select = "select codcli from clientes where cgccpf = '%s'" %(cnpj_cpf)
 		codcli = cur.execute(select).fetchone()[0]
 
-		select = "select NUMDOC from ORCAMENTOS1 where NUMDOC = '%s'" %(pedido.numdoc)
+		select = "select NUMDOC from ORCAMENTOS1 where NUMDOC = '%s'" %(numdoc)
 		numdoc = cur.execute(select).fetchone()
 		if not numdoc:
 			orc1 = dict(NUMDOC = int(lastId) + 1,

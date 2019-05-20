@@ -29,6 +29,7 @@ Anuncios = db.define_table('anuncios',
     Field('garantia','string',label='Garantia',length=100),
     Field('status','string',label='Status:',length=30),
     Field('forma','string',label='Forma:',length=30),
+    Field('alterado','string',label='Alterado:',length=1),
     Field('descricao','reference descricoes', label='Descrição:')
     )
 Anuncios.titulo.requires = [notempty,IS_LENGTH(60)]

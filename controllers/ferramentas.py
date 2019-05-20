@@ -58,7 +58,8 @@ def atualizar_estoque():
 	anuncios = db(Anuncios.id > 0).select()
 	for anuncio in anuncios:
 		estoque =  sugerido(anuncio)['estoque']
-		Anuncios[anuncio.id] = dict(estoque=estoque)
+		if estoque != anuncio.estoque:
+			Anuncios[anuncio.id] = dict(estoque=estoque,alterado = 'S')
 
 	form = FORM.confirm('Atualizar Estoque',{'Voltar':URL('default','index')})
 
@@ -68,7 +69,7 @@ def atualizar_estoque():
 			from meli import Meli 
 			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-			anuncios = db(Anuncios.id > 0).select()
+			anuncios = db(Anuncios.alterado == 'S').select()
 			#anuncios = db(Anuncios.forma == 'Multiplos').select()
 			for anuncio in anuncios:
 				if anuncio['item_id']:
@@ -81,6 +82,8 @@ def atualizar_estoque():
 					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
 					if item.status_code != 200:
 						print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+					else:
+						Anuncios[anuncio.id] = dict(alterado = 'N')
 
 			response.flash = 'Estoque Atualizado com Sucesso....'
 
