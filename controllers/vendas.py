@@ -50,10 +50,12 @@ def importar_vendas():
 	                nome = "%s %s" %(item['buyer']['first_name'],item['buyer']['last_name']),
 	                cnpj_cpf = item['buyer']['billing_info']['doc_number'],
 	                tipo = item['buyer']['billing_info']['doc_type'],
-	                endereco = shipping['destination']['shipping_address']['address_line'], 
+	                endereco = shipping['destination']['shipping_address']['street_name'], 
+	                numero = str(shipping['destination']['shipping_address']['street_number']), 
 	                bairro = shipping['destination']['shipping_address']['neighborhood']['name'],
 	                cidade = shipping['destination']['shipping_address']['city']['name'],
 	                estado = shipping['destination']['shipping_address']['state']['name'],
+	                codcid = ibge_cidade(shipping['destination']['shipping_address']['zip_code']),
 	                cep = shipping['destination']['shipping_address']['zip_code'],
 	                fone = "%s %s" %(item['buyer']['phone']['area_code'] or '',item['buyer']['phone']['number'] or ''),
 	                email = item['buyer']['email'],
@@ -65,7 +67,8 @@ def importar_vendas():
 					id = item['shipping']['id'],
 					buyer_id = item['buyer']['id'],
 					date_created = datetime.strptime(item['date_created'][:10],'%Y-%m-%d'),
-					status = shipping['status']
+					status = shipping['status'],
+					numdoc = 0
 					)
 
 				Pedidos_Itens.update_or_insert(Pedidos_Itens.id == item['id'],
@@ -106,8 +109,8 @@ def exportar(ids):
 		clientesIds.append(pedido.buyer_id)
 	clientes = db(Clientes.id.belongs(clientesIds)).select()
 	salvar_cliente(clientes)
-	#salvar_pedidos(pedidos)
-	#salvar_itens(itens)
+	salvar_pedidos(pedidos)
+	salvar_itens(itens)
 	return
 
 def salvar_cliente(clientes):
@@ -122,6 +125,7 @@ def salvar_cliente(clientes):
 
 		id = cur.execute(select).fetchone()
 		if id:
+			print 'aqui', c.email[:40]
 			update = """UPDATE CLIENTES 
 			SET NOMCLI = '{}',
 			NOMFAN = '{}',
@@ -131,7 +135,9 @@ def salvar_cliente(clientes):
 			ESTCLI = '{}',
 			CEPCLI = '{}',
 			TELCLI = '{}',
-			DATALT = '{}'
+			DATALT = '{}',
+			EMACLI = '{}',
+			COCCLI = '{} '
 			WHERE CGCCPF = '{}'
 			""".format(c.nome.upper(),
 				c.apelido.upper(),
@@ -142,7 +148,11 @@ def salvar_cliente(clientes):
 				cep,
 				c.fone,
 				request.now.date(),
+				c.email[:40],
+				c.codcid,
 				c.cnpj_cpf)	
+			cur.execute(update)
+
 		else:
 			campo = """(CODCLI,NOMCLI,NOMFAN,FISJUR,ENDCLI,BAICLI,CIDCLI,ESTCLI,CEPCLI,EMACLI,
 						TELCLI,CGCCPF,DATCAD,DATALT,CODVEN,CODCON,CODCOR,CODTRA,CODTIP,PORCOM,
@@ -158,7 +168,7 @@ def salvar_cliente(clientes):
 			valor = valor + ",'{}'".format(c.cidade) #CIDCLI
 			valor = valor + ",'{}'".format(estado) #ESTCLI
 			valor = valor + ",'{}'".format(cep) #CEPCLI
-			valor = valor + ",''" #EMACLI
+			valor = valor + ",'{}'".format(c.email[:40]) #EMACLI
 
 			valor = valor + ",'{}'".format(c.fone) #TELCLI
 			valor = valor + ",'{}'".format(c.cnpj_cpf) #CGCCPF
@@ -172,8 +182,8 @@ def salvar_cliente(clientes):
 			valor = valor + ",1" #PORCOM
 
 			valor = valor + ",0" #PDENOR
-			valor = valor + ",''" #NUMCLI
-			valor = valor + ",''" #COCLCI
+			valor = valor + ",'{}'".format(c.numero) #NUMCLI
+			valor = valor + ",'{}'".format(c.codcid) #COCLCI
 			valor = valor + ",'S'" #REGALT
 			valor = valor + ",''" #EMANFE
 			valor = valor + ",'S'" #CALSUB
@@ -191,4 +201,119 @@ def salvar_cliente(clientes):
 			cur.execute(insere)
 
 		con.commit()
-		con.close()
+	con.close()
+
+def ibge_cidade(cep):
+	import requests
+	import json
+	response = requests.get('https://viacep.com.br/ws/{}/json/'.format(cep))
+	if response.status_code == 200:
+		codigo = json.loads(response.content)['ibge']
+	else:
+		codigo = ''
+	return codigo		
+
+def salvar_pedidos(pedidos):
+	import fdb
+	con = fdb.connect(host='localhost', database='c:/erp.fdb',user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	for pedido in pedidos:
+		# Retorna último Ida Tabela ORCAMENTOS1
+		select = 'SELECT NUMDOC FROM ORCAMENTOS1 ORDER BY NUMDOC DESC'
+		lastId = cur.execute(select).fetchone()[0]
+		# Retorna última Tabela de Preços
+		select = 'SELECT CODTAB FROM TABELA ORDER BY CODTAB DESC'
+		tabela = cur.execute(select).fetchone()[0]
+		# Retorna Id do Cliente
+		cnpj_cpf = db(Clientes.id == pedido.buyer_id).select(Clientes.cnpj_cpf).first()['cnpj_cpf']
+		select = "select codcli from clientes where cgccpf = '%s'" %(cnpj_cpf)
+		codcli = cur.execute(select).fetchone()[0]
+
+		select = "select NUMDOC from ORCAMENTOS1 where NUMDOC = '%s'" %(pedido.numdoc)
+		numdoc = cur.execute(select).fetchone()
+		if not numdoc:
+			orc1 = dict(NUMDOC = int(lastId) + 1,
+				 	    CODEMP = 3,
+					    CODCLI = codcli,
+						DATDOC = str(request.now.date()),
+						DATPRO = str(request.now.date()),
+						NUMORC = 0,
+						PEDCLI = '',
+						PEDVEN = str(pedido.id)[-8:],
+						PDEPED = 0,
+						PDEQNT = 100,
+						PDEVAL = 100,
+						PDEPON = 0,
+						CODTAB = str(tabela),
+						CODVEN = 99,
+						PORCOM = 2,
+						CODCON = 2,
+						CODCOR = 15,
+						CODTRA = 273,
+						CODRED = 0,
+						VALFRE = 0,
+						TIPFRE = 0,
+						PEDIMP = 'S',
+						TIPORC = 'P',
+						SITORC = 'A',
+						STATUS = 'PEN',
+						NUMLOT = 0,
+						HORENT = '')		
+
+			insere = "INSERT INTO ORCAMENTOS1 ({}) VALUES ({})".format(', '.join(orc1.keys()),str(orc1.values()).strip('[]'))
+
+			cur.execute(insere)
+
+			Pedidos[pedido.id] = dict(numdoc = int(lastId) + 1)
+
+		con.commit()
+	con.close()
+	 
+	return
+
+def salvar_itens(itens):
+	import fdb
+	con = fdb.connect(host='localhost', database='c:/erp.fdb',user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+
+	for item in itens:
+		numdoc = db(Pedidos.id == item.shipping_id).select().first()['numdoc']
+		anuncioId = db(Anuncios.item_id == item.item_id).select().first()['id']
+		produtos = db(Anuncios_Produtos.anuncio == anuncioId).select()
+
+		for row in produtos:
+			indice = int(row.quantidade or 1)
+			# Buscar produto banco firebird
+			select = "select CODPRO,CODINT,NOMPRO,UNIPRO FROM PRODUTOS WHERE CODPRO = {}".format(row.produto)
+			produto = cur.execute(select).fetchone()
+			# Buscar preõ tabela banco firebird
+			select = 'SELECT PREPRO FROM TABELA WHERE CODPRO = {} ORDER BY CODTAB DESC'.format(produto[0])
+			preco_tabela = cur.execute(select).fetchone()[0]
+
+			pdepro = round((1-((item.valor/indice) / preco_tabela)) * 100,2)
+
+			select = "select * from ORCAMENTOS2 where NUMDOC = {} AND CODPRO = {}".format(int(numdoc),int(produto[0]))
+			existe = cur.execute(select).fetchone()
+			
+			if not existe:
+				item_dict = dict(NUMDOC = int(numdoc),
+								CODPRO = int(produto[0]),
+								CODINT = str(produto[1]),
+								NOMPRO = str(produto[2]),
+								UNIPRO = str(produto[3]),
+								QNTPRO = float(item.quantidade*indice),
+								PDEPRO = float(pdepro),
+								PRECUS = 0,
+								PREORI = float(preco_tabela),
+								PREPRO = float(round(item.valor/indice,2)),
+								ENVIAR = 'S',
+								TIPPRO = 'VND',
+								QNTPRE = 1)
+
+				insere = "INSERT INTO ORCAMENTOS2 ({}) VALUES ({})".format(', '.join(item_dict.keys()),str(item_dict.values()).strip('[]'))
+				
+				cur.execute(insere)
+
+		con.commit()
+	con.close()
+	return
