@@ -1,3 +1,5 @@
+ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
+SERVERNAME = "mpfrserv"
 def importar_vendas():
 	import json
 	from datetime import datetime
@@ -115,7 +117,7 @@ def exportar(ids):
 
 def salvar_cliente(clientes):
 	import fdb
-	con = fdb.connect(host='localhost', database='c:/erp.fdb',user='sysdba', password='masterkey',charset='UTF8')
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
 	for c in clientes:
 		estado =  buscar_uf(c.estado)
@@ -174,7 +176,7 @@ def salvar_cliente(clientes):
 			valor = valor + ",'{}'".format(c.cnpj_cpf) #CGCCPF
 			valor = valor + ",'{}'".format(request.now.date()) #DATCAD
 			valor = valor + ",'{}'".format(request.now.date()) #DATALT
-			valor = valor + ",99" #CODVEN
+			valor = valor + ",146" #CODVEN
 			valor = valor + ",31" #CODCON
 			valor = valor + ",15" #CODCOR
 			valor = valor + ",273" #CODTRA
@@ -185,7 +187,7 @@ def salvar_cliente(clientes):
 			valor = valor + ",'{}'".format(c.numero) #NUMCLI
 			valor = valor + ",'{}'".format(c.codcid) #COCLCI
 			valor = valor + ",'S'" #REGALT
-			valor = valor + ",''" #EMANFE
+			valor = valor + ",'{}'".format(c.email) #EMANFE
 			valor = valor + ",'S'" #CALSUB
 			valor = valor + ",'S'" #ENVPDF
 			valor = valor + ",'N'" #RETPIS
@@ -215,7 +217,7 @@ def ibge_cidade(cep):
 
 def salvar_pedidos(pedidos):
 	import fdb
-	con = fdb.connect(host='localhost', database='c:/erp.fdb',user='sysdba', password='masterkey',charset='UTF8')
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
 	for pedido in pedidos:
 		# Retorna último Ida Tabela ORCAMENTOS1
@@ -245,7 +247,7 @@ def salvar_pedidos(pedidos):
 						PDEVAL = 100,
 						PDEPON = 0,
 						CODTAB = str(tabela),
-						CODVEN = 99,
+						CODVEN = 146,
 						PORCOM = 2,
 						CODCON = 2,
 						CODCOR = 15,
@@ -273,7 +275,7 @@ def salvar_pedidos(pedidos):
 
 def salvar_itens(itens):
 	import fdb
-	con = fdb.connect(host='localhost', database='c:/erp.fdb',user='sysdba', password='masterkey',charset='UTF8')
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
 
 	for item in itens:
