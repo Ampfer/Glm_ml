@@ -1,5 +1,9 @@
-ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
-SERVERNAME = "mpfrserv"
+#ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
+#SERVERNAME = "mpfrserv"
+ERPFDB = "C:/ERP.FDB"
+SERVERNAME = "localhost"
+
+
 def importar_vendas():
 	import json
 	from datetime import datetime
@@ -94,9 +98,9 @@ def importar_vendas():
 	return dict(itens=itens,form=form)
 
 def exportar_vendas():
-	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.status)
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.status,Pedidos.enviado)
 	selectable = lambda ids: exportar(ids)
-	gridPedidos = grid(Pedidos,create=False, editable=False,deletable=False,formname="pedidos",
+	gridPedidos = grid(Pedidos.status == 'ready_to_ship',create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
 	gridPedidos = DIV(gridPedidos, _class="well")
@@ -141,11 +145,11 @@ def salvar_cliente(clientes):
 			EMACLI = '{}',
 			COCCLI = '{} '
 			WHERE CGCCPF = '{}'
-			""".format(c.nome.upper(),
-				c.apelido.upper(),
-				c.endereco.upper(),
-				c.bairro.upper(),
-				c.cidade.upper(),
+			""".format(c.nome[:50].upper(),
+				c.apelido[:30].upper(),
+				c.endereco[:50].upper(),
+				c.bairro[:35].upper(),
+				c.cidade[:35].upper(),
 				estado,
 				cep,
 				c.fone,
@@ -162,12 +166,12 @@ def salvar_cliente(clientes):
 						PDEQNT)"""
 
 			valor = "(GEN_ID(GEN_CLIENTES,1)" #CODCLI
-			valor = valor + ",'{}'".format(c.nome.upper()) #NOMCLI
-			valor = valor + ",'{}'".format(c.apelido) #NOMFAN
+			valor = valor + ",'{}'".format(c.nome[:50].upper()) #NOMCLI
+			valor = valor + ",'{}'".format(c.apelido[:30].upper()) #NOMFAN
 			valor = valor + ",'{}'".format(pessoa) #FISJUR
-			valor = valor + ",'{}'".format(c.endereco) #ENDCLI
-			valor = valor + ",'{}'".format(c.bairro) #BAICLI
-			valor = valor + ",'{}'".format(c.cidade) #CIDCLI
+			valor = valor + ",'{}'".format(c.endereco[:50].upper()) #ENDCLI
+			valor = valor + ",'{}'".format(c.bairro[:35].upper()) #BAICLI
+			valor = valor + ",'{}'".format(c.cidade[:35].upper()) #CIDCLI
 			valor = valor + ",'{}'".format(estado) #ESTCLI
 			valor = valor + ",'{}'".format(cep) #CEPCLI
 			valor = valor + ",'{}'".format(c.email[:40]) #EMACLI
@@ -266,7 +270,7 @@ def salvar_pedidos(pedidos):
 
 			cur.execute(insere)
 
-			Pedidos[pedido.id] = dict(numdoc = int(lastId) + 1)
+			Pedidos[pedido.id] = dict(numdoc = int(lastId) + 1, enviado='SIM')
 
 		con.commit()
 	con.close()

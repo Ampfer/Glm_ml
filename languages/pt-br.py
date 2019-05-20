@@ -136,6 +136,7 @@
 'Enter an integer between %(min)g and %(max)g': 'Informe um valor inteiro entre %(min)g e %(max)g',
 'Enter from %(min)g to %(max)g characters': 'Enter from %(min)g to %(max)g characters',
 'Entre 1 e 50 !': 'Entre 1 e 50 !',
+'Enviado:': 'Enviado:',
 'Errors': 'Erros',
 'Errors in form, please check it out.': 'Errors in form, please check it out.',
 'Estado:': 'Estado:',
