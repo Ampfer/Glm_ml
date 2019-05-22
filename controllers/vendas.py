@@ -128,10 +128,10 @@ def salvar_cliente(clientes):
 		select = "select codcli from clientes where cgccpf = '%s'" %(c.cnpj_cpf)
 		pessoa = 'J' if c.tipo == 'CNPJ' else 'F'
 		cep = c.cep[:5] + '-' + c.cep[-3:]
+		bairro = c.bairro[:35].upper() if c.bairro else 'Centro'
 
 		id = cur.execute(select).fetchone()
 		if id:
-			print 'aqui', c.email[:40]
 			update = """UPDATE CLIENTES 
 			SET NOMCLI = '{}',
 			NOMFAN = '{}',
@@ -148,7 +148,7 @@ def salvar_cliente(clientes):
 			""".format(c.nome[:50].upper(),
 				c.apelido[:30].upper(),
 				c.endereco[:50].upper(),
-				c.bairro[:35].upper(),
+				bairro.upper(),
 				c.cidade[:35].upper(),
 				estado,
 				cep,
@@ -170,7 +170,7 @@ def salvar_cliente(clientes):
 			valor = valor + ",'{}'".format(c.apelido[:30].upper()) #NOMFAN
 			valor = valor + ",'{}'".format(pessoa) #FISJUR
 			valor = valor + ",'{}'".format(c.endereco[:50].upper()) #ENDCLI
-			valor = valor + ",'{}'".format(c.bairro[:35].upper()) #BAICLI
+			valor = valor + ",'{}'".format(bairro.upper()) #BAICLI
 			valor = valor + ",'{}'".format(c.cidade[:35].upper()) #CIDCLI
 			valor = valor + ",'{}'".format(estado) #ESTCLI
 			valor = valor + ",'{}'".format(cep) #CEPCLI
@@ -303,11 +303,13 @@ def salvar_itens(itens):
 			existe = cur.execute(select).fetchone()
 			
 			if not existe:
+				nompro = u'{}'.format(produto[2])
+				unipro = u'{}'.format(produto[3])
 				item_dict = dict(NUMDOC = int(numdoc),
 								CODPRO = int(produto[0]),
 								CODINT = str(produto[1]),
-								NOMPRO = str(produto[2]),
-								UNIPRO = str(produto[3]),
+								NOMPRO = nompro,
+								UNIPRO = unipro,
 								QNTPRO = float(item.quantidade*indice),
 								PDEPRO = float(pdepro),
 								PRECUS = 0,
