@@ -124,13 +124,22 @@ def salvar_cliente(clientes):
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
 	for c in clientes:
-		estado =  buscar_uf(c.estado)
+
 		select = "select codcli from clientes where cgccpf = '%s'" %(c.cnpj_cpf)
+		id = cur.execute(select).fetchone()
+
+		estado =  buscar_uf(c.estado)
 		pessoa = 'J' if c.tipo == 'CNPJ' else 'F'
 		cep = c.cep[:5] + '-' + c.cep[-3:]
 		bairro = c.bairro[:35].upper() if c.bairro else 'Centro'
+		codcid = c.codcid
 
-		id = cur.execute(select).fetchone()
+		if c.codcid == '':
+			select = "select codcid from cidades where nomcid = '{}'".format(c.cidade)
+			xcodcid = cur.execute(select).fetchone()
+			if xcodcid:
+				Clientes[c.id] = dict(codcid = codcid)
+				codcid = xcodcid
 		if id:
 			update = """UPDATE CLIENTES 
 			SET NOMCLI = '{}',
@@ -155,7 +164,7 @@ def salvar_cliente(clientes):
 				c.fone,
 				request.now.date(),
 				c.email[:40],
-				c.codcid,
+				codcid,
 				c.cnpj_cpf)	
 			cur.execute(update)
 
@@ -189,7 +198,7 @@ def salvar_cliente(clientes):
 
 			valor = valor + ",0" #PDENOR
 			valor = valor + ",'{}'".format(c.numero) #NUMCLI
-			valor = valor + ",'{}'".format(c.codcid) #COCLCI
+			valor = valor + ",'{}'".format(codcid) #COCLCI
 			valor = valor + ",'S'" #REGALT
 			valor = valor + ",'{}'".format(c.email) #EMANFE
 			valor = valor + ",'S'" #CALSUB
@@ -273,7 +282,7 @@ def salvar_pedidos(pedidos):
 
 			Pedidos[pedido.id] = dict(numdoc = int(lastId) + 1, enviado='SIM')
 
-		con.commit()
+			con.commit()
 	con.close()
 	 
 	return
@@ -303,13 +312,11 @@ def salvar_itens(itens):
 			existe = cur.execute(select).fetchone()
 			
 			if not existe:
-				nompro = u'{}'.format(produto[2])
-				unipro = u'{}'.format(produto[3])
 				item_dict = dict(NUMDOC = int(numdoc),
 								CODPRO = int(produto[0]),
 								CODINT = str(produto[1]),
-								NOMPRO = nompro,
-								UNIPRO = unipro,
+								NOMPRO = produto[2].encode('UTF-8'),
+								UNIPRO = str(produto[3]),
 								QNTPRO = float(item.quantidade*indice),
 								PDEPRO = float(pdepro),
 								PRECUS = 0,
@@ -323,6 +330,35 @@ def salvar_itens(itens):
 				
 				cur.execute(insere)
 
-		con.commit()
+				con.commit()
 	con.close()
 	return
+
+def importar_estoque():
+	print request.now.time()
+	produtos = db(Produtos.id>0).select()
+	for produto in produtos:
+		saldo = estoque_erp(produto.id)
+	print request.now.time()
+		
+
+
+
+def estoque_erp(codpro):
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	select = "select SUM(qntent) from entradas2 where codpro = {}".format(codpro)
+	qtent = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from pedidos2 where codpro = {}".format(codpro)
+	qtsai = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from mestoque where entsai = 'E' and codpro = {}".format(codpro)
+	qtace = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from mestoque where entsai = 'S' and codpro = {}".format(codpro)
+	qtacs = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from devolucoes2 where codpro = {}".format(codpro)
+	qtdev = cur.execute(select).fetchone()
+
+	saldo = float(qtent[0] or 0) - float(qtsai[0] or 0) + float(qtace[0] or 0) - float(qtacs[0] or 0) + float(qtdev[0] or 0)
+
+	return saldo
