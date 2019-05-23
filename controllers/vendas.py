@@ -1,7 +1,7 @@
-ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
-SERVERNAME = "mpfrserv"
-#ERPFDB = "C:/ERP.FDB"
-#SERVERNAME = "localhost"
+#ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
+#SERVERNAME = "mpfrserv"
+ERPFDB = "C:/ERP.FDB"
+SERVERNAME = "localhost"
 
 
 def importar_vendas():
@@ -339,10 +339,10 @@ def importar_estoque():
 	produtos = db(Produtos.id>0).select()
 	for produto in produtos:
 		saldo = estoque_erp(produto.id)
+		response.flash = produto.nome
 	print request.now.time()
+
 		
-
-
 
 def estoque_erp(codpro):
 	import fdb
@@ -360,5 +360,53 @@ def estoque_erp(codpro):
 	qtdev = cur.execute(select).fetchone()
 
 	saldo = float(qtent[0] or 0) - float(qtsai[0] or 0) + float(qtace[0] or 0) - float(qtacs[0] or 0) + float(qtdev[0] or 0)
-
+	
+	con.close()
+	
 	return saldo
+
+def estoque_erp1():
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	
+	produtos = db(Produtos.id>0).select()
+	for produto in produtos:
+		codpro = produto.id
+		qtent=qtsai=qtace=qtacs=qtdev = 0
+
+		select = "select codpro,sum(qntent) from entradas2 group by codpro order by codpro"
+		entradas = cur.execute(select).fetchall()
+		try:
+			qtent = float([x[1] for x in entradas if x[0] == codpro][0]) or 0
+		except:
+			pass
+		
+		select = "select codpro,SUM(qntpro) from pedidos2 group by codpro order by codpro"
+		saidas = cur.execute(select).fetchall()
+		try:
+			qtsai = float([x[1] for x in saidas if x[0] == codpro][0]) or 0
+		except:
+			pass
+		
+		select = "select codpro,entsai,SUM(qntpro) from mestoque group by codpro,entsai order by codpro,entsai"
+		acertos = cur.execute(select).fetchall()
+		try:
+			qtace =  float([x[2] for x in acertos if x[0] == codpro and x[1] == 'E'][0]) or 0
+		except:
+			pass
+		try:
+			qtacs =  float([x[2] for x in acertos if x[0] == codpro and x[1] == 'S'][0]) or 0
+		except:
+			pass
+
+		select = "select codpro,SUM(qntpro) from devolucoes2 group by codpro order by codpro"
+		devolucoes = cur.execute(select).fetchall()
+		try:
+			qtdev = float([x[1] for x in devolucoes if x[0] == codpro][0]) or 0
+		except:
+			pass
+			
+		saldo = qtent-qtsai+qtace-qtacs+qtdev
+
+	con.close()
