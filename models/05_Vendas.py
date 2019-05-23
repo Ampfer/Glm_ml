@@ -34,7 +34,7 @@ Pedidos = db.define_table('pedidos',
 	Field('date_created', 'date', label='Data:', length=20,requires = data),
 	Field.Virtual('valor',lambda row: totalCompra(row), label='Valor:'),
 	Field('status', 'string', label='Status:', length=30),
-	Field('numdoc', 'integer', label='Numdoc:'),
+	Field('numdoc', 'integer', label='Docto:'),
 	Field('enviado', 'string', label='Enviado:', length=3),
     )
 

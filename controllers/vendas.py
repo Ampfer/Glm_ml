@@ -1,7 +1,7 @@
-#ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
-#SERVERNAME = "mpfrserv"
-ERPFDB = "C:/ERP.FDB"
-SERVERNAME = "localhost"
+ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
+SERVERNAME = "mpfrserv"
+#ERPFDB = "C:/ERP.FDB"
+#SERVERNAME = "localhost"
 
 
 def importar_vendas():
@@ -98,7 +98,7 @@ def importar_vendas():
 	return dict(itens=itens,form=form)
 
 def exportar_vendas():
-	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.status,Pedidos.enviado)
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.enviado)
 	selectable = lambda ids: exportar(ids)
 	gridPedidos = grid(Pedidos.status == 'ready_to_ship',create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
@@ -282,7 +282,7 @@ def salvar_pedidos(pedidos):
 
 			Pedidos[pedido.id] = dict(numdoc = int(lastId) + 1, enviado='SIM')
 
-			con.commit()
+		con.commit()
 	con.close()
 	 
 	return
@@ -330,17 +330,17 @@ def salvar_itens(itens):
 				
 				cur.execute(insere)
 
-				con.commit()
+			con.commit()
 	con.close()
 	return
 
 def importar_estoque():
-	print request.now.time()
+	
 	produtos = db(Produtos.id>0).select()
 	for produto in produtos:
 		saldo = estoque_erp(produto.id)
 		response.flash = produto.nome
-	print request.now.time()
+	
 
 		
 
@@ -410,3 +410,44 @@ def estoque_erp1():
 		saldo = qtent-qtsai+qtace-qtacs+qtdev
 
 	con.close()
+
+def qtde_vendida1():
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	codpro = 3413
+	select = "select numdoc,codpro,qntpro from orcamentos2 where enviar = 'S' and codpro = {}".format(codpro)
+	orcamentos = cur.execute(select).fetchall()
+	qtde = 0
+	for orcamento in orcamentos:
+		comprado = orcamento[2]
+		select = "select sum(qntpro) from pedidos1, pedidos2 where pedidos1.numorc = {} AND pedidos1.numdoc=pedidos2.numdoc and codpro = {}".format(orcamento[0],codpro)
+		pedidos = cur.execute(select).fetchone()
+		enviado = pedidos[0] if pedidos[0] else 0
+		
+		qtde += float(comprado) - float(enviado)
+	print qtde
+
+	con.close()
+
+def qtde_vendida():
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	codpro = 3413
+
+	select = "select sum(qntpro) from orcamentos2 where enviar = 'S' and codpro = {}".format(codpro)
+	orcamentos = cur.execute(select).fetchall()
+
+	select = """select sum(pedidos2.qntpro) from pedidos1, pedidos2, orcamentos2
+				where pedidos1.numorc = orcamentos2.numdoc and pedidos1.numdoc = pedidos2.numdoc 
+				and pedidos2.codpro = {0} and orcamentos2.enviar = 'S' and 
+				orcamentos2.codpro = {0}""".format(codpro)
+	
+	pedidos = cur.execute(select).fetchone()
+	
+	print orcamentos
+	print pedidos
+
+	con.close()
+

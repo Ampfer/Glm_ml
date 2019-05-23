@@ -120,6 +120,7 @@
 'Disk Cache Keys': 'Chaves do Cache de Disco',
 'Disk Cleared': 'Disco Limpo',
 'DISK contains items up to **%(hours)02d** %%{hour(hours)} **%(min)02d** %%{minute(min)} **%(sec)02d** %%{second(sec)} old.': 'DISK contains items up to **%(hours)02d** %%{hour(hours)} **%(min)02d** %%{minute(min)} **%(sec)02d** %%{second(sec)} old.',
+'Docto:': 'Docto:',
 'Documentation': 'Documentação',
 "Don't know what to do?": 'Não sabe o que fazer?',
 'done!': 'concluído!',
