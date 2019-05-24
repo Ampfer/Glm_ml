@@ -335,14 +335,15 @@ def salvar_itens(itens):
 	return
 
 def importar_estoque():
-	
+	import time
 	produtos = db(Produtos.id>0).select()
+	ini =  time.time()
 	for produto in produtos:
 		saldo = estoque_erp(produto.id)
-		response.flash = produto.nome
-	
+		qtde = qtde_vendida(produto.id)
+	print time.time() - ini
 
-		
+	return
 
 def estoque_erp(codpro):
 	import fdb
@@ -365,89 +366,47 @@ def estoque_erp(codpro):
 	
 	return saldo
 
-def estoque_erp1():
+
+def qtde_vendida(codpro):
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
-	
-	produtos = db(Produtos.id>0).select()
-	for produto in produtos:
-		codpro = produto.id
-		qtent=qtsai=qtace=qtacs=qtdev = 0
+	#codpro = 3413
 
-		select = "select codpro,sum(qntent) from entradas2 group by codpro order by codpro"
-		entradas = cur.execute(select).fetchall()
-		try:
-			qtent = float([x[1] for x in entradas if x[0] == codpro][0]) or 0
-		except:
-			pass
-		
-		select = "select codpro,SUM(qntpro) from pedidos2 group by codpro order by codpro"
-		saidas = cur.execute(select).fetchall()
-		try:
-			qtsai = float([x[1] for x in saidas if x[0] == codpro][0]) or 0
-		except:
-			pass
-		
-		select = "select codpro,entsai,SUM(qntpro) from mestoque group by codpro,entsai order by codpro,entsai"
-		acertos = cur.execute(select).fetchall()
-		try:
-			qtace =  float([x[2] for x in acertos if x[0] == codpro and x[1] == 'E'][0]) or 0
-		except:
-			pass
-		try:
-			qtacs =  float([x[2] for x in acertos if x[0] == codpro and x[1] == 'S'][0]) or 0
-		except:
-			pass
+	#select = "select sum(qntpro) from orcamentos2 where enviar = 'S' and codpro = {}".format(codpro)
+	select = "select sum(qntpro) from orcamentos1, orcamentos2 where orcamentos1.sitorc = 'A' and tiporc = 'P' and orcamentos1.numdoc = orcamentos2.numdoc and orcamentos2.codpro = {}".format(codpro)
+	orcamentos = cur.execute(select).fetchone()
 
-		select = "select codpro,SUM(qntpro) from devolucoes2 group by codpro order by codpro"
-		devolucoes = cur.execute(select).fetchall()
-		try:
-			qtdev = float([x[1] for x in devolucoes if x[0] == codpro][0]) or 0
-		except:
-			pass
-			
-		saldo = qtent-qtsai+qtace-qtacs+qtdev
-
-	con.close()
-
-def qtde_vendida1():
-	import fdb
-	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-	cur = con.cursor()
-	codpro = 3413
-	select = "select numdoc,codpro,qntpro from orcamentos2 where enviar = 'S' and codpro = {}".format(codpro)
-	orcamentos = cur.execute(select).fetchall()
-	qtde = 0
-	for orcamento in orcamentos:
-		comprado = orcamento[2]
-		select = "select sum(qntpro) from pedidos1, pedidos2 where pedidos1.numorc = {} AND pedidos1.numdoc=pedidos2.numdoc and codpro = {}".format(orcamento[0],codpro)
-		pedidos = cur.execute(select).fetchone()
-		enviado = pedidos[0] if pedidos[0] else 0
-		
-		qtde += float(comprado) - float(enviado)
-	print qtde
-
-	con.close()
-
-def qtde_vendida():
-	import fdb
-	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-	cur = con.cursor()
-	codpro = 3413
-
-	select = "select sum(qntpro) from orcamentos2 where enviar = 'S' and codpro = {}".format(codpro)
-	orcamentos = cur.execute(select).fetchall()
-
-	select = """select sum(pedidos2.qntpro) from pedidos1, pedidos2, orcamentos2
-				where pedidos1.numorc = orcamentos2.numdoc and pedidos1.numdoc = pedidos2.numdoc 
-				and pedidos2.codpro = {0} and orcamentos2.enviar = 'S' and 
-				orcamentos2.codpro = {0}""".format(codpro)
+	#select = """select sum(pedidos2.qntpro) from pedidos1, pedidos2, orcamentos2
+	#			where pedidos1.numorc = orcamentos2.numdoc and pedidos1.numdoc = pedidos2.numdoc 
+	#			and pedidos2.codpro = {0} and orcamentos2.enviar = 'S' and 
+	#			orcamentos2.codpro = {0}""".format(codpro)
+	select = """select sum(pedidos2.qntpro) from pedidos1, pedidos2, orcamentos1
+				where pedidos1.numdoc = pedidos2.numdoc and pedidos2.codpro = {0} and pedidos1.numorc=orcamentos1.numdoc 
+				and orcamentos1.sitorc = 'A' and orcamentos1.tiporc = 'P' """.format(codpro)
 	
 	pedidos = cur.execute(select).fetchone()
-	
-	print orcamentos
-	print pedidos
 
 	con.close()
+
+	vendido =  orcamentos[0] if orcamentos[0] else 0
+	enviado =  pedidos[0] if pedidos[0] else 0
+
+	return (vendido - enviado)
+
+
+def qtde_vendida1(codpro):
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	
+	select = """select sum(orcamentos2.qntpro - (select pedidos2.qntpro from pedidos1, pedidos2 where orcamentos1.numdoc=pedidos1.numorc and pedidos1.numdoc = pedidos2.numdoc and pedidos2.codpro = {0}))
+				from orcamentos1, orcamentos2
+				where orcamentos1.sitorc = 'A' and orcamentos1.numdoc = orcamentos2.numdoc and orcamentos2.codpro = {0} and orcamentos2.enviar = 'S' and orcamentos1.tiporc = 'P'""".format(codpro)
+	
+	qtde = cur.execute(select).fetchall()
+
+	con.close()
+
+	return qtde
 
