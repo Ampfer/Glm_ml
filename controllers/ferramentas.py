@@ -91,6 +91,69 @@ def atualizar_estoque():
 			status = 'Antes Faça o Login....'
 
 	return dict(form=form)
+"""
+SINCRONIZAR ESTOQUE
+"""
+def sicronizar_estoque():
+	import time
+	produtos = db(Produtos.id>0).select()
+	ini =  time.time()
+
+	for produto in produtos:
+		saldo = estoque_erp(produto.id)
+		qtde = qtde_vendida(produto.id)
+		estoque = (float(saldo)-float(qtde)) if (float(saldo)-float(qtde)) > 0 else 0
+		Produtos[produto.id] = dict(estoque = estoque)
+
+	print time.time() - ini	
+	
+	return
+
+def estoque_erp(codpro):
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	select = "select SUM(qntent) from entradas2 where codpro = {}".format(codpro)
+	qtent = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from pedidos2 where codpro = {}".format(codpro)
+	qtsai = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from mestoque where entsai = 'E' and codpro = {}".format(codpro)
+	qtace = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from mestoque where entsai = 'S' and codpro = {}".format(codpro)
+	qtacs = cur.execute(select).fetchone()
+	select = "select SUM(qntpro) from devolucoes2 where codpro = {}".format(codpro)
+	qtdev = cur.execute(select).fetchone()
+
+	saldo = float(qtent[0] or 0) - float(qtsai[0] or 0) + float(qtace[0] or 0) - float(qtacs[0] or 0) + float(qtdev[0] or 0)
+	
+	con.close()
+	
+	return saldo
+
+def qtde_vendida(codpro):
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+
+	select = "select sum(qntpro) from orcamentos1, orcamentos2 where orcamentos1.sitorc = 'A' and tiporc = 'P' and orcamentos1.numdoc = orcamentos2.numdoc and orcamentos2.codpro = {}".format(codpro)
+	orcamentos = cur.execute(select).fetchone()
+
+	select = """select sum(pedidos2.qntpro) from pedidos1, pedidos2, orcamentos1
+				where pedidos1.numdoc = pedidos2.numdoc and pedidos2.codpro = {0} and pedidos1.numorc=orcamentos1.numdoc 
+				and orcamentos1.sitorc = 'A' and orcamentos1.tiporc = 'P' """.format(codpro)
+	
+	pedidos = cur.execute(select).fetchone()
+
+	con.close()
+
+	vendido =  orcamentos[0] if orcamentos[0] else 0
+	enviado =  pedidos[0] if pedidos[0] else 0
+
+	return (vendido - enviado)
+
+"""
+**************************************************
+"""
 
 def atualizar_sugerido():
 	anuncios = db(Anuncios.id > 0).select()

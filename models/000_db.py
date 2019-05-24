@@ -142,6 +142,11 @@ USER_ID = 158428813
 
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
+ERPFDB = "C:\Ampfer\Lieto\Dados\ERP.FDB"
+SERVERNAME = "mpfrserv"
+#ERPFDB = "C:/ERP.FDB"
+#SERVERNAME = "localhost"
+
 def login():
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
