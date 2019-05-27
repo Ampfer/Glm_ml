@@ -69,7 +69,7 @@ def atualizar_estoque():
 			from meli import Meli 
 			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-			anuncios = db(Anuncios.alterado == 'S').select()
+			anuncios = db(Anuncios.alterado == 'S' or Anuncios.forma == 'Multiplos' ).select()
 			#anuncios = db(Anuncios.forma == 'Multiplos').select()
 			for anuncio in anuncios:
 				if anuncio['item_id']:
@@ -101,11 +101,13 @@ def sicronizar_estoque():
 
 	for produto in produtos:
 		saldo = estoque_erp(produto.id)
+		med = time.time()
 		qtde = qtde_vendida(produto.id)
 		estoque = (float(saldo)-float(qtde)) if (float(saldo)-float(qtde)) > 0 else 0
-		Produtos[produto.id] = dict(estoque = estoque)
+		Produtos[produto.id] = dict(estoque1 = estoque)
 
-	print time.time() - ini	
+	print time.time() - med
+	print time.time() - ini
 	
 	return
 

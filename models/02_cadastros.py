@@ -81,6 +81,7 @@ Produtos = db.define_table('produtos',
     Field('altura','decimal(7,3)',label='Altura'),
     Field('comprimento','decimal(7,3)',label='Comprimento'),
     Field('descricao','reference descricoes', label='Descrição:'),
+    Field('estoque1','decimal(7,2)',label='Estoque'),
     format='%(nome)s',
     )
 Produtos.preco.requires = IS_DECIMAL_IN_RANGE(dot=',')

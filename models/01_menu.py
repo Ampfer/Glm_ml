@@ -58,6 +58,7 @@ response.menu+=[
     ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
     ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='atualizar_estoque')),
     ('Atualizar Preços', False, URL(r=request, c='ferramentas', f='atualizar_preco')),
+    ('Sicronizar_estoque', False, URL(r=request, c='ferramentas', f='sicronizar_estoque')),
     ])]
 response.menu+=[
     (T('Login ML'), False, URL(request.application,'default','login'),
