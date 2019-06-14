@@ -70,7 +70,7 @@ def atualizar_estoque():
 			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
 			#anuncios = db(Anuncios.alterado == 'S' or Anuncios.forma == 'Multiplos' ).select()
-			anuncios = db(Anuncios.item_id != '').select()
+			anuncios = db(Anuncios.item_id != '' and (Anuncios.alterado == 'S' or Anuncios.forma == 'Multiplos') ).select()
 			#anuncios = db(Anuncios.forma == 'Multiplos').select()
 			for anuncio in anuncios:
 				if anuncio['item_id']:
