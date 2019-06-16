@@ -296,19 +296,41 @@ def buscar_descricao(produtoId):
 	return descricao_curta
 
 def exportar_produtos():
-	familias = db(Familias.id < 10).select()
-	bling = []
+	familias = db(Familias.id == 996).select()
+	#bling = []
 	tray = []
 	tray_variacao = []
+	
 	for familia in familias:
 		produtos = db(Familias_Produtos.familia == familia.id).select()
-		familiaId = '1%s' %('{:0>4}'.format(familia.id))
 		descricao_curta = Descricoes[familia.descricao].descricao
-		if len(produtos) == 1:
-			prod = Produtos[produtos[0].produto]
-			codigo = '{:0>5}'.format(prod.id)
-			b = dict (codigo = codigo,
-					  descricao= (prod.nome).upper(),
+		prod = Produtos[produtos[0].produto]
+		
+		b = dict (codigo = familia.id,
+				  descricao= familia.nome,
+				  ncm =  '',
+				  origem =  '',
+				  preco =  '',
+		          estoque = 0,
+				  peso = prod.peso,
+			      ean = '',
+				  largura ='',
+		          altura =  '',
+				  comprimento = '',
+				  marca = familia.marca,
+				  tipo = 'Produto',
+				  pai = '',
+				  descricao_curta = descricao_curta
+				  )
+		
+		#bling.append(lista_bling(b))
+		tray.append(lista_tray(b))
+
+		for produto in produtos:
+			prod = Produtos[produto.produto]
+
+			b = dict (codigo = prod.id,
+					  descricao=  '%s:%s' % (prod.atributo,prod.variacao),
 					  ncm =  prod.ncm,
 					  origem =  prod.origem,
 					  preco =  prod.preco,
@@ -320,73 +342,15 @@ def exportar_produtos():
 					  comprimento = prod.comprimento,
 					  marca = prod.marca,
 					  tipo = 'Produto',
-					  pai = '',
-					  descricao_curta = buscar_descricao(produtos[0].produto)
+					  pai = familia.id,
+					  descricao_curta = buscar_descricao(produto.produto),
+					  variacao_nome = prod.variacao,
+					  variacao_tipo = prod.atributo
 					  )
-			bling.append(lista_bling(b))
-			tray.append(lista_tray(b))
-
-		elif len(produtos) == 0:
-			print familia.id
-		else:
-			prod = Produtos[produtos[0].produto]
 			
-			b = dict (codigo = familiaId,
-					  descricao = (familia.nome).upper(),
-					  ncm = prod.ncm,
-					  origem = prod.origem,
-					  preco = 0,
-			          estoque = 0,
-					  peso = prod.peso,
-				      ean = 0,
-					  largura = 0,
-			          altura = 0,
-					  comprimento = 0,
-					  marca = '',
-					  tipo = 'Variação',
-					  pai = '',
-					  descricao_curta = descricao_curta
-					  )
-				
-			bling.append(lista_bling(b))
-			tray.append(lista_tray(b))
+			#bling.append(lista_bling(b))
+			tray_variacao.append(lista_tray_variacao(b))
 
-			for produto in produtos:
-				prod = Produtos[produto.produto]
-				codigo = '{:0>5}'.format(prod.id)
-				b = dict (codigo = codigo,
-						  descricao=  '%s:%s' % (prod.atributo,prod.variacao),
-						  ncm =  prod.ncm,
-						  origem =  prod.origem,
-						  preco =  prod.preco,
-				          estoque =  prod.estoque,
-						  peso = prod.peso,
-					      ean = prod.ean,
-						  largura = prod.largura,
-				          altura =  prod.altura,
-						  comprimento = prod.comprimento,
-						  marca = prod.marca,
-						  tipo = 'Produto',
-						  pai = familiaId,
-						  descricao_curta = buscar_descricao(produto.produto),
-						  variacao_nome = prod.variacao,
-						  variacao_tipo = prod.atributo
-						  )
-				
-				bling.append(lista_bling(b))
-				tray_variacao.append(lista_tray_variacao(b))
-
-	import csv
-	c = csv.writer(open("produto.csv", "wb",),delimiter=';')
-	head = ["ID","Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Valor_IPI_fixo","Observacoes","Situacao","Estoque","Preco_de_custo","Cod_no_fabricante","Fabricante","Localizacao","Estoque_maximo","Estoque_minimo","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","GTIN_EAN_da_ embalagem","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Data_Validade","Descricao_do_Produto_no_Fornecedor","Descricao_Complementar","Unidade_por_Caixa","Produto_Variacao","Tipo_Producao","Classe_de_enquadramento_do_IPI","Codigo_da_lista_de_servicos","Tipo_do_item","Grupo de Tags/Tags","Tributos","Código Pai","Código Integração","Grupo de Produtos","Marca","CEST","Volumes","Descrição curta","Cross-Docking","URL Imagens Externas","Link Externo","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis","Número FCI","Vídeo"]
-	#head = ["Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Situacao","Estoque","Localizacao","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Produto_Variacao","Código Pai","Marca","CEST","Descrição curta","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis"]
-	c.writerow(head)
-	for row in bling:
-		c.writerow(row)
-	
-    #head= ['Código do produto (ID Tray)';'Referência (código fornecedor)';'Nome do produto';'Marca;Preço de venda em reais';'Nome da categoria - nível 1';'Estoque do produto';'Código EAN/GTIN/UPC';'NCM do produto';'Peso do produto (gramas)';'Largura (cm)';'Altura (cm)';'Comprimento (cm)';'HTML da descrição completa';'Endereço da imagem principal do produto';'Endereço da imagem do produto 2';'Endereço da imagem do produto 3';'Endereço da imagem do produto 4';'Endereço da imagem do produto 5';'Endereço da imagem do produto 6']
-
-    #********************************
 	import xlwt
 	wb = xlwt.Workbook(encoding='utf-8')
 	wb1 = xlwt.Workbook(encoding='utf-8')
@@ -398,11 +362,11 @@ def exportar_produtos():
 	font_style = xlwt.XFStyle()
 	font_style.font.bold = True
 
-	columns = ['Código do produto (ID Tray)','Referência (código fornecedor)','Nome do produto','Marca','Preço de venda em reais','Nome da categoria - nível 1','Estoque do produto','Código EAN/GTIN/UPC','NCM do produto','Peso do produto (gramas)','Largura (cm)','Altura (cm)','Comprimento (cm)','HTML da descrição completa','Endereço da imagem principal do produto','Endereço da imagem do produto 2','Endereço da imagem do produto 3','Endereço da imagem do produto 4','Endereço da imagem do produto 5','Endereço da imagem do produto 6']
+	columns = ['Código do produto (ID Tray)','Nome do produto','Marca','Preço de venda em reais','Nome da categoria - nível 1','Estoque do produto','Código EAN/GTIN/UPC','NCM do produto','Peso do produto (gramas)','Largura (cm)','Altura (cm)','Comprimento (cm)','HTML da descrição completa','Endereço da imagem principal do produto','Endereço da imagem do produto 2','Endereço da imagem do produto 3','Endereço da imagem do produto 4','Endereço da imagem do produto 5','Endereço da imagem do produto 6']
 	for col_num in range(len(columns)):
 	    ws.write(row_num, col_num, columns[col_num], font_style)
 
-	columns = ['Referência','CódigoEAN/GTIN/UPC','Código da variação (ID)','Estoque da variação','Altura (cm)','Comprimento (cm)','Largura (cm)','Peso da variação (gramas)','Preço de venda em reais','Nome da variação 1 (exemplo: Branco)','Tipo da variação 1 (exemplo: Cor']
+	columns = ['Código da variação (ID)','Referência','Código do produto','CódigoEAN/GTIN/UPC','Estoque da variação','Altura (cm)','Comprimento (cm)','Largura (cm)','Peso da variação (gramas)','Preço de venda em reais','Nome da variação 1 (exemplo: Branco)','Tipo da variação 1 (exemplo: Cor']
 	for col_num in range(len(columns)):
 	    ws1.write(row_num, col_num, columns[col_num], font_style)
 
@@ -425,14 +389,13 @@ def exportar_produtos():
 	wb1.save('tray_variacao.xls')
 	#********************************
 
-	return dict(bling=bling)
+	return dict(tray=tray)
 
 def lista_tray(b):
 	xpeso = b['peso'] or 0
 	peso =  float(xpeso) * 1000
 	tray_produtos_row = []
-	tray_produtos_row.append('') #Código do produto (ID Tray)
-	tray_produtos_row.append(b['codigo']) #Referência (código fornecedor)
+	tray_produtos_row.append(b['codigo']) #Código do produto (ID Tray)
 	tray_produtos_row.append(b['descricao']) #Nome do produto
 	tray_produtos_row.append(b['marca']) #Marca
 	tray_produtos_row.append(b['preco']) #Preço de venda em reais
@@ -457,9 +420,10 @@ def lista_tray_variacao(b):
 	tray_variacao_row = []
 	xpeso = b['peso'] or 0
 	peso = float(xpeso) * 1000
-	tray_variacao_row.append(b['pai']) # Referência
+	tray_variacao_row.append('') # Código da variação (ID)
+	tray_variacao_row.append(b['codigo']) # Referêcia da variação
+	tray_variacao_row.append(b['pai']) # Código do produto
 	tray_variacao_row.append(b['ean']) # Código EAN/GTIN/UPC
-	tray_variacao_row.append(b['codigo']) # Código da variação (ID)
 	tray_variacao_row.append(float(b['estoque'])) # Estoque da variação	
 	tray_variacao_row.append(b['altura']) # Altura (cm)	
 	tray_variacao_row.append(b['comprimento']) # Comprimento (cm)	
@@ -469,6 +433,20 @@ def lista_tray_variacao(b):
 	tray_variacao_row.append(b['variacao_nome']) # Nome da variação 1 (exemplo: Branco)
 	tray_variacao_row.append(b['variacao_tipo']) # Tipo da variação 1 (exemplo: Cor)
 	return tray_variacao_row
+
+"""
+	import csv
+	c = csv.writer(open("produto.csv", "wb",),delimiter=';')
+	head = ["ID","Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Valor_IPI_fixo","Observacoes","Situacao","Estoque","Preco_de_custo","Cod_no_fabricante","Fabricante","Localizacao","Estoque_maximo","Estoque_minimo","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","GTIN_EAN_da_ embalagem","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Data_Validade","Descricao_do_Produto_no_Fornecedor","Descricao_Complementar","Unidade_por_Caixa","Produto_Variacao","Tipo_Producao","Classe_de_enquadramento_do_IPI","Codigo_da_lista_de_servicos","Tipo_do_item","Grupo de Tags/Tags","Tributos","Código Pai","Código Integração","Grupo de Produtos","Marca","CEST","Volumes","Descrição curta","Cross-Docking","URL Imagens Externas","Link Externo","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis","Número FCI","Vídeo"]
+	#head = ["Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Situacao","Estoque","Localizacao","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Produto_Variacao","Código Pai","Marca","CEST","Descrição curta","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis"]
+	c.writerow(head)
+	for row in bling:
+		c.writerow(row)
+	
+    #head= ['Código do produto (ID Tray)';'Referência (código fornecedor)';'Nome do produto';'Marca;Preço de venda em reais';'Nome da categoria - nível 1';'Estoque do produto';'Código EAN/GTIN/UPC';'NCM do produto';'Peso do produto (gramas)';'Largura (cm)';'Altura (cm)';'Comprimento (cm)';'HTML da descrição completa';'Endereço da imagem principal do produto';'Endereço da imagem do produto 2';'Endereço da imagem do produto 3';'Endereço da imagem do produto 4';'Endereço da imagem do produto 5';'Endereço da imagem do produto 6']
+
+    #********************************
+
 
 def lista_bling(b):
 	bling_produtos = []
@@ -524,5 +502,5 @@ def lista_bling(b):
 	bling_produtos.append(0) # Numero_FCI 
 	bling_produtos.append('') #  Video
 	return bling_produtos
-
+"""
 

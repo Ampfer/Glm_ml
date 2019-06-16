@@ -291,7 +291,7 @@ def familia_produtos():
     btnAdicionar = adicionar('cadastro','selecionar_produtos',' Adicionar Produtos')
       
     query = (Familias_Produtos.familia == session.idFamilia) & (Produtos.id == Familias_Produtos.produto)
-    fields= [Produtos.id,Produtos.nome,Produtos.preco, Produtos.estoque]
+    fields= [Produtos.id,Produtos.nome,Produtos.atributo,Produtos.variacao,Produtos.preco, Produtos.estoque]
     #links = [lambda row: A('remover',_onclick="return confirm('Deseja Remover Produto ?');",callback=URL('cadastro', 'remove_produto', args=[row.id]))]
     formProdutos = grid(db(query),orderby=Produtos.nome,args=[session.idFamilia],fields=fields,
                              create=False,editable=False,deletable = True,searchable=False,
