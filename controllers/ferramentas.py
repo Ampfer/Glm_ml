@@ -300,11 +300,18 @@ def exportar_produtos():
 	#bling = []
 	tray = []
 	tray_variacao = []
-	
+
 	for familia in familias:
 		produtos = db(Familias_Produtos.familia == familia.id).select()
 		descricao_curta = Descricoes[familia.descricao].descricao
 		prod = Produtos[produtos[0].produto]
+
+		query = (Familias_Imagens.familia == familia.id) & (Familias_Imagens.imagem==Imagens.id)
+		rows = db(query).select()
+		imagens = []
+		for row in rows:
+			imagem = "c:/web2py/applications/glm_ml/uploads/{}".format(row.imagens.imagem)
+			imagens.append(imagem)
 		
 		b = dict (codigo = familia.id,
 				  descricao= familia.nome,
@@ -320,7 +327,8 @@ def exportar_produtos():
 				  marca = familia.marca,
 				  tipo = 'Produto',
 				  pai = '',
-				  descricao_curta = descricao_curta
+				  descricao_curta = descricao_curta,
+				  img1 = imagens[0]
 				  )
 		
 		#bling.append(lista_bling(b))
@@ -408,7 +416,7 @@ def lista_tray(b):
 	tray_produtos_row.append(b['altura']) #Altura (cm)
 	tray_produtos_row.append(b['comprimento']) #Comprimento (cm)
 	tray_produtos_row.append(b['descricao_curta']) #HTML da descrição completa
-	tray_produtos_row.append('') #Endereço da imagem principal do produto
+	tray_produtos_row.append(b['img1']) #Endereço da imagem principal do produto
 	tray_produtos_row.append('') #Endereço da imagem do produto 2
 	tray_produtos_row.append('') #Endereço da imagem do produto 3
 	tray_produtos_row.append('') #Endereço da imagem do produto 4
