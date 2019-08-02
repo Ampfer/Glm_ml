@@ -44,6 +44,11 @@ def importar_vendas():
 
 			if busca.status_code == 200:
 				shipping = json.loads(busca.content)
+				try:
+					codcid = ibge_cidade(shipping['destination']['shipping_address']['zip_code'])
+				
+				except:
+					codcid = ''
 				
 				Clientes.update_or_insert(Clientes.id == item['buyer']['id'],
 	                id = item['buyer']['id'],
@@ -55,13 +60,12 @@ def importar_vendas():
 	                bairro = shipping['destination']['shipping_address']['neighborhood']['name'],
 	                cidade = shipping['destination']['shipping_address']['city']['name'],
 	                estado = shipping['destination']['shipping_address']['state']['name'],
-	                codcid = ibge_cidade(shipping['destination']['shipping_address']['zip_code']),
+	                codcid = codcid,
 	                cep = shipping['destination']['shipping_address']['zip_code'],
 	                fone = "%s %s" %(item['buyer']['phone']['area_code'] or '',item['buyer']['phone']['number'] or ''),
 	                email = item['buyer']['email'],
 	                apelido = item['buyer']['nickname'],
 	                )
-				
 				
 				Pedidos.update_or_insert(Pedidos.id == item['shipping']['id'],
 					id = item['shipping']['id'],
@@ -94,7 +98,7 @@ def importar_vendas():
 def exportar_vendas():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.enviado)
 	selectable = lambda ids: exportar(ids)
-	gridPedidos = grid(Pedidos.status == 'ready_to_ship',create=False, editable=False,deletable=False,formname="pedidos",
+	gridPedidos = grid(Pedidos.id > 0,create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
 	gridPedidos = DIV(gridPedidos, _class="well")

@@ -252,14 +252,15 @@ def anuncios_atributos():
 def anuncios_imagens():
     idAnuncio = int(request.args(0))
 
-    btnAtualizar = atualizar('atualiza_imagem',' Atualizar Imagens ','anunciosimagens')
+    btnAtualizar = atualizar('atualiza_imagem_familia',' Imagens Familia','anunciosimagens')
+    btnAtualizar1 = atualizar('atualiza_imagem_produto',' Imagens Produto ','anunciosimagens')
 
     q3 = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem==Imagens.id)
     imagens = db(q3).select()
 
-    return dict(imagens=imagens,btnAtualizar=btnAtualizar)
+    return dict(imagens=imagens,btnAtualizar=btnAtualizar,btnAtualizar1=btnAtualizar1)
 
-def atualiza_imagem():
+def atualiza_imagem_familia():
     idAnuncio = int(request.args(0))
     idFamilia = Anuncios[idAnuncio].familia
     q1 = (Familias_Imagens.familia == idFamilia) & (Familias_Imagens.imagem==Imagens.id)
@@ -269,7 +270,20 @@ def atualiza_imagem():
         q2 = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem == imagem)
         Anuncios_Imagens.update_or_insert(q2,anuncio=idAnuncio,imagem=imagem)
     response.js = "$('#anunciosimagens').get(0).reload();"
+
+def atualiza_imagem_produto():
+    idAnuncio = int(request.args(0))
+    anuncio_produto = db(Anuncios_Produtos.anuncio == idAnuncio).select().first()
+    idproduto = anuncio_produto.produto
+    q1 = (Produtos_Imagens.familia == idproduto) & (Produtos_Imagens.imagem==Imagens.id)
+    imagensProduto = db(q1).select()
+    for row in imagensProduto:
+        imagem = row.produtos_imagens.imagem
+        q2 = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem == imagem)
+        Anuncios_Imagens.update_or_insert(q2,anuncio=idAnuncio,imagem=imagem)
+    response.js = "$('#anunciosimagens').get(0).reload();"
     
+
 def remove_imagem():
     idImagem = int(request.args(0))
     del Anuncios_Imagens[idImagem]
@@ -331,14 +345,17 @@ def anuncios_publicar():
 
     #### Buscando Tipo de Frete ####
     free_shipping = True if anuncio.frete == 'gratis' else False
-    frete = dict(local_pick_up=True,free_shipping=free_shipping,free_methods=[],mode="me2")
+    frete = dict(local_pick_up=False,free_shipping=free_shipping,free_methods=[],mode="me2")
 
     atributos = []
     buscaAtributos = db(Anuncios_Atributos.anuncio == idAnuncio).select()
     
     for atributo in buscaAtributos:
     	atributo_id = Atributos(atributo.atributo).atributo_id
-    	atributos.append(dict(id=atributo_id, value_name=atributo.valor))
+    	if atributo_id == "ITEM_CONDITION" and anuncio.item_id:
+    		pass
+    	else:
+    		atributos.append(dict(id=atributo_id, value_name=atributo.valor))
          
     #### Montando Dicionário com Dados do Anuncio ####
     session.anuncio = dict(id=anuncio.id,
@@ -380,7 +397,7 @@ def buscar_variacao(idAnuncio,imagens):
             produto = Produtos[row.produto]
             variacaoProduto = dict(id=row.variacao_id,
                                    price=float(row.preco_sugerido),
-                                   attribute_combinations = [dict(name = produto.atributo,value_name=produto.variacao)],
+                                   attribute_combinations = [dict(name = produto.atributo,value_name=produto.variacao,id=produto.id)],
                                    available_quantity=float(produto.estoque),
                                    seller_custom_field = str(produto.id),
                                    picture_ids = imgs
@@ -482,7 +499,7 @@ def alterar_item():
         tipo = meli.post(tipo_args, listing_type_id, {'access_token':session.ACCESS_TOKEN})
 
         if item.status_code != 200 or desc.status_code != 200:
-            status = 'Falha na Atualização do Item : item:%s Descrição:%s' %(item,desc)
+            status = 'Falha na Atualização do Item : item:%s Descrição:%s' %(item.content,desc)
         else:
             status = 'Anuncio Atualizado com Sucesso....'
 
@@ -522,8 +539,8 @@ def importar_anuncios():
 
         if anuncio_id:
             argsItem = "items/%s" %(anuncio_id)
-            busca = meli.get(argsItem)
-            
+            busca = meli.get(argsItem,{'access_token':session.ACCESS_TOKEN})
+
             if busca.status_code == 200:
                 itens = json.loads(busca.content)    
                 xitens.append(itens)
@@ -610,9 +627,10 @@ def atualizar_anuncios(xitens):
                 desconto = desc,
                 status = 'active',
                 fretegratis = valorfrete,
+                vendido = item['sold_quantity']
                 )
 
-        # Salvar Atributos
+		# Salvar Atributos
         for atributo in item['attributes'] :
             idAnuncio = int(db(Anuncios.item_id == item['id']).select().first()['id'])
             #salva atributos na tabele atributos
@@ -627,18 +645,36 @@ def atualizar_anuncios(xitens):
                 atributo = idAtributo,
                 valor =  atributo['value_name']
                 )
-        
-        # Salvar Variações
+
+		# Salvar Variações
         if item['variations']:
-            for variacao in item['variations'] :
+            c=0
+            for variacao in item['variations']:
+                c =c +1
+                query = (Anuncios_Produtos.variacao_id == variacao['id'])
+                anunciosProdutos = db(query).select().first()
+                try:
+                    Anuncios_Produtos[anunciosProdutos['id']] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'],quantidade = variacao['available_quantity'] )
+                except: 
+                    pass
+                Anuncios.update_or_insert(Anuncios.item_id == item['id'],qtevar = c)
+		
+
+		# Salvar Variações
+		
+        if item['variations']:
+            for variacao in item['variations']:
+            
                 for atributo in variacao['attribute_combinations']:
-                    query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) &(Produtos.variacao == atributo['value_name'])    
+                    query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) & (Produtos.variacao == atributo['value_name'])    
                     anunciosProdutos = db(query).select().first()
                     try:
                         anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
                         Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'],quantidade = variacao['available_quantity'] )
                     except: 
                         pass
+		
+
 
 def buscar_valor_frete(item_id):
     import json
@@ -701,7 +737,7 @@ def sincronizar_anuncios():
             xitens = []
             # Cunsulta de itens na Api do mercado livre
             argsItem = "items/%s" %(anuncio.item_id)
-            busca = meli.get(argsItem)
+            busca = meli.get(argsItem,{'access_token':session.ACCESS_TOKEN})
             
             if busca.status_code == 200:
                 itens = json.loads(busca.content)    
@@ -711,7 +747,7 @@ def sincronizar_anuncios():
                 except Exception as e:
                     print itens               
 
-        response.flash = 'Estoque Atualizado com Sucesso....'
+        response.flash = 'Anuncios Atualizado com Sucesso....'
 
     return dict(form=form)
 

@@ -296,7 +296,14 @@ def buscar_descricao(produtoId):
 	return descricao_curta
 
 def exportar_produtos():
-	familias = db(Familias.id == 996).select()
+
+	if type(request.vars.ids) is list:
+		ids = request.vars.ids
+	else:
+		ids = []
+		ids.append(request.vars.ids)
+
+	familias = db(Familias.id.belongs(ids)).select()
 	#bling = []
 	tray = []
 	tray_variacao = []
@@ -305,12 +312,13 @@ def exportar_produtos():
 		produtos = db(Familias_Produtos.familia == familia.id).select()
 		descricao_curta = Descricoes[familia.descricao].descricao
 		prod = Produtos[produtos[0].produto]
+		marca = Marcas[familia.marca].marca
 
 		query = (Familias_Imagens.familia == familia.id) & (Familias_Imagens.imagem==Imagens.id)
 		rows = db(query).select()
 		imagens = []
 		for row in rows:
-			imagem = "c:/web2py/applications/glm_ml/uploads/{}".format(row.imagens.imagem)
+			imagem = "https://webimagens.s3-sa-east-1.amazonaws.com/{}".format(row.imagens.imagem)
 			imagens.append(imagem)
 		
 		b = dict (codigo = familia.id,
@@ -324,7 +332,7 @@ def exportar_produtos():
 				  largura ='',
 		          altura =  '',
 				  comprimento = '',
-				  marca = familia.marca,
+				  marca = marca,
 				  tipo = 'Produto',
 				  pai = '',
 				  descricao_curta = descricao_curta,
