@@ -114,8 +114,18 @@ def anuncio():
     formAnuncio.element(_name='titulo')['_onblur']   = "ajax('%s', ['titulo','categoria'], ':eval');" % URL('anuncio', 'sugerir_categoria')
 
     if formAnuncio.process().accepted:
-        response.flash = 'Anuncio Salvo com Sucesso!'
-        redirect(URL('anuncio', args=formAnuncio.vars.id))
+
+		### Salva Sku na tabela Anuncios_Atributos	
+		sku = '%05d' % int(idAnuncio)
+		query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 313)
+		Anuncios_Atributos.update_or_insert(query,
+											anuncio = idAnuncio,
+											atributo = 313,
+											valor = sku
+											)
+
+		response.flash = 'Anuncio Salvo com Sucesso!'
+		redirect(URL('anuncio', args=formAnuncio.vars.id))
 
     elif formAnuncio.errors:
         response.flash = 'Erro no Formulário Principal!'
@@ -209,9 +219,9 @@ def anuncios_produtos():
         Anuncios_Produtos.update_or_insert(query, anuncio = idAnuncio, produto = idProduto, quantidade = qtde)
 
         #### Atualiza Atributos ####
-        marca = Produtos[idProduto].marca
-        
+        marca = Produtos[idProduto].marca    
         ean = Produtos[idProduto].ean
+
         if marca:
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 1)
             Anuncios_Atributos.update_or_insert(query,anuncio=idAnuncio, atributo = 1, valor= marca)
@@ -356,7 +366,9 @@ def anuncios_publicar():
     		pass
     	else:
     		atributos.append(dict(id=atributo_id, value_name=atributo.valor))
-         
+    
+    sku = '%05d' % anuncio.id
+
     #### Montando Dicionário com Dados do Anuncio ####
     session.anuncio = dict(id=anuncio.id,
                     title=anuncio.titulo,
@@ -374,6 +386,7 @@ def anuncios_publicar():
                     description = descricao,
                     attributes=atributos,
                     forma=anuncio.forma,
+                    sku =sku
                     )
 
     #### Verificando se Item Novo ou Alteração ####
@@ -424,6 +437,7 @@ def anunciar_item():
                 warranty=session.anuncio['warranty'],
                 description=session.anuncio['description'],
                 shipping=session.anuncio['frete'],
+                seller_custom_field = session.anuncio['sku'],
                 pictures=imagens,
                 variations = variacao,
                 )
@@ -467,6 +481,7 @@ def alterar_item():
                 available_quantity=session.anuncio['available_quantity'],
                 shipping=session.anuncio['frete'],
                 attributes=session.anuncio['attributes'],
+                seller_custom_field = session.anuncio['sku'],
                 pictures=imagens,
                 )
 
@@ -628,6 +643,7 @@ def atualizar_anuncios(xitens):
                 status = 'active',
                 fretegratis = valorfrete,
                 vendido = item['sold_quantity']
+
                 )
 
 		# Salvar Atributos
@@ -751,4 +767,47 @@ def sincronizar_anuncios():
 
     return dict(form=form)
 
+
+def atualizar_sku():
+
+	if session.ACCESS_TOKEN:
+		from meli import Meli 
+		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+
+		#anuncios = db(Anuncios.item_id != '').select()
+		anuncios = db(Anuncios.item_id == 'MLB710088868').select()
+		for anuncio in anuncios:
+
+			atributos = []
+			buscaAtributos = db(Anuncios_Atributos.anuncio == anuncio.id).select()
+
+			for atributo in buscaAtributos:
+				atributo_id = Atributos(atributo.atributo).atributo_id
+				if atributo_id == "ITEM_CONDITION" and anuncio.item_id:
+					pass
+				else:
+					atributos.append(dict(id=atributo_id, value_name=atributo.valor))
+
+			sku = '%05d' % anuncio.id
+			body = dict(attributes=atributos)
+			item_args = "items/%s" %(anuncio['item_id'])	
+			item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+			if item.status_code != 200:
+				print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+			else:
+				status = 'Antes Faça o Login....'
+
+	return 
+
+
+def sku():
+	anuncios = db(Anuncios.id>0).select()
+	for anuncio in anuncios:
+		sku = '%05d' % anuncio.id
+		query = (Anuncios_Atributos.anuncio == anuncio.id) & (Anuncios_Atributos.atributo == 313)
+		Anuncios_Atributos.update_or_insert(query,
+											anuncio = anuncio.id,
+											atributo = 313,
+											valor = sku
+											)
 
