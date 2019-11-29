@@ -29,18 +29,31 @@ def totalCompra(row):
 		valorCompra += (item.quantidade * item.valor).quantize(Decimal('1.00'), rounding=ROUND_DOWN)
 	return valorCompra
 
+def totalTaxas(row):
+	try:
+		itens= db(Pedidos_Itens.shipping_id == int(row.pedidos.id)).select()
+	except:
+		itens=[]
+	valorTaxa = 0
+	for item in itens:
+		valorTaxa += item.taxa
+	return valorTaxa
+
+
 Pedidos = db.define_table('pedidos',
 	Field('buyer_id', 'reference clientes', label='Cliente:', length=20),
 	Field('date_created', 'date', label='Data:', length=20,requires = data),
 	Field.Virtual('valor',lambda row: totalCompra(row), label='Valor:'),
+	Field.Virtual('taxa',lambda row: totalTaxas(row), label='Valor:'),
 	Field('status', 'string', label='Status:', length=30),
 	Field('numdoc', 'integer', label='Docto:'),
 	Field('enviado', 'string', label='Enviado:', length=3),
+	Field('total','decimal(7,2)',label='Total:'),
     )
 
 Pedidos_Itens = db.define_table('pedidos_itens',
 	Field('shipping_id','reference pedidos',label='Id Pedido:',length=20),
-	Field('payments_id','string',label='Id Pedido:',length=20),
+	Field('payments_id','string',label='Id Pedido:',length=50),
 	Field('item','string', label='Item:',length=60),
 	Field('item_id','string', label='Item:',length=30),
 	Field('quantidade','integer',label='quantidade:'),

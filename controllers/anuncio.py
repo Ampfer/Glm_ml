@@ -116,10 +116,10 @@ def anuncio():
     if formAnuncio.process().accepted:
 
 		### Salva Sku na tabela Anuncios_Atributos	
-		sku = '%05d' % int(idAnuncio)
-		query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 313)
+		sku = '%05d' % int(formAnuncio.vars.id)
+		query = (Anuncios_Atributos.anuncio == formAnuncio.vars.id) & (Anuncios_Atributos.atributo == 313)
 		Anuncios_Atributos.update_or_insert(query,
-											anuncio = idAnuncio,
+											anuncio = formAnuncio.vars.id,
 											atributo = 313,
 											valor = sku
 											)
@@ -774,8 +774,8 @@ def atualizar_sku():
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-		#anuncios = db(Anuncios.item_id != '').select()
-		anuncios = db(Anuncios.item_id == 'MLB710088868').select()
+		anuncios = db(Anuncios.item_id != '').select()
+		#anuncios = db(Anuncios.item_id == 'MLB1088856690').select()
 		for anuncio in anuncios:
 
 			atributos = []

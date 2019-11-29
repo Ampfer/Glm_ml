@@ -322,6 +322,7 @@
 'Tipo de Anuncio:': 'Tipo de Anuncio:',
 'Tipo de Frete:': 'Tipo de Frete:',
 'Tipo:': 'Tipo:',
+'Total:': 'Total:',
 'Traceback': 'Traceback',
 'Twitter': 'Twitter',
 'Título:': 'Título:',

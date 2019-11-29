@@ -38,6 +38,26 @@ def importar_vendas():
 					itens = itens['results']
 
 		for item in itens:
+			# Busca Tarifas
+			idsPag ='X'
+			for pag in item['payments']:				
+				if idsPag == 'X':
+					idsPag = pag['id']
+				else:
+					idsPag = "%s-%s" %(idsPag,pag['id'])
+
+				body = "/v1/payments/%s" %(pag['id'])
+				buscaTaxas = meli.get_mp(body, {'access_token':session.ACCESS_TOKEN})
+			
+				if buscaTaxas.status_code == 200:
+					taxas = json.loads(buscaTaxas.content)
+					try:
+						taxa = 0
+						for row in taxas['fee_details']:
+							if row['type'] == 'ml_fee' or row['type'] == 'mp_fee' :
+								taxa = taxa + row['amount']
+					except:
+						taxa = 0
 
 			body = "/shipments/%s" %(item['shipping']['id'])
 			busca = meli.get(body, {'access_token':session.ACCESS_TOKEN})
@@ -45,11 +65,19 @@ def importar_vendas():
 			if busca.status_code == 200:
 				shipping = json.loads(busca.content)
 				try:
-					codcid = ibge_cidade(shipping['destination']['shipping_address']['zip_code'])
-				
+					codcid = ibge_cidade(shipping['destination']['shipping_address']['zip_code'])			
 				except:
 					codcid = ''
-				
+
+				body = "/shipments/%s/items" %(item['shipping']['id'])
+				buscaItens = meli.get(body, {'access_token':session.ACCESS_TOKEN})
+				if buscaItens.status_code == 200:
+					mlItens = json.loads(buscaItens.content)
+					mlitem = ''
+					for row in mlItens:
+						mlitem = '%s\n%s' %(mlitem,row['description'])
+					print mlitem
+
 				Clientes.update_or_insert(Clientes.id == item['buyer']['id'],
 	                id = item['buyer']['id'],
 	                nome = "%s %s" %(item['buyer']['first_name'],item['buyer']['last_name']),
@@ -62,7 +90,7 @@ def importar_vendas():
 	                estado = shipping['destination']['shipping_address']['state']['name'],
 	                codcid = codcid,
 	                cep = shipping['destination']['shipping_address']['zip_code'],
-	                fone = "%s %s" %(item['buyer']['phone']['area_code'] or '',item['buyer']['phone']['number'] or ''),
+	                #fone = "%s %s" %(item['buyer']['phone']['area_code'] or '',item['buyer']['phone']['number'] or ''),
 	                email = item['buyer']['email'],
 	                apelido = item['buyer']['nickname'],
 	                )
@@ -72,18 +100,18 @@ def importar_vendas():
 					buyer_id = item['buyer']['id'],
 					date_created = datetime.strptime(item['date_created'][:10],'%Y-%m-%d'),
 					status = shipping['status'],
-					
+					#total = pedido.valor,
 					)
 
 				Pedidos_Itens.update_or_insert(Pedidos_Itens.id == item['id'],
 					id = item['id'],
 					shipping_id = item['shipping']['id'],
-					payments_id = item['payments'][0]['id'],
+					payments_id = idsPag,
 					item = item['order_items'][0]['item']['title'],
 					item_id = item['order_items'][0]['item']['id'],
 					quantidade =  item['order_items'][0]['quantity'],
 					valor = item['order_items'][0]['unit_price'],
-					taxa = 0,
+					taxa = taxa,
 					frete = 0, 
 					)
 
@@ -245,6 +273,13 @@ def salvar_pedidos(pedidos):
 
 		select = "select NUMDOC from ORCAMENTOS1 where NUMDOC = '%s'" %(numdoc)
 		numdoc = cur.execute(select).fetchone()
+		
+		obsord = """Total Mercado Livre: {}  -  Tarifas: {}""".format(pedido.valor,pedido.taxa)
+		#obsord1 = "'Total Mercado Livre: {}' + CHAR(13) + CHAR(10) + 'Tarifas: {}'".format(pedido.valor,pedido.taxa)
+		#import urllib
+		#obsord1= urllib.unquote(obsord).encode('latin1').decode('unicode_escape')
+		#print obsord1
+
 		if not numdoc:
 			orc1 = dict(NUMDOC = int(lastId) + 1,
 				 	    CODEMP = 3,
@@ -267,12 +302,14 @@ def salvar_pedidos(pedidos):
 						CODRED = 0,
 						VALFRE = 0,
 						TIPFRE = 0,
-						PEDIMP = 'S',
+						PEDIMP = 'N',
 						TIPORC = 'P',
 						SITORC = 'A',
 						STATUS = 'PEN',
 						NUMLOT = 0,
-						HORENT = '')		
+						HORENT = '',
+						OBSORD = obsord
+						)
 
 			insere = "INSERT INTO ORCAMENTOS1 ({}) VALUES ({})".format(', '.join(orc1.keys()),str(orc1.values()).strip('[]'))
 
