@@ -774,8 +774,8 @@ def atualizar_sku():
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-		anuncios = db(Anuncios.item_id != '').select()
-		#anuncios = db(Anuncios.item_id == 'MLB1088856690').select()
+		#anuncios = db(Anuncios.item_id != '').select()
+		anuncios = db(Anuncios.item_id == 'MLB1088889262').select()
 		for anuncio in anuncios:
 
 			atributos = []
@@ -796,7 +796,6 @@ def atualizar_sku():
 				print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
 			else:
 				status = 'Antes Faça o Login....'
-
 	return 
 
 
@@ -811,3 +810,44 @@ def sku():
 											valor = sku
 											)
 
+def dadosfiscais():
+
+	if session.ACCESS_TOKEN:
+		from meli import Meli 
+		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+
+		#anuncios = db(Anuncios.item_id != '').select()
+		anuncios = db(Anuncios.item_id == 'MLB1088889262').select()
+		for anuncio in anuncios:
+			tax_information = dict(
+			    ncm= '82041100',
+			    origin_type= 'reseller',
+			    origin_detail= '2',
+			    csosn= '500',
+		        cest= '',
+			    ean= '7895315015909',
+			    tax_rule_id= '',
+			    empty= 'false'
+   				)
+
+			dados = dict(
+			    #seller_id= "158428813",
+			    #sku= "00815",
+			    title= "Chave Combinada Catracada Fixa 10 Mm - Eda 9vt",
+			    type= "single",
+			    tax_information = tax_information,	        
+    			cost= 0,
+    			#register_type= "final"
+				)
+
+			body = dados
+			item_args = "items/fiscal_information/808950" 
+			#item_args = "items/MLB1088889262/fiscal_information/detail"
+			item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
+			#item = meli.get(item_args, {'access_token':session.ACCESS_TOKEN})
+			if item.status_code != 200:
+				print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item.content)
+			else:
+				status = 'Antes Faça o Login....'
+				print 'blz'
+	return item
