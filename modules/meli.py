@@ -32,6 +32,7 @@ class Meli(object):
             self._requests = requests
 
         self.API_ROOT_URL = parser.get('config', 'api_root_url')
+        self.API_ROOT_URL_MP = parser.get('config', 'api_root_url_mp')
         self.SDK_VERSION = parser.get('config', 'sdk_version')
         self.AUTH_URL = parser.get('config', 'auth_url')
         self.OAUTH_URL = parser.get('config', 'oauth_url')
@@ -90,6 +91,13 @@ class Meli(object):
         response = self._requests.get(uri, params=urlencode(params), headers=headers)
         return response
 
+    def get_mp(self, path, params={}):
+        headers = {'Accept': 'application/json', 'User-Agent':self.SDK_VERSION, 'Content-type':'application/json','x-format-new':'true'}
+        uri = self.make_path_mp(path,params=params)
+        #response = self._requests.get(uri, params=urlencode(params), headers=headers)
+        response = requests.get(uri)
+        return response
+
     def post(self, path, body=None, params={}):
         headers = {'Accept': 'application/json', 'User-Agent':self.SDK_VERSION, 'Content-type':'application/json'}
         uri = self.make_path(path)
@@ -121,7 +129,7 @@ class Meli(object):
         return response
 
     def make_path(self, path, params={}):
-        # Making Path and add a leading / if not exist
+        
         if not (re.search("^http", path)):
             if not (re.search("^\/", path)):
                 path = "/" + path
@@ -129,6 +137,16 @@ class Meli(object):
         if params:
             path = path + "?" + urlencode(params)
         return path
+
+    def make_path_mp(self, path, params={}):
+        
+        if not (re.search("^http", path)):
+            if not (re.search("^\/", path)):
+                path = "/" + path
+            path = self.API_ROOT_URL_MP + path
+        if params:
+            path = path + "?" + urlencode(params)
+        return path        
 
     def imagem(self, path, body=None, params={}):
         headers = {'Accept': 'application/json', 'User-Agent':self.SDK_VERSION, 'Content-type':'application/json'}

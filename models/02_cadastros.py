@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 data = IS_NULL_OR(IS_DATE(format=T("%d/%m/%Y")))
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
-ATRIBUTO = ('Medidas','Tamanho','Modelo','Voltagem','Cor')
+ATRIBUTO = ('Medida','Tamanho','Modelo','Voltagem','Cor')
 CATALOGO = {'S':"Sim","N":"Não"}
 
 estados = []
@@ -73,6 +73,7 @@ Produtos = db.define_table('produtos',
     Field('preco','decimal(7,2)',label='Preço'),
     Field('estoque','decimal(7,2)',label='Estoque'),
     Field('ean','string',label='Ean:',length=13),
+    Field('locpro','string',label='Local:',length=5),
     Field('variacao_id','string', label='Id Variação:', length=20),
     Field('peso','decimal(7,3)',label='Peso'),
     Field('origem','string',label='Origem',length=1),
@@ -81,6 +82,7 @@ Produtos = db.define_table('produtos',
     Field('altura','decimal(7,3)',label='Altura'),
     Field('comprimento','decimal(7,3)',label='Comprimento'),
     Field('descricao','reference descricoes', label='Descrição:'),
+    Field('vendido','integer'),
     Field('estoque1','decimal(7,2)',label='Estoque'),
     format='%(nome)s',
     )
@@ -109,7 +111,7 @@ Familias = db.define_table('familias',
     Field('nome_catalogo', 'string', label='Nome Catálogo:', length=60),
     Field('marca', 'reference marcas', label='Marca:', ondelete='SET NULL'),
     Field('descricao','reference descricoes', label='Descrição:'),
-    Field('atributos','string', label='Atributos:', length=100),
+    Field('atributos','string', label='Atributos:', length=150),
     Field('imagem','string',label='Imagem Destacada', length=50),
     Field('catalogo','string',label='Catálogo:', length=1),
     Field('web','string',label='web:', length=1),

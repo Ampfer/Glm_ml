@@ -110,7 +110,7 @@ def marca():
 
 def produtos():
 
-    fields = (Produtos.id,Produtos.nome,Produtos.atributo,Produtos.variacao,Produtos.ean)
+    fields = (Produtos.id,Produtos.nome,Produtos.atributo,Produtos.variacao,Produtos.estoque,Produtos.largura, Produtos.altura,Produtos.comprimento, Produtos.peso)
     formProdutos = grid(Produtos,formname="produtos",fields=fields,create=False,deletable=False)
             
     formProdutos = DIV(formProdutos, _class="well")
@@ -187,10 +187,12 @@ def remove_imagem_produto():
 
 def familias():
 
-    fields = (Familias.id,Familias.nome)
-    formFamilias = grid(Familias,formname="familias",fields=fields,deletable=False, orderby= Familias.nome)
-    session.teste = False
-            
+    fields = (Familias.id,Familias.nome, Familias.catalogo,Familias.web)
+    selectable = [('Exportar Familias', lambda ids: redirect(URL('ferramentas','exportar_produtos',vars=dict(ids=ids)))),]            
+    formFamilias = grid(Familias,formname="familias",fields=fields,deletable=False, orderby= Familias.nome,selectable=selectable)
+    #session.teste = False
+
+
     formFamilias = DIV(formFamilias, _class="well")
 
     if request.args(-2) == 'new':
@@ -289,13 +291,18 @@ def familia_produtos():
     session.idFamilia = int(request.args(0))
 
     btnAdicionar = adicionar('cadastro','selecionar_produtos',' Adicionar Produtos')
-      
+
+    links=[dict(header='Editar',
+                body=lambda row: A(TAG.button(I(_class='glyphicon glyphicon-edit')),
+               _href=URL('produto',args=row.id)))] 
+
     query = (Familias_Produtos.familia == session.idFamilia) & (Produtos.id == Familias_Produtos.produto)
     fields= [Produtos.id,Produtos.nome,Produtos.atributo,Produtos.variacao,Produtos.preco, Produtos.estoque]
     #links = [lambda row: A('remover',_onclick="return confirm('Deseja Remover Produto ?');",callback=URL('cadastro', 'remove_produto', args=[row.id]))]
     formProdutos = grid(db(query),orderby=Produtos.nome,args=[session.idFamilia],fields=fields,
                              create=False,editable=False,deletable = True,searchable=False,
-                             formname="familiaprodutos")
+                             formname="familiaprodutos",links=links)
+
     
     return dict(btnAdicionar=btnAdicionar,formProdutos=formProdutos)
 
@@ -381,3 +388,39 @@ def atualiza_imagem():
             except:
                 pass
        
+def importar_imagem_produto():
+    produtos = db(Produtos.id >0).select(orderby=Produtos.id)
+
+    for produto in produtos:
+        anuncio = db(Anuncios_Produtos.produto == produto.id).select().first()
+        if anuncio:
+            anuncioId = anuncio['anuncio']
+            imagens = db(Anuncios_Imagens.anuncio == anuncioId).select()
+            for imagem in imagens:
+                print produto.id, anuncioId, imagem.id
+                query = (Produtos_Imagens.produto==produto.id) & (Produtos_Imagens.imagem == imagem.imagem)
+                Produtos_Imagens.update_or_insert(
+                    query ,
+                    produto = produto.id, 
+                    imagem = imagem.imagem)
+
+def importar_descricao_produtos():
+
+    produtos = db(Produtos.id >0).select(orderby=Produtos.id)
+
+    for produto in produtos:
+        anuncio = db(Anuncios_Produtos.produto == produto.id).select().first()
+        if anuncio:
+            anuncioId = anuncio['anuncio']
+            descricaoId = db(Anuncios.id == anuncioId).select().first()['descricao']
+            if descricaoId:
+                Produtos[produto.id] = dict(descricao = descricaoId)
+            else:
+                familiaId = db(Anuncios.id == anuncioId).select().first()['familia']
+                descricaoId = db(Familias.id == familiaId).select().first()['descricao']
+                descricao = Descricoes[descricaoId].descricao
+                if Produtos[produto.id].descricao:
+                    pass
+                else:
+                    id = Descricoes.insert(descricao=descricao)
+                    Produtos[produto.id] = dict(descricao = id)
