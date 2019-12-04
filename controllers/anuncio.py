@@ -116,13 +116,13 @@ def anuncio():
     if formAnuncio.process().accepted:
 
 		### Salva Sku na tabela Anuncios_Atributos	
-		sku = '%05d' % int(formAnuncio.vars.id)
-		query = (Anuncios_Atributos.anuncio == formAnuncio.vars.id) & (Anuncios_Atributos.atributo == 313)
-		Anuncios_Atributos.update_or_insert(query,
-											anuncio = formAnuncio.vars.id,
-											atributo = 313,
-											valor = sku
-											)
+		#sku = '%05d' % int(formAnuncio.vars.id)
+		#query = (Anuncios_Atributos.anuncio == formAnuncio.vars.id) & (Anuncios_Atributos.atributo == 313)
+		#Anuncios_Atributos.update_or_insert(query,
+	    #    								anuncio = formAnuncio.vars.id,
+		#									atributo = 313,
+		#									valor = sku
+		#									)
 
 		response.flash = 'Anuncio Salvo com Sucesso!'
 		redirect(URL('anuncio', args=formAnuncio.vars.id))
@@ -221,6 +221,7 @@ def anuncios_produtos():
         #### Atualiza Atributos ####
         marca = Produtos[idProduto].marca    
         ean = Produtos[idProduto].ean
+        sku = '%05d' % int(idProduto)
 
         if marca:
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 1)
@@ -228,6 +229,9 @@ def anuncios_produtos():
         if ean and forma=='Individual':
             query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 3)
             Anuncios_Atributos.update_or_insert(query,anuncio=idAnuncio, atributo = 3, valor= ean)
+        if sku and forma !='Multiplos':
+            query = (Anuncios_Atributos.anuncio == idAnuncio) & (Anuncios_Atributos.atributo == 313)
+            Anuncios_Atributos.update_or_insert(query,anuncio=idAnuncio, atributo = 313, valor= sku)            
 
         #### Atualiza Preço e Estoque ####
         sugerir = sugerido(anuncio)
@@ -835,12 +839,17 @@ def dadosfiscais(idProduto):
         produto = db(Produtos.id == idProduto).select().first()
         sku = '%05d' % idProduto
 
+        if produto.cst == '60':
+        	csosn = '500'
+        else:
+        	csosn = '102'
+
         tax_information = dict(
         ncm= produto.ncm,
         origin_type= 'reseller',
-        origin_detail= '2',
+        origin_detail= produto.origem,
         tax_rule_id= '',
-        csosn= '500',
+        csosn= csosn,
         cest= '',
         ean= produto.ean, 
         )
@@ -873,23 +882,36 @@ def dadosfiscais(idProduto):
 
 
 def vicular_sku():
-    if session.ACCESS_TOKEN:
-        from meli import Meli 
-        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-        anuncios = db(Anuncios.forma != 'Multiplos').select()
-        #anuncios = db(Anuncios.item_id == 'MLB988433434').select()    
-        for anuncio in anuncios: 
-            try:
-                idProduto = db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']
-                dadosfiscais(idProduto)
-                args = "items/fiscal_information/items"
-                sku = '%05d' %(idProduto)
-                body = dict(
-                    sku = sku,
-                    item_id = anuncio.item_id,
-                    variation_id = ""
-                    )
-                item_post = meli.post(args, body, {'access_token':session.ACCESS_TOKEN})
-            except:
-                pass
-    return
+	if session.ACCESS_TOKEN:
+		from meli import Meli 
+		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+		anuncios = db(Anuncios.forma != 'Multiplos').select(orderby =~ Anuncios.vendido, limitby=(200, 100))
+		#anuncios = db(Anuncios.item_id == 'MLB988433434').select()    
+		for anuncio in anuncios:
+			try:
+				idProduto = db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']
+				dadosfiscais(idProduto)
+				args = "items/fiscal_information/items"
+				sku = '%05d' %(idProduto)
+				body = dict(sku = sku,
+							item_id = anuncio.item_id,
+							variation_id = ""
+							)
+				item_post = meli.post(args, body, {'access_token':session.ACCESS_TOKEN})
+			except:
+				pass
+	return
+
+def atualizar_produtos():
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	# Buscar produto banco firebird
+	produtos = db(Produtos.id > 0).select()
+	for row in produtos:
+		select = "select CODPRO,ORIPRO,CLAFIS,SITDEN FROM PRODUTOS WHERE CODPRO = {}".format(row.id)
+		produto = cur.execute(select).fetchone()
+		try:
+			Produtos[int(row.id)] = dict(origem=produto[1],ncm=produto[2], cst=produto[3])
+		except:
+			pass

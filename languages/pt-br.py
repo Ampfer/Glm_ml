@@ -91,6 +91,7 @@
 'Contas a Receber': 'Contas a Receber',
 'Controller': 'Controlador',
 'Copyright': 'Copyright',
+'CST:': 'CST:',
 'Current request': 'Requisição atual',
 'Current response': 'Resposta atual',
 'Current session': 'Sessão atual',
