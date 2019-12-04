@@ -774,8 +774,8 @@ def atualizar_sku():
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-		#anuncios = db(Anuncios.item_id != '').select()
-		anuncios = db(Anuncios.item_id == 'MLB1088889262').select()
+		anuncios = db(Anuncios.item_id != '').select()
+		#anuncios = db(Anuncios.item_id == 'MLB1088889262').select()
 		for anuncio in anuncios:
 
 			atributos = []
@@ -800,6 +800,7 @@ def atualizar_sku():
 
 
 def sku():
+    #id ancunio
 	anuncios = db(Anuncios.id>0).select()
 	for anuncio in anuncios:
 		sku = '%05d' % anuncio.id
@@ -809,45 +810,86 @@ def sku():
 											atributo = 313,
 											valor = sku
 											)
+def sku1():
+    #id produto
+    anuncios = db(Anuncios.forma != 'Multiplos').select()
+    for anuncio in anuncios:
+        try:
+            idProduto = db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']
+            sku = '%05d' %(idProduto)
+            query = (Anuncios_Atributos.anuncio == anuncio.id) & (Anuncios_Atributos.atributo == 313)
+            Anuncios_Atributos.update_or_insert(query,
+                                                anuncio = anuncio.id,
+                                                atributo = 313,
+                                                valor = sku
+                                                )        
+        except:
+            pass
 
-def dadosfiscais():
+def dadosfiscais(idProduto):
 
-	if session.ACCESS_TOKEN:
-		from meli import Meli 
-		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+    if session.ACCESS_TOKEN:
+        from meli import Meli 
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-		#anuncios = db(Anuncios.item_id != '').select()
-		anuncios = db(Anuncios.item_id == 'MLB1088889262').select()
-		for anuncio in anuncios:
-			tax_information = dict(
-			    ncm= '82041100',
-			    origin_type= 'reseller',
-			    origin_detail= '2',
-			    csosn= '500',
-		        cest= '',
-			    ean= '7895315015909',
-			    tax_rule_id= '',
-			    empty= 'false'
-   				)
+        produto = db(Produtos.id == idProduto).select().first()
+        sku = '%05d' % idProduto
 
-			dados = dict(
-			    #seller_id= "158428813",
-			    #sku= "00815",
-			    title= "Chave Combinada Catracada Fixa 10 Mm - Eda 9vt",
-			    type= "single",
-			    tax_information = tax_information,	        
-    			cost= 0,
-    			#register_type= "final"
-				)
+        tax_information = dict(
+        ncm= produto.ncm,
+        origin_type= 'reseller',
+        origin_detail= '2',
+        tax_rule_id= '',
+        csosn= '500',
+        cest= '',
+        ean= produto.ean, 
+        )
 
-			body = dados
-			item_args = "items/fiscal_information/808950" 
-			#item_args = "items/MLB1088889262/fiscal_information/detail"
-			item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-			#item = meli.get(item_args, {'access_token':session.ACCESS_TOKEN})
-			if item.status_code != 200:
-				print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item.content)
-			else:
-				status = 'Antes Faça o Login....'
-				print 'blz'
-	return item
+        dados_put = dict(
+            title= produto.nome,
+            type= "single",
+            cost= 0,
+            tax_information = tax_information,
+            )
+        dados_post = dict(
+            sku= sku,
+            title= produto.nome,
+            type= "single",
+            cost= 0,
+            tax_information = tax_information,
+            )
+
+        item_args_post = "items/fiscal_information" 
+        item_post = meli.post(item_args_post, dados_post, {'access_token':session.ACCESS_TOKEN})
+        
+        if item_post.status_code != 200:
+            item_args_put = "items/fiscal_information/%s" %(sku)
+            item_put = meli.put(item_args_put, dados_put, {'access_token':session.ACCESS_TOKEN})
+            if item_put.status_code != 200:
+                print '%s - %s' %(produto.nome ,item_put)
+    else:
+        status = 'Antes Faça o Login....'
+    return 
+
+
+def vicular_sku():
+    if session.ACCESS_TOKEN:
+        from meli import Meli 
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+        anuncios = db(Anuncios.forma != 'Multiplos').select()
+        #anuncios = db(Anuncios.item_id == 'MLB988433434').select()    
+        for anuncio in anuncios: 
+            try:
+                idProduto = db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']
+                dadosfiscais(idProduto)
+                args = "items/fiscal_information/items"
+                sku = '%05d' %(idProduto)
+                body = dict(
+                    sku = sku,
+                    item_id = anuncio.item_id,
+                    variation_id = ""
+                    )
+                item_post = meli.post(args, body, {'access_token':session.ACCESS_TOKEN})
+            except:
+                pass
+    return
