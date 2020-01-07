@@ -92,6 +92,16 @@ def atualizar_estoque():
 			status = 'Antes Faça o Login....'
 
 	return dict(form=form)
+
+def zerar_estoque():
+
+	form = FORM.confirm('Zerar Estoque',{'Voltar':URL('default','index')})
+	if form.accepted:
+		produtos = db(Produtos.id > 0).select()
+		for produto in produtos:
+			Produtos[produto.id] = dict(estoque=0)
+	return dict(form=form)
+
 """
 SINCRONIZAR ESTOQUE
 """

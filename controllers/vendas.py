@@ -68,7 +68,7 @@ def importar_vendas():
 					codcid = ibge_cidade(shipping['destination']['shipping_address']['zip_code'])			
 				except:
 					codcid = ''
-
+				
 				body = "/shipments/%s/items" %(item['shipping']['id'])
 				buscaItens = meli.get(body, {'access_token':session.ACCESS_TOKEN})
 				if buscaItens.status_code == 200:
@@ -100,15 +100,16 @@ def importar_vendas():
 					buyer_id = item['buyer']['id'],
 					date_created = datetime.strptime(item['date_created'][:10],'%Y-%m-%d'),
 					status = shipping['status'],
+					logistica = shipping['logistic']['type']
 					#total = pedido.valor,
 					)
-
 				Pedidos_Itens.update_or_insert(Pedidos_Itens.id == item['id'],
 					id = item['id'],
 					shipping_id = item['shipping']['id'],
 					payments_id = idsPag,
 					item = item['order_items'][0]['item']['title'],
 					item_id = item['order_items'][0]['item']['id'],
+					logistica = shipping['logistic']['type'],
 					quantidade =  item['order_items'][0]['quantity'],
 					valor = item['order_items'][0]['unit_price'],
 					taxa = taxa,
@@ -124,9 +125,19 @@ def importar_vendas():
 	return dict(itens=itens,form=form)
 
 def exportar_vendas():
-	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.enviado)
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
 	selectable = lambda ids: exportar(ids)
-	gridPedidos = grid(Pedidos.id > 0,create=False, editable=False,deletable=False,formname="pedidos",
+	gridPedidos = grid(Pedidos.logistica != 'fulfillment' ,create=False, editable=False,deletable=False,formname="pedidos",
+		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
+        
+	gridPedidos = DIV(gridPedidos, _class="well")
+
+	return dict(gridPedidos=gridPedidos)
+
+def vendas_full():
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
+	selectable = lambda ids: exportar(ids)
+	gridPedidos = grid(Pedidos.logistica == 'fulfillment',create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
 	gridPedidos = DIV(gridPedidos, _class="well")

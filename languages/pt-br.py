@@ -209,6 +209,7 @@
 'Login': 'Autentique-se',
 'login': 'Entrar',
 'Login ML': 'Login ML',
+'Logistica:': 'Logistica:',
 'logo:': 'logo:',
 'Logomarca:': 'Logomarca:',
 'logout': 'Sair',

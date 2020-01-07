@@ -52,11 +52,13 @@ response.menu+=[
     (T('Vendas'), False, URL(request.application,'default','index'), [
     ('Importar Vendas', False, URL(r=request, c='vendas', f='importar_vendas')),
     ('Exportar Vendas', False, URL(r=request, c='vendas', f='exportar_vendas')),
+    ('Vendas Full', False, URL(r=request, c='vendas', f='vendas_full')),
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [
     ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
     ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='atualizar_estoque')),
+    ('Zerar Estoque', False, URL(r=request, c='ferramentas', f='zerar_estoque')),
     ('Atualizar Preços', False, URL(r=request, c='ferramentas', f='atualizar_preco')),
     ('Sicronizar_estoque', False, URL(r=request, c='ferramentas', f='sicronizar_estoque')),
     ])]
