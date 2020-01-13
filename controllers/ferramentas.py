@@ -13,6 +13,7 @@ def importar_produtos():
 		if request.vars.csvfile != None:
 			try:
 				Importar_Produtos.import_from_csv_file(request.vars.csvfile.file, delimiter=";")
+
 				gridProdutos = grid(Importar_Produtos,formname="importarprodutos",create=False, editable=False,
 					searchable=False,orderby = Importar_Produtos.nome)
 				
