@@ -171,7 +171,8 @@ def produtos_imagens():
     idProduto = int(request.args(0))
     formImagem = SQLFORM(Imagens)
     if formImagem.process().accepted:
-        Produtos_Imagens[0] = dict(familia=idProduto, imagem = formImagem.vars.id)
+        #Produtos_Imagens[0] = dict(familia=idProduto, imagem = formImagem.vars.id)
+        Produtos_Imagens.insert(familia=idProduto, imagem = formImagem.vars.id)
         response.flash = 'Salvo !'
     elif formImagem.errors:
         response.flash = 'Erro no Formulário !' 
@@ -238,7 +239,8 @@ def familia():
         if db(Familias_Imagens.familia==idFamilia).count() == 0:
             try:
                 id = Imagens.insert(imagem = open(image,'rb'))
-                Familias_Imagens[0] = dict(familia=idFamilia, imagem = id)
+                #Familias_Imagens[0] = dict(familia=idFamilia, imagem = id)
+                Familias_Imagens.insert(familia=idFamilia, imagem = id)
             except:
                 pass
 
@@ -344,7 +346,8 @@ def familias_imagens():
     idFamilia = int(request.args(0))
     formImagem = SQLFORM(Imagens)
     if formImagem.process().accepted:
-        Familias_Imagens[0] = dict(familia=idFamilia, imagem = formImagem.vars.id)
+        #Familias_Imagens[0] = dict(familia=idFamilia, imagem = formImagem.vars.id)
+        Familias_Imagens.insert(familia=idFamilia, imagem = formImagem.vars.id)
         response.flash = 'Salvo !'
     elif formImagem.errors:
         response.flash = 'Erro no Formulário !' 
@@ -384,7 +387,8 @@ def atualiza_imagem():
         if db(Familias_Imagens.familia==row.id).count() == 0:
             try:
                 id = Imagens.insert(imagem = open(image,'rb'))
-                Familias_Imagens[0] = dict(familia=row.id, imagem = id)
+                #Familias_Imagens[0] = dict(familia=row.id, imagem = id)
+                Familias_Imagens.insert(familia=row.id, imagem = id)
             except:
                 pass
        
