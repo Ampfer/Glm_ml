@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 def importar_vendas():
 	import json
 	from datetime import datetime
