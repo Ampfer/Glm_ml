@@ -6,22 +6,24 @@ class Conexao:
 	def __init__(self, arg):
 		self.con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 		self.cur = con.cursor()
-		self.tabela = '111'
-		self.dados= {}
 		
-	def inserir(self,arg):
-		print self.__dict__
-		print self
+	def inserir(self):
+		chave = self.__dict__.keys()
+		valor = self.__dict__.values()
+		#insere = "INSERT INTO {} ({}) VALUES ({})".format(session.tabela, ', '.join(chave),str(valor).strip('[]'))
+		insere = "INSERT INTO {} ({}) VALUES ({})".format(session.tabela, ', '.join(chave),str(valor))
+		print insere
+
 
 def test():
-	pedido = Pedido()
+	pedido = Pedidos1()
+	pedido.inserir()
 
-	pedido.inserir(Pedido.__name__)
 
-
-class Pedido(Conexao):
+class Pedidos1(Conexao):
 	"""docstring for Pedido"""
 	def __init__(self, numdoc=0):
+		session.tabela = 'PEDIDOS1'
 		self.codemp = 0,
 		self.codcli = 0,
 		self.datdoc = request.now.date(),
@@ -58,12 +60,8 @@ class Pedido(Conexao):
 		self.conimp = '',
 		self.pedsub = 0,
 		self.fretra = 0,
-		self.dados = self.__dict__
 
-	def to_dict(self):
-		return self.__dict__
-
-class Pedido1:
+class Pedidos2:
 	"""docstring for Pedido"""
 	def __init__(self, numdoc=0):
 		self.codpro = 0,
