@@ -7,15 +7,21 @@ class Conexao:
 		self.con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 		self.cur = con.cursor()
 		self.tabela = '111'
+		self.dados= {}
 		
 	def inserir(self,arg):
-		print self.tabela
-		
+		print self.__dict__
+		print self
+
+def test():
+	pedido = Pedido()
+
+	pedido.inserir(Pedido.__name__)
+
+
 class Pedido(Conexao):
 	"""docstring for Pedido"""
 	def __init__(self, numdoc=0):
-		self.tabela = '222'
-		self.numdoc = numdoc,
 		self.codemp = 0,
 		self.codcli = 0,
 		self.datdoc = request.now.date(),
@@ -52,6 +58,7 @@ class Pedido(Conexao):
 		self.conimp = '',
 		self.pedsub = 0,
 		self.fretra = 0,
+		self.dados = self.__dict__
 
 	def to_dict(self):
 		return self.__dict__
@@ -196,8 +203,4 @@ class Orcamentos2:
 	def to_dict(self):
 		return self.__dict__
 
-
-def test():
-	pedido = Pedido()
-	pedido.inserir('teste 2')
 
