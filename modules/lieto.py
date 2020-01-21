@@ -1,32 +1,27 @@
 # -*- coding: utf-8 -*-
-#from lieto import Pedidos1
-
-def test():
-	pedido = Pedidos1()
-	pedido.inserir()
-	#pedido.commit()
-
-
-#*************************************************
 import fdb
 
-class Conexao(object):
+class Conexao:
 	"""docstring for Conexao"""
-	def __init__(self):
+	def __init__(self, arg):
 		self.con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-		self.cur = self.con.cursor()
+		self.cur = con.cursor()
 		
 	def inserir(self):
 		chave = self.__dict__.keys()
 		valor = self.__dict__.values()
 		tabela = self.__class__.__name__.upper()
 		insere = "INSERT INTO {} ({}) VALUES ({})".format(tabela, ', '.join(chave),str(valor).strip('[]')) 
-		self.cur.execute(insere)
+		print insere
+		#cur.execute(insere)
+
+	def commit():
+		con.commit()
+		con.close()
 
 class Pedidos1(Conexao):
 	"""docstring for Pedido"""
-	def __init__(self):
-		super(Pedidos1,self).__init__()
+	def __init__(self, numdoc=0):
 		self.codemp = 0
 		self.codcli = 0
 		#self.datdoc = request.now.date()
@@ -64,10 +59,9 @@ class Pedidos1(Conexao):
 		self.pedsub = 0
 		self.fretra = 0
 
-class Pedidos2(Conexao):
+class Pedidos2:
 	"""docstring for Pedido"""
 	def __init__(self, numdoc=0):
-		super(Pedidos2,self).__init__()
 		self.codpro = 0
 		self.codint = ''
 		self.nompro = ''
@@ -80,10 +74,9 @@ class Pedidos2(Conexao):
 		self.tippro = ''
 		self.dattro = request.now.date(),
 
-class Receber(Conexao):
+class Receber:
 	"""docstring for Pedido"""
 	def __init__(self, numide=0):
-		super(Receber,self).__init__()
 		self.numide = 0
 		self.numped = 0
 		self.numdoc = 0
@@ -108,10 +101,13 @@ class Receber(Conexao):
 		self.idelot = 0
 		self.sernot = ''
 
-class Clientes(Conexao):
+	def to_dict(self):
+		return self.__dict__
+
+
+class Clientes:
 	"""docstring for Clientes"""
 	def __init__(self, codcli=0):
-		super(Clientes,self).__init__()
 		self.nomcli = ''
 		self.nomfan = ''
 		self.fisjur = ''
@@ -143,10 +139,9 @@ class Clientes(Conexao):
 		self.regesp = ''
 		self.pdeqnt = 100
 
-class Orcamentos1(Conexao):
+class Orcamentos1:
 	"""docstring for Orcamentos1"""
 	def __init__(self, numdoc=0):
-		super(Orcamentos1,self).__init__()
 		self.codemp = 3
 		self.codcli = codcli
 		self.datdoc = request.now.date()
@@ -175,10 +170,9 @@ class Orcamentos1(Conexao):
 		self.horent = ''
 		self.obsord = obsord
 
-class Orcamentos2(Conexao):
+class Orcamentos2:
 	"""docstring for Orcamentos2"""
 	def __init__(self, numdoc=0):
-		super(Orcamentos2,self).__init__()
 		self.codpro = 0
 		self.codint = ''
 		self.nompro = ''
@@ -191,7 +185,6 @@ class Orcamentos2(Conexao):
 		self.enviar = 'S'
 		self.tippro = 'VND'
 		self.qntpre = 1
-
 
 
 
