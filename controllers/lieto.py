@@ -35,19 +35,21 @@ def lieto_cliente(cliente_ml):
 	cliente.numcli = cliente_ml.numero
 	cliente.datalt = request.now.date()
 	cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(cliente.cidcli)
-	cliente.emanfe = (cliente_ml.email)
+	cliente.emanfe = cliente_ml.email
 
 	cli = cliente.buscar_cliente_cnpj(cliente_ml.cnpj_cpf)
+	
 	if cli:
 		cliente.codcli  = cli[0]
 		cliente.datcad  = cli[1]
-		print cli[0]
-		
+		condicao = "CGCCPF = '{}'".format(cliente_ml.cnpj_cpf)
+		cliente.update(condicao)		
 	else:
-		cliente.codcli  = "(GEN_ID(GEN_CLIENTES,1)"
+		cliente.codcli = "(GEN_ID(GEN_CLIENTES,1)"
 		cliente.datcad = request.now.date()
-		print 'insert'
-	#cliente.insert()
+    	cliente.insert()
+
+	cliente.commit()
 	return
 
 def exportar_full(ids):
@@ -55,9 +57,9 @@ def exportar_full(ids):
 	for orcamento in orcamentos:
 		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
 		lieto_cliente(cliente_ml)
+
+
 	return
-
-
 
 #*************************************************
 import fdb
@@ -65,27 +67,42 @@ import fdb
 class Connect(object):
 	"""docstring for Conexao"""
 	global cur
-	global teste
 	
 	def __init__(self):
 		try:
 			self.con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 			self.cur = self.con.cursor()
-			self.teste = 'blz'
 		except:
 			print "Erro ao se conectar a base de dados!"
 
 class Base(object):
 	"""docstring for Conexao"""
-
 	def insert(self):
 		con = Connect()
-		chave = self.__dict__.keys()
-		valor = self.__dict__.values()
-		tabela = self.__class__.__name__.upper()
-		insere = "INSERT INTO {} ({}) VALUES ({})".format(tabela, ', '.join(chave),str(valor).strip('[]')) 
-		print insere
-		#con.cur.execute(insere)
+		insere = "INSERT INTO {} ({}) VALUES ({})".format(
+			self.__class__.__name__.upper(),
+			', '.join(self.__dict__.keys()),
+			str(self.__dict__.values()).strip('[]'))
+		con.cur.execute(insere)
+		con.commit()
+
+	def update(self,codicao):
+		con = Connect()
+		args = ''
+ 		for k,v in self.__dict__.items():
+ 			args = args + ',' if args != '' else ''
+ 			if type(v) == str:
+ 				args = args + "{} = '{}'".format(k,v)
+ 			else:
+ 				args = args + "{} = {}".format(k,v)
+ 					
+		update = "UPDATE {} SET {} WHERE {} ".format(
+			self.__class__.__name__.upper(),
+			args,
+			codicao
+			)
+		con.cur.execute(update)
+		con.commit()
 
 class Pedidos1(Base):
 	"""docstring for Pedido"""
