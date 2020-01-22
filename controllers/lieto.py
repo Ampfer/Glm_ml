@@ -2,9 +2,58 @@
 #from lieto import Pedidos1
 
 def test():
-	pedido = Pedidos1()
-	pedido.inserir()
+	#pedido = Pedidos1()
+	#pedido.inserir()
 	#pedido.commit()
+	cc = Clientes()
+	cc.busca_coccli('AMPARO')
+
+def vendas_full():
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
+	selectable = lambda ids: exportar_full(ids)
+	gridPedidos = grid(Pedidos.logistica == 'fulfillment',create=False, editable=False,deletable=False,formname="pedidos",
+		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
+        
+	gridPedidos = DIV(gridPedidos, _class="well")
+
+	return dict(gridPedidos=gridPedidos)
+
+'''
+		if cliente_ml.codcid == '':
+
+			if xcodcid:
+				Clientes[cliente_ml.id] = dict(codcid = codcid)
+				codcid = xcodcid
+'''
+
+
+def exportar_full(ids):
+	orcamentos = db(Pedidos.id.belongs(ids)).select()
+	for orcamento in orcamentos:
+		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
+
+		cliente = Clientes()
+		cliente.nomcli = cliente_ml.nome[:50].upper()
+		cliente.nomfan = cliente_ml.apelido[:30].upper()
+		cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
+		cliente.endcli = cliente_ml.endereco[:50].upper()
+		cliente.baicli = cliente_ml.bairro[:35].upper() if cliente_ml.bairro else 'CENTRO'
+		cliente.cidcli = cliente_ml.cidade[:35].upper()
+		cliente.estcli = buscar_uf(cliente_ml.estado)
+		cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
+		cliente.emacli = cliente_ml.email[:40]
+		cliente.telcli = cliente_ml.fone
+		cliente.cgccpf = cliente_ml.cnpj_cpf
+		cliente.numcli = cliente_ml.numero
+		cliente.datcad = request.now.date()
+		cliente.datalt = request.now.date()
+		cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.busca_coccli(cliente.cidcli)
+		cliente.emanfe = (cliente_ml.email)
+
+		print cliente.coccli
+
+	return
+
 
 
 #*************************************************
@@ -15,7 +64,7 @@ class Conexao(object):
 	def __init__(self):
 		self.con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 		self.cur = self.con.cursor()
-		
+
 	def inserir(self):
 		chave = self.__dict__.keys()
 		valor = self.__dict__.values()
@@ -142,6 +191,13 @@ class Clientes(Conexao):
 		self.retcof = 'N'
 		self.regesp = ''
 		self.pdeqnt = 100
+
+	def busca_coccli(self,cidade):
+		select = "select codcid from cidades where nomcid = '{}'".format(cidade)
+		xcodcid = self.cur.execute(select).fetchone()
+		print xcodcid
+
+
 
 class Orcamentos1(Conexao):
 	"""docstring for Orcamentos1"""
