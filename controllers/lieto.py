@@ -5,8 +5,8 @@ def test():
 	#pedido = Pedidos1()
 	#pedido.inserir()
 	#pedido.commit()
-	cc = Clientes()
-	cc.busca_coccli('AMPARO')
+	con = Connect()
+	print con.teste
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -18,40 +18,43 @@ def vendas_full():
 
 	return dict(gridPedidos=gridPedidos)
 
-'''
-		if cliente_ml.codcid == '':
 
-			if xcodcid:
-				Clientes[cliente_ml.id] = dict(codcid = codcid)
-				codcid = xcodcid
-'''
+def lieto_cliente(cliente_ml):
+	cliente = Clientes()
+	cliente.nomcli = cliente_ml.nome[:50].upper()
+	cliente.nomfan = cliente_ml.apelido[:30].upper()
+	cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
+	cliente.endcli = cliente_ml.endereco[:50].upper()
+	cliente.baicli = cliente_ml.bairro[:35].upper() if cliente_ml.bairro else 'CENTRO'
+	cliente.cidcli = cliente_ml.cidade[:35].upper()
+	cliente.estcli = buscar_uf(cliente_ml.estado)
+	cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
+	cliente.emacli = cliente_ml.email[:40]
+	cliente.telcli = cliente_ml.fone
+	cliente.cgccpf = cliente_ml.cnpj_cpf
+	cliente.numcli = cliente_ml.numero
+	cliente.datalt = request.now.date()
+	cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(cliente.cidcli)
+	cliente.emanfe = (cliente_ml.email)
 
+	cli = cliente.buscar_cliente_cnpj(cliente_ml.cnpj_cpf)
+	if cli:
+		cliente.codcli  = cli[0]
+		cliente.datcad  = cli[1]
+		print cli[0]
+		
+	else:
+		cliente.codcli  = "(GEN_ID(GEN_CLIENTES,1)"
+		cliente.datcad = request.now.date()
+		print 'insert'
+	#cliente.insert()
+	return
 
 def exportar_full(ids):
 	orcamentos = db(Pedidos.id.belongs(ids)).select()
 	for orcamento in orcamentos:
 		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
-
-		cliente = Clientes()
-		cliente.nomcli = cliente_ml.nome[:50].upper()
-		cliente.nomfan = cliente_ml.apelido[:30].upper()
-		cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
-		cliente.endcli = cliente_ml.endereco[:50].upper()
-		cliente.baicli = cliente_ml.bairro[:35].upper() if cliente_ml.bairro else 'CENTRO'
-		cliente.cidcli = cliente_ml.cidade[:35].upper()
-		cliente.estcli = buscar_uf(cliente_ml.estado)
-		cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
-		cliente.emacli = cliente_ml.email[:40]
-		cliente.telcli = cliente_ml.fone
-		cliente.cgccpf = cliente_ml.cnpj_cpf
-		cliente.numcli = cliente_ml.numero
-		cliente.datcad = request.now.date()
-		cliente.datalt = request.now.date()
-		cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.busca_coccli(cliente.cidcli)
-		cliente.emanfe = (cliente_ml.email)
-
-		print cliente.coccli
-
+		lieto_cliente(cliente_ml)
 	return
 
 
@@ -59,20 +62,32 @@ def exportar_full(ids):
 #*************************************************
 import fdb
 
-class Conexao(object):
+class Connect(object):
 	"""docstring for Conexao"""
+	global cur
+	global teste
+	
 	def __init__(self):
-		self.con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-		self.cur = self.con.cursor()
+		try:
+			self.con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+			self.cur = self.con.cursor()
+			self.teste = 'blz'
+		except:
+			print "Erro ao se conectar a base de dados!"
 
-	def inserir(self):
+class Base(object):
+	"""docstring for Conexao"""
+
+	def insert(self):
+		con = Connect()
 		chave = self.__dict__.keys()
 		valor = self.__dict__.values()
 		tabela = self.__class__.__name__.upper()
 		insere = "INSERT INTO {} ({}) VALUES ({})".format(tabela, ', '.join(chave),str(valor).strip('[]')) 
-		self.cur.execute(insere)
+		print insere
+		#con.cur.execute(insere)
 
-class Pedidos1(Conexao):
+class Pedidos1(Base):
 	"""docstring for Pedido"""
 	def __init__(self):
 		super(Pedidos1,self).__init__()
@@ -113,7 +128,7 @@ class Pedidos1(Conexao):
 		self.pedsub = 0
 		self.fretra = 0
 
-class Pedidos2(Conexao):
+class Pedidos2(Base):
 	"""docstring for Pedido"""
 	def __init__(self, numdoc=0):
 		super(Pedidos2,self).__init__()
@@ -129,7 +144,7 @@ class Pedidos2(Conexao):
 		self.tippro = ''
 		self.dattro = request.now.date(),
 
-class Receber(Conexao):
+class Receber(Base):
 	"""docstring for Pedido"""
 	def __init__(self, numide=0):
 		super(Receber,self).__init__()
@@ -157,7 +172,7 @@ class Receber(Conexao):
 		self.idelot = 0
 		self.sernot = ''
 
-class Clientes(Conexao):
+class Clientes(Base):
 	"""docstring for Clientes"""
 	def __init__(self, codcli=0):
 		super(Clientes,self).__init__()
@@ -192,14 +207,18 @@ class Clientes(Conexao):
 		self.regesp = ''
 		self.pdeqnt = 100
 
-	def busca_coccli(self,cidade):
+	def buscar_coccli(self,cidade):
+		con = Connect()
 		select = "select codcid from cidades where nomcid = '{}'".format(cidade)
-		xcodcid = self.cur.execute(select).fetchone()
-		print xcodcid
+		return con.cur.execute(select).fetchone()
+
+	def buscar_cliente_cnpj(self,cnpj_cpf):
+		con = Connect()
+		select = "select codcli,datcad from clientes where cgccpf = '{}'".format(cnpj_cpf)
+		return con.cur.execute(select).fetchone()
 
 
-
-class Orcamentos1(Conexao):
+class Orcamentos1(Base):
 	"""docstring for Orcamentos1"""
 	def __init__(self, numdoc=0):
 		super(Orcamentos1,self).__init__()
@@ -231,7 +250,7 @@ class Orcamentos1(Conexao):
 		self.horent = ''
 		self.obsord = obsord
 
-class Orcamentos2(Conexao):
+class Orcamentos2(Base):
 	"""docstring for Orcamentos2"""
 	def __init__(self, numdoc=0):
 		super(Orcamentos2,self).__init__()
