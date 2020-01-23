@@ -26,14 +26,14 @@ def lieto_cliente(cliente_ml):
 	cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
 	cliente.endcli = cliente_ml.endereco[:50].upper()
 	cliente.baicli = cliente_ml.bairro[:35].upper() if cliente_ml.bairro else 'CENTRO'
-	cliente.cidcli = cliente_ml.cidade[:35].upper()
+	cliente.cidcli = cliente_ml.cidade.decode('utf-8')[:35].upper().encode('ascii')
 	cliente.estcli = buscar_uf(cliente_ml.estado)
 	cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
 	cliente.emacli = cliente_ml.email[:40]
-	cliente.telcli = cliente_ml.fone
+	cliente.telcli = cliente_ml.fone if cliente_ml.fone else ' '
 	cliente.cgccpf = cliente_ml.cnpj_cpf
 	cliente.numcli = cliente_ml.numero
-	cliente.datalt = request.now.date()
+	cliente.datalt = '{}'.format(request.now.date())
 	cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(cliente.cidcli)
 	cliente.emanfe = cliente_ml.email
 
@@ -45,11 +45,12 @@ def lieto_cliente(cliente_ml):
 		condicao = "CGCCPF = '{}'".format(cliente_ml.cnpj_cpf)
 		cliente.update(condicao)		
 	else:
-		cliente.codcli = "(GEN_ID(GEN_CLIENTES,1)"
-		cliente.datcad = request.now.date()
-    	cliente.insert()
+		cliente.codcli = int(cliente.lastId())
+		cliente.datcad = '{}'.format(request.now.date())
+		print cliente.cidcli
+		print type(cliente.cidcli)
+    	#cliente.insert()
 
-	cliente.commit()
 	return
 
 def exportar_full(ids):
@@ -74,6 +75,9 @@ class Connect(object):
 			self.cur = self.con.cursor()
 		except:
 			print "Erro ao se conectar a base de dados!"
+	
+	def commit(self):
+		self.con.commit()
 
 class Base(object):
 	"""docstring for Conexao"""
@@ -83,6 +87,7 @@ class Base(object):
 			self.__class__.__name__.upper(),
 			', '.join(self.__dict__.keys()),
 			str(self.__dict__.values()).strip('[]'))
+		print insere
 		con.cur.execute(insere)
 		con.commit()
 
@@ -137,7 +142,7 @@ class Pedidos1(Base):
 		self.pesliq = 0
 		self.valsub = 0
 		self.pedimp = ''
-		#self.datfat = request.now.date(),
+		self.datfat = ''
 		self.numnot = 0
 		self.obsped = ''
 		self.obsord = ''
@@ -191,8 +196,9 @@ class Receber(Base):
 
 class Clientes(Base):
 	"""docstring for Clientes"""
-	def __init__(self, codcli=0):
+	def __init__(self):
 		super(Clientes,self).__init__()
+		self.codcli = 0
 		self.nomcli = ''
 		self.nomfan = ''
 		self.fisjur = ''
@@ -204,8 +210,8 @@ class Clientes(Base):
 		self.emacli = ''
 		self.telcli = ''
 		self.cgccpf = ''
-		self.datcad = request.now.date()
-		self.datalt = request.now.date()
+		self.datcad = ''
+		self.datalt = ''
 		self.codven = 146
 		self.codcon = 31
 		self.codcor = 15
@@ -214,7 +220,7 @@ class Clientes(Base):
 		self.porcom = 1
 		self.pdenor = 0
 		self.numcli = ''
-		self.coclci = ''
+		self.coccli = ''
 		self.regalt = 'S'
 		self.emanfe = ''
 		self.calsub = 'S'
@@ -223,6 +229,7 @@ class Clientes(Base):
 		self.retcof = 'N'
 		self.regesp = ''
 		self.pdeqnt = 100
+
 
 	def buscar_coccli(self,cidade):
 		con = Connect()
@@ -233,6 +240,11 @@ class Clientes(Base):
 		con = Connect()
 		select = "select codcli,datcad from clientes where cgccpf = '{}'".format(cnpj_cpf)
 		return con.cur.execute(select).fetchone()
+	def lastId(self):
+		con = Connect()
+		select = "select gen_id(GEN_CLIENTES, 1) from rdb$database"
+		return con.cur.execute(select).fetchone()[0]
+
 
 
 class Orcamentos1(Base):
