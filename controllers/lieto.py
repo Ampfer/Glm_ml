@@ -1,12 +1,14 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-#from lieto import Pedidos1
+
 
 def test():
-	#pedido = Pedidos1()
-	#pedido.inserir()
-	#pedido.commit()
-	con = Connect()
-	print con.teste
+	teste = "10,'Marcionílio Souza'"
+	print type(teste)
+	teste = teste.decode('utf-8')
+	print teste
+	print type(teste)
+
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -21,12 +23,13 @@ def vendas_full():
 
 def lieto_cliente(cliente_ml):
 	cliente = Clientes()
+	print type(cliente)
 	cliente.nomcli = cliente_ml.nome[:50].upper()
 	cliente.nomfan = cliente_ml.apelido[:30].upper()
 	cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
 	cliente.endcli = cliente_ml.endereco[:50].upper()
 	cliente.baicli = cliente_ml.bairro[:35].upper() if cliente_ml.bairro else 'CENTRO'
-	cliente.cidcli = cliente_ml.cidade.decode('utf-8')[:35].upper().encode('ascii')
+	cliente.cidcli = (cliente_ml.cidade[:35].upper()).decode('utf-8')
 	cliente.estcli = buscar_uf(cliente_ml.estado)
 	cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
 	cliente.emacli = cliente_ml.email[:40]
@@ -47,9 +50,8 @@ def lieto_cliente(cliente_ml):
 	else:
 		cliente.codcli = int(cliente.lastId())
 		cliente.datcad = '{}'.format(request.now.date())
-		print cliente.cidcli
-		print type(cliente.cidcli)
-    	#cliente.insert()
+
+    	cliente.insert()
 
 	return
 
@@ -83,13 +85,16 @@ class Base(object):
 	"""docstring for Conexao"""
 	def insert(self):
 		con = Connect()
-		insere = "INSERT INTO {} ({}) VALUES ({})".format(
-			self.__class__.__name__.upper(),
-			', '.join(self.__dict__.keys()),
-			str(self.__dict__.values()).strip('[]'))
+		insere = "INSERT INTO %s (%s) VALUES (%s)" %(self.__class__.__name__.upper(),
+													', '.join(self.__dict__.keys()),
+													str(self.__dict__.values()).strip('[]'))
+
+		print type(insere)
+		insere = insere.decode('utf-8')
+		print type(insere)
 		print insere
-		con.cur.execute(insere)
-		con.commit()
+		#con.cur.execute(insere)
+		#con.commit()
 
 	def update(self,codicao):
 		con = Connect()

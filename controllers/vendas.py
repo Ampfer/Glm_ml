@@ -77,7 +77,7 @@ def importar_vendas():
 					mlitem = ''
 					for row in mlItens:
 						mlitem = '%s\n%s' %(mlitem,row['description'])
-					print mlitem
+					#print mlitem
 
 				Clientes.update_or_insert(Clientes.id == item['buyer']['id'],
 	                id = item['buyer']['id'],
