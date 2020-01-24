@@ -1,13 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
 def test():
 	teste = "10,'Marcionílio Souza'"
-	print type(teste)
+	print type(teste), teste
+
 	teste = teste.decode('utf-8')
-	print teste
-	print type(teste)
+	print type(teste), teste
+	teste2 = "11,%s" %(teste)
+
+	print type(teste2), teste2
 
 
 def vendas_full():
@@ -43,14 +45,13 @@ def lieto_cliente(cliente_ml):
 	cli = cliente.buscar_cliente_cnpj(cliente_ml.cnpj_cpf)
 	
 	if cli:
-		cliente.codcli  = cli[0]
-		cliente.datcad  = cli[1]
-		condicao = "CGCCPF = '{}'".format(cliente_ml.cnpj_cpf)
+		from datetime import date, datetime
+		#cliente.datcad  = cli[1]
+		condicao = "CGCCPF = '%s'" %(cliente_ml.cnpj_cpf)
 		cliente.update(condicao)		
 	else:
 		cliente.codcli = int(cliente.lastId())
-		cliente.datcad = '{}'.format(request.now.date())
-
+		cliente.datcad = '%s' %(request.now.date())
     	cliente.insert()
 
 	return
@@ -85,32 +86,39 @@ class Base(object):
 	"""docstring for Conexao"""
 	def insert(self):
 		con = Connect()
+		valores = self.__dict__.values()
+		valor = ''
+		for item in valores:
+			valor = valor + ',' if valor != '' else ''		
+			if type(item) == str or type(item) == unicode:
+				valor = valor + "'%s'" %(item)
+			else:
+			 valor = valor + '%s' %(item)
+
 		insere = "INSERT INTO %s (%s) VALUES (%s)" %(self.__class__.__name__.upper(),
 													', '.join(self.__dict__.keys()),
-													str(self.__dict__.values()).strip('[]'))
+													valor)
+		con.cur.execute(insere)
+		con.commit()
 
-		print type(insere)
-		insere = insere.decode('utf-8')
-		print type(insere)
-		print insere
-		#con.cur.execute(insere)
-		#con.commit()
-
-	def update(self,codicao):
+	def update(self,condicao):
 		con = Connect()
 		args = ''
  		for k,v in self.__dict__.items():
+ 			print type(v), k
  			args = args + ',' if args != '' else ''
- 			if type(v) == str:
- 				args = args + "{} = '{}'".format(k,v)
+ 			if type(v) == str or type(v) == unicode :
+ 				args = args + "%s = '%s'" %(k,v)
  			else:
- 				args = args + "{} = {}".format(k,v)
+ 				args = args + "%s = %s" %(k,v)
  					
-		update = "UPDATE {} SET {} WHERE {} ".format(
+		update = "UPDATE %s SET %s WHERE %s " %(
 			self.__class__.__name__.upper(),
 			args,
-			codicao
-			)
+			condicao)
+
+		print update
+
 		con.cur.execute(update)
 		con.commit()
 
@@ -215,7 +223,7 @@ class Clientes(Base):
 		self.emacli = ''
 		self.telcli = ''
 		self.cgccpf = ''
-		self.datcad = ''
+		#self.datcad = ''
 		self.datalt = ''
 		self.codven = 146
 		self.codcon = 31
