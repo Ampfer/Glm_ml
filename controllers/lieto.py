@@ -1,16 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-def test():
-	teste = "10,'Marcionílio Souza'"
-	print type(teste), teste
-
-	teste = teste.decode('utf-8')
-	print type(teste), teste
-	teste2 = "11,%s" %(teste)
-
-	print type(teste2), teste2
-
+def teste():
+	pedido = Orcamento()
+	print pedido.dados.__dict__
+	print pedido.itens.__dict__
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -22,17 +16,30 @@ def vendas_full():
 
 	return dict(gridPedidos=gridPedidos)
 
+def exportar_full(ids):
+	orcamentos = db(Pedidos.id.belongs(ids)).select()
+	for orcamento in orcamentos:
+		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
+		#lieto_cliente(cliente_ml)
+		lieto_orcamento(orcamento)
+
+	msg = """
+	{}
+	Pedido atualizado
+	 com sucesso....!
+	""".format(session.msg)
+
+	session.flash = msg
 
 def lieto_cliente(cliente_ml):
 	cliente = Clientes()
-	print type(cliente)
-	cliente.nomcli = cliente_ml.nome[:50].upper()
-	cliente.nomfan = cliente_ml.apelido[:30].upper()
+	cliente.nomcli = cliente_ml.nome[:50].upper().decode('utf-8')
+	cliente.nomfan = cliente_ml.apelido[:30].upper().decode('utf-8')
 	cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
-	cliente.endcli = cliente_ml.endereco[:50].upper()
-	cliente.baicli = cliente_ml.bairro[:35].upper() if cliente_ml.bairro else 'CENTRO'
+	cliente.endcli = cliente_ml.endereco[:50].upper().decode('utf-8')
+	cliente.baicli = cliente_ml.bairro[:35].upper().decode('utf-8') if cliente_ml.bairro else 'CENTRO'
 	cliente.cidcli = (cliente_ml.cidade[:35].upper()).decode('utf-8')
-	cliente.estcli = buscar_uf(cliente_ml.estado)
+	cliente.estcli = buscar_uf(cliente_ml.estado).decode('utf-8')
 	cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
 	cliente.emacli = cliente_ml.email[:40]
 	cliente.telcli = cliente_ml.fone if cliente_ml.fone else ' '
@@ -45,23 +52,53 @@ def lieto_cliente(cliente_ml):
 	cli = cliente.buscar_cliente_cnpj(cliente_ml.cnpj_cpf)
 	
 	if cli:
-		from datetime import date, datetime
-		#cliente.datcad  = cli[1]
 		condicao = "CGCCPF = '%s'" %(cliente_ml.cnpj_cpf)
 		cliente.update(condicao)		
 	else:
 		cliente.codcli = int(cliente.lastId())
 		cliente.datcad = '%s' %(request.now.date())
-    	cliente.insert()
+		cliente.insert()
 
-	return
+	session.msg = 'Cliente atualizado com sucesso....!'
 
-def exportar_full(ids):
-	orcamentos = db(Pedidos.id.belongs(ids)).select()
-	for orcamento in orcamentos:
-		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
-		lieto_cliente(cliente_ml)
+	return 
 
+def lieto_orcamento(venda):
+	orcamentos1 = Orcamentos1()
+	venda_itens = db(db.pedidos_itens.shipping_id  == venda.id).select()
+
+	# Retorna última Tabela de Preços
+	tabela = orcamentos1.tabela()
+	# Retorna Id do Cliente
+	cnpj_cpf = db(db.clientes.id == venda.buyer_id).select(db.clientes.cnpj_cpf).first()['cnpj_cpf']
+	cliente = Clientes()
+	codcli = cliente.buscar_cliente_cnpj(cnpj_cpf)[0]
+
+	obsord = """
+	Total Mercado Livre: {}
+	Tarifas: {}
+	""".format(venda.valor,venda.taxa)
+
+	orcamentos1.codcli = codcli
+	#orcamentos1.pedven = str(venda_itens['id'][-8:])
+	orcamentos1.codtab = str(tabela)
+	orcamentos1.codven = 148
+	orcamentos1.obsord = obsord
+
+	numdoc = venda.numdoc or 0
+	orc =  orcamentos1.buscar(numdoc)
+
+	if orc:	
+		orcamentos1.update(int(orc[0]))
+	else:
+		lastId = orcamentos1.last_id() # Retorna último Id Tabela ORCAMENTOS1
+		orcamentos1.numdoc = int(lastId) + 1
+		orcamentos1.datdoc = str(request.now.date())
+		orcamentos1.datpro = str(request.now.date())
+
+		orcamentos1.insert()
+
+		Pedidos[venda.id] = dict(numdoc = int(lastId) + 1, enviado='SIM')
 
 	return
 
@@ -105,7 +142,7 @@ class Base(object):
 		con = Connect()
 		args = ''
  		for k,v in self.__dict__.items():
- 			print type(v), k
+ 			#print type(v), k
  			args = args + ',' if args != '' else ''
  			if type(v) == str or type(v) == unicode :
  				args = args + "%s = '%s'" %(k,v)
@@ -210,8 +247,6 @@ class Receber(Base):
 class Clientes(Base):
 	"""docstring for Clientes"""
 	def __init__(self):
-		super(Clientes,self).__init__()
-		self.codcli = 0
 		self.nomcli = ''
 		self.nomfan = ''
 		self.fisjur = ''
@@ -223,7 +258,6 @@ class Clientes(Base):
 		self.emacli = ''
 		self.telcli = ''
 		self.cgccpf = ''
-		#self.datcad = ''
 		self.datalt = ''
 		self.codven = 146
 		self.codcon = 31
@@ -243,7 +277,6 @@ class Clientes(Base):
 		self.regesp = ''
 		self.pdeqnt = 100
 
-
 	def buscar_coccli(self,cidade):
 		con = Connect()
 		select = "select codcid from cidades where nomcid = '{}'".format(cidade)
@@ -253,21 +286,17 @@ class Clientes(Base):
 		con = Connect()
 		select = "select codcli,datcad from clientes where cgccpf = '{}'".format(cnpj_cpf)
 		return con.cur.execute(select).fetchone()
+	
 	def lastId(self):
 		con = Connect()
 		select = "select gen_id(GEN_CLIENTES, 1) from rdb$database"
 		return con.cur.execute(select).fetchone()[0]
 
-
-
 class Orcamentos1(Base):
 	"""docstring for Orcamentos1"""
-	def __init__(self, numdoc=0):
-		super(Orcamentos1,self).__init__()
+	def __init__(self):
 		self.codemp = 3
-		self.codcli = codcli
-		self.datdoc = request.now.date()
-		self.datpro = request.now.date()
+		self.codcli = 0
 		self.numorc = 0
 		self.pedcli = ''
 		self.pedven = ''
@@ -290,12 +319,26 @@ class Orcamentos1(Base):
 		self.status = 'PEN'
 		self.numlot = 0
 		self.horent = ''
-		self.obsord = obsord
+		self.obsord = ''
+
+	def buscar(self,numdoc):
+		con = Connect()
+		select = "select * from ORCAMENTOS1 where NUMDOC = '%s'" %(numdoc)
+		return con.cur.execute(select).fetchone()
+
+	def last_id(self):
+		con = Connect()
+		select = 'SELECT NUMDOC FROM ORCAMENTOS1 ORDER BY NUMDOC DESC'
+		return con.cur.execute(select).fetchone()[0]
+	
+	def tabela(self):
+		con = Connect()
+		select = 'SELECT CODTAB FROM TABELA ORDER BY CODTAB DESC'
+		return con.cur.execute(select).fetchone()[0]
 
 class Orcamentos2(Base):
 	"""docstring for Orcamentos2"""
-	def __init__(self, numdoc=0):
-		super(Orcamentos2,self).__init__()
+	def __init__(self):
 		self.codpro = 0
 		self.codint = ''
 		self.nompro = ''
@@ -308,6 +351,7 @@ class Orcamentos2(Base):
 		self.enviar = 'S'
 		self.tippro = 'VND'
 		self.qntpre = 1
+
 
 
 

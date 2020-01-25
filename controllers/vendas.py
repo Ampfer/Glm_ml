@@ -135,16 +135,6 @@ def exportar_vendas():
 
 	return dict(gridPedidos=gridPedidos)
 
-def vendas_full():
-	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
-	selectable = lambda ids: exportar(ids)
-	gridPedidos = grid(Pedidos.logistica == 'fulfillment',create=False, editable=False,deletable=False,formname="pedidos",
-		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
-        
-	gridPedidos = DIV(gridPedidos, _class="well")
-
-	return dict(gridPedidos=gridPedidos)
-
 def exportar(ids):
 	pedidos = db(Pedidos.id.belongs(ids)).select()
 	itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
@@ -286,11 +276,10 @@ def salvar_pedidos(pedidos):
 		select = "select NUMDOC from ORCAMENTOS1 where NUMDOC = '%s'" %(numdoc)
 		numdoc = cur.execute(select).fetchone()
 		
-		obsord = """Total Mercado Livre: {}  -  Tarifas: {}""".format(pedido.valor,pedido.taxa)
-		#obsord1 = "'Total Mercado Livre: {}' + CHAR(13) + CHAR(10) + 'Tarifas: {}'".format(pedido.valor,pedido.taxa)
-		#import urllib
-		#obsord1= urllib.unquote(obsord).encode('latin1').decode('unicode_escape')
-		#print obsord1
+		obsord = """
+		Total Mercado Livre: {}
+		Tarifas: {}
+		""".format(pedido.valor,pedido.taxa)
 
 		if not numdoc:
 			orc1 = dict(NUMDOC = int(lastId) + 1,
