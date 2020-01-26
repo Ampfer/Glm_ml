@@ -9,7 +9,8 @@ def teste():
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
 	selectable = lambda ids: exportar_full(ids)
-	gridPedidos = grid(Pedidos.logistica == 'fulfillment',create=False, editable=False,deletable=False,formname="pedidos",
+	query = (Pedidos.logistica == 'fulfillment') & (Pedidos.enviado == None)
+	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
 	gridPedidos = DIV(gridPedidos, _class="well")
@@ -21,16 +22,12 @@ def exportar_full(ids):
 	for orcamento in orcamentos:
 		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
 		lieto_clientes(cliente_ml)
-		lieto_orcamentos1(orcamento)
+		numorc = lieto_orcamentos1(orcamento)
 		itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
 		lieto_orcamentos2(itens)
+		numdoc = lieto_pedidos1(numorc)
 
-	msg = """
-	{}
-	Pedido atualizado com sucesso....!
-	""".format(session.msg)
-
-	session.flash = msg
+	session.flash = "Pedido Importado com Sucesso....!"
 
 def lieto_clientes(cliente_ml):
 	cliente = Clientes()
@@ -60,8 +57,6 @@ def lieto_clientes(cliente_ml):
 		cliente.datcad = '%s' %(request.now.date())
 		cliente.insert()
 
-	session.msg = 'Cliente atualizado com sucesso....!'
-
 	return 
 
 def lieto_orcamentos1(venda):
@@ -85,6 +80,7 @@ def lieto_orcamentos1(venda):
 	orcamentos1.codtab = str(tabela)
 	orcamentos1.codven = 148
 	orcamentos1.obsord = obsord
+	orcamentos1.porcom = ((0.02*(float(venda.valor) - float(venda.taxa))) / float(venda.valor))*100
 
 	numdoc = venda.numdoc or 0
 	orc =  orcamentos1.buscar(numdoc)
@@ -94,6 +90,7 @@ def lieto_orcamentos1(venda):
 		orcamentos1.update(condicao)
 	else:
 		lastId = orcamentos1.last_id() # Retorna último Id Tabela ORCAMENTOS1
+		numdoc = int(lastId) + 1
 		orcamentos1.numdoc = int(lastId) + 1
 		orcamentos1.datdoc = str(request.now.date())
 		orcamentos1.datpro = str(request.now.date())
@@ -102,7 +99,7 @@ def lieto_orcamentos1(venda):
 
 		Pedidos[venda.id] = dict(numdoc = int(lastId) + 1, enviado='SIM')
 
-	return
+	return numdoc
 
 def lieto_orcamentos2(itens):
 	orcamentos2 = Orcamentos2()
@@ -155,7 +152,62 @@ def lieto_orcamentos2(itens):
 					orcamentos2.insert()
 	return
 
+def lieto_pedidos1(numorc):
+	pedidos1 = Pedidos1()
+	orcamentos1 = Orcamentos1()
+	orcamentos2 = Orcamentos2()
+	numdoc = (numorc*100) + 01
 	
+	# Buscar Orcamento
+	fields = "codcli,numorc,pedcli,pedven,pdeped,pdeqnt,pdeval,pdepon,codtab,codven,porcom,codcon,codcor,codtra,codred,valfre,tipfre"
+	condicao = " numdoc = {}".format(numorc)
+	orcamento = orcamentos1.select(fields,condicao).fetchone()
+
+	# total do orçamento 
+	condicao = 'numdoc = {}'.format(numorc)
+	total_itens = orcamentos2.select('sum(qntpro*prepro)',condicao).fetchone()[0]
+	total = float(total_itens) + float(orcamento[15])
+	
+	pedidos1.numdoc = numdoc
+	pedidos1.codcli = orcamento[0]
+	pedidos1.numorc = numorc
+	pedidos1.pedcli = orcamento[2]
+	pedidos1.pedven = orcamento[3]
+	pedidos1.pdeped = orcamento[4]
+	pedidos1.pdeqnt = orcamento[5]
+	pedidos1.pdeval = orcamento[6]
+	pedidos1.pdepon = orcamento[7]
+	pedidos1.codtab = orcamento[8]
+	pedidos1.codven = orcamento[9]
+	pedidos1.porcom = orcamento[10]
+	pedidos1.codcon = orcamento[11]
+	pedidos1.codcor = orcamento[12]
+	pedidos1.codtra = orcamento[13]
+	pedidos1.codred = orcamento[14]
+	pedidos1.valfre = orcamento[15]
+	pedidos1.tipfre = orcamento[16]
+	pedidos1.datdoc = str(request.now.date())
+	pedidos1.datpro = str(request.now.date())
+	pedidos1.totped = total
+	#pedidos1.pesbru = 0
+	#pedidos1.pesliq = 0
+	#pedidos1.datfat = ''
+	pedidos1.numnot = 0
+	#pedidos1.obsord = orcamento[16]
+	pedidos1.conimp = ''
+
+	condicao = 'numdoc = {}'.format(numdoc)
+	pedido = pedidos1.select('*',condicao).fetchone()
+
+	if pedido:
+		condicao = "NUMDOC = '%s'" %(numdoc)
+		pedidos1.update(condicao)
+	else:
+		pedidos1.insert()
+
+	return numdoc
+
+
 
 #*************************************************
 import fdb
@@ -191,7 +243,7 @@ class Base(object):
 		insere = "INSERT INTO %s (%s) VALUES (%s)" %(self.__class__.__name__.upper(),
 													', '.join(self.__dict__.keys()),
 													valor)
-		#print insere
+		print insere
 		con.cur.execute(insere)
 		con.commit()
 
@@ -229,10 +281,8 @@ class Pedidos1(Base):
 	"""docstring for Pedido"""
 	def __init__(self):
 		super(Pedidos1,self).__init__()
-		self.codemp = 0
+		self.codemp = 3
 		self.codcli = 0
-		#self.datdoc = request.now.date()
-		#self.datpro = request.now.date()
 		self.numorc = 0
 		self.pedcli = ''
 		self.pedven = ''
@@ -250,21 +300,20 @@ class Pedidos1(Base):
 		self.valfre = 0
 		self.tipfre = 0
 		self.totped = 0
-		self.qntvol = 0
-		self.espvol = ''
+		self.qntvol = 1
+		self.espvol = 'VOLUMES'
 		self.marvol = ''
 		self.numvol = 0
 		self.pesbru = 0
 		self.pesliq = 0
 		self.valsub = 0
-		self.pedimp = ''
-		self.datfat = ''
 		self.numnot = 0
 		self.obsped = ''
 		self.obsord = ''
 		self.conimp = ''
 		self.pedsub = 0
 		self.fretra = 0
+		self.pedimp = 'N'
 
 class Pedidos2(Base):
 	"""docstring for Pedido"""
