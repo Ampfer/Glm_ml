@@ -20,18 +20,19 @@ def exportar_full(ids):
 	orcamentos = db(Pedidos.id.belongs(ids)).select()
 	for orcamento in orcamentos:
 		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
-		#lieto_cliente(cliente_ml)
-		lieto_orcamento(orcamento)
+		lieto_clientes(cliente_ml)
+		lieto_orcamentos1(orcamento)
+		itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
+		lieto_orcamentos2(itens)
 
 	msg = """
 	{}
-	Pedido atualizado
-	 com sucesso....!
+	Pedido atualizado com sucesso....!
 	""".format(session.msg)
 
 	session.flash = msg
 
-def lieto_cliente(cliente_ml):
+def lieto_clientes(cliente_ml):
 	cliente = Clientes()
 	cliente.nomcli = cliente_ml.nome[:50].upper().decode('utf-8')
 	cliente.nomfan = cliente_ml.apelido[:30].upper().decode('utf-8')
@@ -63,7 +64,7 @@ def lieto_cliente(cliente_ml):
 
 	return 
 
-def lieto_orcamento(venda):
+def lieto_orcamentos1(venda):
 	orcamentos1 = Orcamentos1()
 	venda_itens = db(db.pedidos_itens.shipping_id  == venda.id).select()
 
@@ -80,7 +81,7 @@ def lieto_orcamento(venda):
 	""".format(venda.valor,venda.taxa)
 
 	orcamentos1.codcli = codcli
-	#orcamentos1.pedven = str(venda_itens['id'][-8:])
+	#orcamentos1.pedven = str(venda['id'][-8:])
 	orcamentos1.codtab = str(tabela)
 	orcamentos1.codven = 148
 	orcamentos1.obsord = obsord
@@ -89,7 +90,8 @@ def lieto_orcamento(venda):
 	orc =  orcamentos1.buscar(numdoc)
 
 	if orc:	
-		orcamentos1.update(int(orc[0]))
+		condicao = "NUMDOC = '%s'" %(int(orc[0]))
+		orcamentos1.update(condicao)
 	else:
 		lastId = orcamentos1.last_id() # Retorna último Id Tabela ORCAMENTOS1
 		orcamentos1.numdoc = int(lastId) + 1
@@ -101,6 +103,59 @@ def lieto_orcamento(venda):
 		Pedidos[venda.id] = dict(numdoc = int(lastId) + 1, enviado='SIM')
 
 	return
+
+def lieto_orcamentos2(itens):
+	orcamentos2 = Orcamentos2()
+	
+	for item in itens:
+		numdoc = db(Pedidos.id == item.shipping_id).select().first()['numdoc']
+		anuncio = db(Anuncios.item_id == item.item_id).select().first()
+		anuncioId = anuncio['id']
+		anuncioForma = anuncio['forma']
+		produtos = db(Anuncios_Produtos.anuncio == anuncioId).select()
+
+		for row in produtos:
+			indice = int(row.quantidade or 1)
+			
+			if anuncioForma == "Kit":
+				prepro = sugerido(anuncio,int(row.produto))
+			else:
+				prepro = float(round(item.valor/indice,2))
+	
+			prod = Produtos()
+			# Buscar produto banco firebird
+			condicao = "CODPRO = {}".format(row.produto)
+			produto = prod.select('CODPRO,CODINT,NOMPRO,UNIPRO', condicao).fetchone()
+			# Buscar preco tabela banco firebird
+			preco_tabela = prod.preco_tabela(produto[0])
+			# calcular porcentagem de desconto do item
+			pdepro = round((1-((item.valor/indice) / preco_tabela)) * 100,2)
+			# verificar se existe item cadastrado
+			condicao = "NUMDOC = {} AND CODPRO = {}".format(int(numdoc),int(produto[0]))
+			existe = orcamentos2.select('*',condicao).fetchone()
+		
+			orcamentos2.numdoc = int(numdoc)
+			orcamentos2.codpro = int(produto[0])
+			orcamentos2.codint = str(produto[1])
+			orcamentos2.nompro = produto[2].encode('UTF-8')
+			orcamentos2.unipro = str(produto[3])
+			orcamentos2.qntpro = float(item.quantidade*indice)
+			orcamentos2.pdepro = float(pdepro)
+			orcamentos2.preori = float(preco_tabela)
+			orcamentos2.prepro = prepro
+
+			if existe:
+				orcamentos2.update(condicao)
+			else:
+				try:
+					orcamentos2.insert()
+				except:
+					orcamentos2.codpro = 1679
+					orcamentos2.nompro = 'PRODUTO NÃO ENCOTRADO'		
+					orcamentos2.insert()
+	return
+
+	
 
 #*************************************************
 import fdb
@@ -118,6 +173,7 @@ class Connect(object):
 	
 	def commit(self):
 		self.con.commit()
+		self.con.close()
 
 class Base(object):
 	"""docstring for Conexao"""
@@ -135,6 +191,7 @@ class Base(object):
 		insere = "INSERT INTO %s (%s) VALUES (%s)" %(self.__class__.__name__.upper(),
 													', '.join(self.__dict__.keys()),
 													valor)
+		#print insere
 		con.cur.execute(insere)
 		con.commit()
 
@@ -158,6 +215,15 @@ class Base(object):
 
 		con.cur.execute(update)
 		con.commit()
+
+	def select(self,fields,condicao):
+		con = Connect()
+		select = "SELECT %s FROM %s WHERE %s" %(
+			fields,
+			self.__class__.__name__.upper(), #Tabela 
+			condicao) 
+		result = con.cur.execute(select)
+		return result
 
 class Pedidos1(Base):
 	"""docstring for Pedido"""
@@ -351,6 +417,16 @@ class Orcamentos2(Base):
 		self.enviar = 'S'
 		self.tippro = 'VND'
 		self.qntpre = 1
+
+class Produtos(Base):
+	"""docstring for Orcamentos2"""
+	def __init__(self):
+		self.nompro = ''
+
+	def preco_tabela(self,codpro):
+		con = Connect()
+		select = 'SELECT PREPRO FROM TABELA WHERE CODPRO = {} ORDER BY CODTAB DESC'.format(codpro)
+		return con.cur.execute(select).fetchone()[0]
 
 
 

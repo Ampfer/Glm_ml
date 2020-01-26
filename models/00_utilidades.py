@@ -100,7 +100,7 @@ def sugerido(anuncio,idProduto = 0):
             preco = db(q).select(sum).first()[sum]  or 0
 
     else:
-        preco = Produtos[idProduto].preco
+        preco = db.produtos[idProduto].preco
 
     empresa = db(Empresa.id==1).select().first()
 
