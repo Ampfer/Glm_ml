@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+<div class="container">
+    <div class="panel panel-info">
+        <div class="panel-heading"><h4>Cobrança</h4></div>
+            <div class="panel-body">
+                {{=form.custom.begin}}
+				<div class="well">
+				    <div class="row">
+				        <div class="col-md-5">
+				            {{=form.custom.label.csvfile}}
+				            {{=form.custom.widget.csvfile}}
+				        </div>  
+				        <div class="col-md-4">
+				            {{=form.custom.submit}}
+				        </div>      
+				    </div>               
+				</div>
+				{{=form.custom.end}}
+				<div id=status>{{=file}}</div>
+                {{=gridRetorno}}
+            </div>
+        </div>
+    </div>
+</div>
+<div id="mensagem" title="Título da mensagem" style="display:none">
+    <p>Aqui fica o conteúdo da mensagem.</p>
+</div>

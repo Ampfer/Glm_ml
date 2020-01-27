@@ -1,10 +1,46 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-def teste():
-	pedido = Orcamento()
-	print pedido.dados.__dict__
-	print pedido.itens.__dict__
+def cobranca():
+
+	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo csv:',requires=notempty)
+		,submit_button='Carregar Produtos')
+
+	gridRetorno = file = ''
+
+	if form.process().accepted:
+		if request.vars.csvfile != None:
+			file = request.vars.csvfile.file
+			for linha in file:
+				print str(linha[0:1]).zfill(1)
+
+			#print lista
+
+
+	'''
+	if form.process().accepted:
+		if request.vars.csvfile != None:
+			try:
+				Importar_Produtos.import_from_csv_file(request.vars.csvfile.file, delimiter=";")
+
+				gridProdutos = grid(Importar_Produtos,formname="importarprodutos",create=False, editable=False,
+					searchable=False,orderby = Importar_Produtos.nome)
+				
+				btnAtualizar = atualizar('atualiza_produtos',' Atualizar Produtos', 'importarprodutos')
+				gridProdutos[0].insert(-1, btnAtualizar)
+				btnAtualizar["_onclick"] = "return confirm('Confirma a Atualização dos Produtos?');"
+				if btnAtualizar:
+					atualiza_produtos()
+					
+				file = 'Arquivo Carregado: %s' %(request.vars.csvfile.filename)
+			except:
+				response.flash = 'Arquivo Inválido'
+
+	elif form.errors:
+		response.flash = 'Erro no Formulário'
+	'''
+
+	return dict(form=form,gridRetorno=gridRetorno,file=file)
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
