@@ -1,44 +1,49 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import codecs
+
 #ERPFDB = "D:/lieto/Dados/ERP.FDB"
 #SERVERNAME = "localhost"
 
 def cobranca():
 
-	form_pesq = SQLFORM.factory(Field('retorno','upload',uploadfield=False,label='Arquivo Retorno:',requires=notempty)
+	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo Retorno:',requires=notempty)
 		,submit_button='Mostrar Boletos')
 
+
 	boletos = []
-	formBoletos = ''	
-	if form_pesq.process().accepted:
-		if request.vars.retorno != None:
-			arquivo = request.vars.retorno.file
-			file = open(arquivo,'r')
+
+	if form.process().accepted:
+		if request.vars.csvfile != None:
+			file =  request.vars.csvfile.file
 			for linha in file:
-				print linha
+				if str(linha[0:1]).zfill(1) == '1':
+					boleto = dict(documento =  linha[38:44],
+								  parcela =  linha[46:47],
+								  tipo =  str(linha[48:1]),
+								  vencimento = str(linha[147:152].zfill(6)),
+								  data_credito = str(linha[147:152].zfill(6)),
+								  valor = float(linha[153:165]),
+								  valor_pago = float(linha[254:266]),
+								  juros = float(linha[201:213]),
+								  mora = float(linha[266:278])
+		  						  )
 
-			formBoletos = LOAD(c='lieto', f='boletos',args=[boletos], target='boletos', ajax=True)
 
+					boletos.append(boleto)
+			
 
-	elif form_pesq.errors:
+	elif form.errors:
 		response.flash = 'Erro no Formulário'
 
-	return dict(form_pesq=form_pesq, formBoletos = formBoletos)
+	
+
+	return dict(form=form, boletos = boletos)
 
 def boletos():
-	print request.vars
-	for linha in session.file:
-		if str(linha[0:1]).zfill(1) == '1':
-			boleto = dict(documento =  linha[116:125],
-						  vencimento = linha[146:151],
-						  valor = float(linha[152:164]),
-						  valor_pago = float(linha[253:265]),
-						  juros = float(linha[201:213]),
-						  mora = float(linha[266:278])
-  						  )
 
-			boletos.append(boleto)
+	
 
 	return dict(boletos = boletos)
 
