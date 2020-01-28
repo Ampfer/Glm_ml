@@ -225,6 +225,7 @@
 'Menu Model': 'Modelo de Menu',
 'Mode de Compra:': 'Mode de Compra:',
 'Moeda:': 'Moeda:',
+'Mostrar Boletos': 'Mostrar Boletos',
 'My Sites': 'Meus sites',
 'Name': 'Nome',
 'NCM:': 'NCM:',

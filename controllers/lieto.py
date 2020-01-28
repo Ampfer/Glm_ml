@@ -1,60 +1,49 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-ERPFDB = "D:/lieto/Dados/ERP.FDB"
-SERVERNAME = "localhost"
+#ERPFDB = "D:/lieto/Dados/ERP.FDB"
+#SERVERNAME = "localhost"
 
 def cobranca():
 
-	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo csv:',requires=notempty)
-		,submit_button='Carregar Produtos')
+	form_pesq = SQLFORM.factory(Field('retorno','upload',uploadfield=False,label='Arquivo Retorno:',requires=notempty)
+		,submit_button='Mostrar Boletos')
 
-	gridRetorno = file = ''
 	boletos = []
-	if form.process().accepted:
-		if request.vars.csvfile != None:
-			file = request.vars.csvfile.file
+	formBoletos = ''	
+	if form_pesq.process().accepted:
+		if request.vars.retorno != None:
+			
+			retorno = open(request.vars.retorno,'r')
+			for linha in retorno:
+				print linha
 
-			for linha in file:
-				if str(linha[0:1]).zfill(1) == '1':
-					boleto = dict(documento =  linha[116:125],
-								  vencimento = linha[146:151],
-								  valor = float(linha[152:164]),
-								  valor_pago = float(linha[253:265]),
-								  juros = float(linha[201:213]),
-								  mora = float(linha[266:278])
-          						  )
-
-					boletos.append(boleto)
-
-			#print lista
+			formBoletos = LOAD(c='lieto', f='boletos',args=[boletos], target='boletos', ajax=True)
 
 
-	'''
-	if form.process().accepted:
-		if request.vars.csvfile != None:
-			try:
-				Importar_Produtos.import_from_csv_file(request.vars.csvfile.file, delimiter=";")
-
-				gridProdutos = grid(Importar_Produtos,formname="importarprodutos",create=False, editable=False,
-					searchable=False,orderby = Importar_Produtos.nome)
-				
-				btnAtualizar = atualizar('atualiza_produtos',' Atualizar Produtos', 'importarprodutos')
-				gridProdutos[0].insert(-1, btnAtualizar)
-				btnAtualizar["_onclick"] = "return confirm('Confirma a Atualização dos Produtos?');"
-				if btnAtualizar:
-					atualiza_produtos()
-					
-				file = 'Arquivo Carregado: %s' %(request.vars.csvfile.filename)
-			except:
-				response.flash = 'Arquivo Inválido'
-
-	elif form.errors:
+	elif form_pesq.errors:
 		response.flash = 'Erro no Formulário'
-	'''
-	return dict(form=form,gridRetorno=gridRetorno,file=file,boletos=boletos)
 
-def baixar(ids):
+	return dict(form_pesq=form_pesq, formBoletos = formBoletos)
+
+def boletos():
+	print request.vars
+	for linha in session.file:
+		if str(linha[0:1]).zfill(1) == '1':
+			boleto = dict(documento =  linha[116:125],
+						  vencimento = linha[146:151],
+						  valor = float(linha[152:164]),
+						  valor_pago = float(linha[253:265]),
+						  juros = float(linha[201:213]),
+						  mora = float(linha[266:278])
+  						  )
+
+			boletos.append(boleto)
+
+	return dict(boletos = boletos)
+
+def baixar():
+	ids = request.vars.ids
 	print ids
 
 def vendas_full():
