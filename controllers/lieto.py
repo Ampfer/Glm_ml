@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+ERPFDB = "D:/lieto/Dados/ERP.FDB"
+SERVERNAME = "localhost"
+
 def cobranca():
 
 	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo csv:',requires=notempty)
@@ -57,7 +60,8 @@ def baixar(ids):
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
 	selectable = lambda ids: exportar_full(ids)
-	query = (Pedidos.logistica == 'fulfillment') & (Pedidos.enviado == None)
+	#query = (Pedidos.logistica == 'fulfillment') & (Pedidos.enviado == None)
+	query = (Pedidos.logistica == 'fulfillment')
 	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
@@ -74,6 +78,7 @@ def exportar_full(ids):
 		itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
 		lieto_orcamentos2(itens)
 		numdoc = lieto_pedidos1(numorc)
+		lieto_pedidos2(numdoc,numorc)
 
 	session.flash = "Pedido Importado com Sucesso....!"
 
@@ -94,6 +99,20 @@ def lieto_clientes(cliente_ml):
 	cliente.datalt = '{}'.format(request.now.date())
 	cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(cliente.cidcli)
 	cliente.emanfe = cliente_ml.email
+	cliente.codven = 146
+	cliente.codcon = 31
+	cliente.codcor = 15
+	cliente.codtra = 273
+	cliente.codtip = 5
+	cliente.porcom = 1
+	cliente.pdenor = 0
+	cliente.regalt = 'S'
+	cliente.calsub = 'N'
+	cliente.envpdf = 'S'
+	cliente.retpis = 'N'
+	cliente.retcof = 'N'
+	cliente.regesp = ''
+	cliente.pdeqnt = 100
 
 	cli = cliente.buscar_cliente_cnpj(cliente_ml.cnpj_cpf)
 	
@@ -124,11 +143,30 @@ def lieto_orcamentos1(venda):
 	""".format(venda.valor,venda.taxa)
 
 	orcamentos1.codcli = codcli
-	#orcamentos1.pedven = str(venda['id'][-8:])
+	orcamentos1.pedven = ''
 	orcamentos1.codtab = str(tabela)
 	orcamentos1.codven = 148
 	orcamentos1.obsord = obsord
 	orcamentos1.porcom = ((0.02*(float(venda.valor) - float(venda.taxa))) / float(venda.valor))*100
+	orcamentos1.codemp = 3
+	orcamentos1.numorc = 0
+	orcamentos1.pedcli = ''
+	orcamentos1.pdeped = 0
+	orcamentos1.pdeqnt = 100
+	orcamentos1.pdeval = 100
+	orcamentos1.pdepon = 0
+	orcamentos1.codcon = 2
+	orcamentos1.codcor = 15
+	orcamentos1.codtra = 273
+	orcamentos1.codred = 0
+	orcamentos1.valfre = 0
+	orcamentos1.tipfre = 0
+	orcamentos1.pedimp = 'N'
+	orcamentos1.tiporc = 'P'
+	orcamentos1.sitorc = 'A'
+	orcamentos1.status = 'PEN'
+	orcamentos1.numlot = 0
+	orcamentos1.horent = ''
 
 	numdoc = venda.numdoc or 0
 	orc =  orcamentos1.buscar(numdoc)
@@ -186,8 +224,12 @@ def lieto_orcamentos2(itens):
 			orcamentos2.unipro = str(produto[3])
 			orcamentos2.qntpro = float(item.quantidade*indice)
 			orcamentos2.pdepro = float(pdepro)
-			orcamentos2.preori = float(preco_tabela)
+			orcamentos2.preori = 0
+			orcamentos2.precus = 0
 			orcamentos2.prepro = prepro
+			orcamentos2.enviar = 'S'
+			orcamentos2.tippro = 'VND'
+			orcamentos2.qntpre = 1
 
 			if existe:
 				orcamentos2.update(condicao)
@@ -237,12 +279,26 @@ def lieto_pedidos1(numorc):
 	pedidos1.datdoc = str(request.now.date())
 	pedidos1.datpro = str(request.now.date())
 	pedidos1.totped = total
-	#pedidos1.pesbru = 0
-	#pedidos1.pesliq = 0
 	#pedidos1.datfat = ''
-	pedidos1.numnot = 0
-	#pedidos1.obsord = orcamento[16]
+	#pedidos1.numnot = 0
 	pedidos1.conimp = ''
+	pedidos1.codemp = 3
+	pedidos1.qntvol = 1
+	pedidos1.espvol = 'VOLUMES'
+	pedidos1.marvol = ''
+	pedidos1.numvol = 0
+	pedidos1.pesbru = 0
+	pedidos1.pesliq = 0
+	pedidos1.valsub = 0
+	pedidos1.numnot = 0
+	pedidos1.obsped = ''
+	pedidos1.obsord = ''
+	pedidos1.conimp = 'ON'
+	pedidos1.pedsub = 0
+	pedidos1.fretra = 0
+	pedidos1.pedimp = 'N'
+
+
 
 	condicao = 'numdoc = {}'.format(numdoc)
 	pedido = pedidos1.select('*',condicao).fetchone()
@@ -253,9 +309,62 @@ def lieto_pedidos1(numorc):
 	else:
 		pedidos1.insert()
 
+	print numdoc
 	return numdoc
 
+def lieto_pedidos2(numdoc,numorc):
 
+	pedidos2 = Pedidos2()
+	orcamentos2 = Orcamentos2()
+	produtos = Produtos()
+
+	# buscar itens do orçamento
+	fields = 'codpro,codint,nompro,unipro,qntpro,pdepro,precus,preori,prepro,tippro'
+	condicao = 'NUMDOC = {}'.format(numorc)
+	itens = orcamentos2.select(fields,condicao).fetchall()
+	total_peso = 0
+	for item in itens:
+
+		pedidos2.numdoc = numdoc
+		pedidos2.codpro = item[0]
+		pedidos2.codint = item[1]
+		pedidos2.nompro = item[2]
+		pedidos2.unipro = item[3]
+		pedidos2.qntpro = item[4]
+		pedidos2.pdepro = item[5]
+		pedidos2.precus = item[6]
+		pedidos2.preori = item[7]
+		pedidos2.prepro = item[8]
+		pedidos2.tippro = item[9]
+
+		# buscar peso na tabela de produtos
+		condicao = 'CODPRO = {}'.format(item[0])
+		peso = float(produtos.select('pesbru',condicao).fetchone()[0])
+
+		total_peso = total_peso + peso
+
+		condicao = 'NUMDOC = {} AND CODPRO = {}'.format(numdoc,item[0])
+		existe = pedidos2.select('*',condicao).fetchone()
+		if existe:
+			pedidos2.update(condicao)
+		else:
+			pedidos2.insert()
+
+	#Atualiza pesos na tabela pedidos1
+	pedidos1 = Pedidos1()
+	pedidos1.pesliq = total_peso
+	pedidos1.pesbru = total_peso + 0.100
+	condicao = 'NUMDOC = {}'.format(numdoc)
+	pedidos1.update(condicao)
+	
+	#Atializa Tabela Orcamento 1
+	orcamentos1 = Orcamentos1()
+	orcamentos1.pedimp = 'S'
+	orcamentos1.sitorc ='E'
+	condicao = 'NUMDOC = {}'.format(numorc)
+	orcamentos1.update(condicao)
+
+	return
 
 #*************************************************
 import fdb
@@ -311,7 +420,7 @@ class Base(object):
 			args,
 			condicao)
 
-		print update
+		#print update
 
 		con.cur.execute(update)
 		con.commit()
@@ -328,56 +437,12 @@ class Base(object):
 class Pedidos1(Base):
 	"""docstring for Pedido"""
 	def __init__(self):
-		super(Pedidos1,self).__init__()
-		self.codemp = 3
-		self.codcli = 0
-		self.numorc = 0
-		self.pedcli = ''
-		self.pedven = ''
-		self.pdeped = 0
-		self.pdeqnt = 0
-		self.pdeval = 0
-		self.pdepon = 0
-		self.codtab = ''
-		self.codven = 0
-		self.porcom = 0
-		self.codcon = 0
-		self.codcor = 0
-		self.codtra = 0
-		self.codred = 0
-		self.valfre = 0
-		self.tipfre = 0
-		self.totped = 0
-		self.qntvol = 1
-		self.espvol = 'VOLUMES'
-		self.marvol = ''
-		self.numvol = 0
-		self.pesbru = 0
-		self.pesliq = 0
-		self.valsub = 0
-		self.numnot = 0
-		self.obsped = ''
-		self.obsord = ''
-		self.conimp = ''
-		self.pedsub = 0
-		self.fretra = 0
-		self.pedimp = 'N'
+		pass
 
 class Pedidos2(Base):
 	"""docstring for Pedido"""
-	def __init__(self, numdoc=0):
-		super(Pedidos2,self).__init__()
-		self.codpro = 0
-		self.codint = ''
-		self.nompro = ''
-		self.unipro = ''
-		self.qntpro = 0
-		self.pdepro = 0
-		self.precus = 0
-		self.preori = 0
-		self.prepro = 0
-		self.tippro = ''
-		self.dattro = request.now.date(),
+	def __init__(self):
+		pass
 
 class Receber(Base):
 	"""docstring for Pedido"""
@@ -410,35 +475,7 @@ class Receber(Base):
 class Clientes(Base):
 	"""docstring for Clientes"""
 	def __init__(self):
-		self.nomcli = ''
-		self.nomfan = ''
-		self.fisjur = ''
-		self.endcli = ''
-		self.baicli = ''
-		self.cidcli = ''
-		self.estcli = ''
-		self.cepcli = ''
-		self.emacli = ''
-		self.telcli = ''
-		self.cgccpf = ''
-		self.datalt = ''
-		self.codven = 146
-		self.codcon = 31
-		self.codcor = 15
-		self.codtra = 273
-		self.codtip = 5
-		self.porcom = 1
-		self.pdenor = 0
-		self.numcli = ''
-		self.coccli = ''
-		self.regalt = 'S'
-		self.emanfe = ''
-		self.calsub = 'S'
-		self.envpdf = 'S'
-		self.retpis = 'N'
-		self.retcof = 'N'
-		self.regesp = ''
-		self.pdeqnt = 100
+		pass
 
 	def buscar_coccli(self,cidade):
 		con = Connect()
@@ -458,31 +495,7 @@ class Clientes(Base):
 class Orcamentos1(Base):
 	"""docstring for Orcamentos1"""
 	def __init__(self):
-		self.codemp = 3
-		self.codcli = 0
-		self.numorc = 0
-		self.pedcli = ''
-		self.pedven = ''
-		self.pdeped = 0
-		self.pdeqnt = 100
-		self.pdeval = 100
-		self.pdepon = 0
-		self.codtab = ''
-		self.codven = 146
-		self.porcom = 2
-		self.codcon = 2
-		self.codcor = 15
-		self.codtra = 273
-		self.codred = 0
-		self.valfre = 0
-		self.tipfre = 0
-		self.pedimp = 'N'
-		self.tiporc = 'P'
-		self.sitorc = 'A'
-		self.status = 'PEN'
-		self.numlot = 0
-		self.horent = ''
-		self.obsord = ''
+		pass
 
 	def buscar(self,numdoc):
 		con = Connect()
@@ -502,23 +515,12 @@ class Orcamentos1(Base):
 class Orcamentos2(Base):
 	"""docstring for Orcamentos2"""
 	def __init__(self):
-		self.codpro = 0
-		self.codint = ''
-		self.nompro = ''
-		self.unipro = ''
-		self.qntpro = 0
-		self.pdepro = 0
-		self.precus = 0
-		self.preori = 0
-		self.prepro = 0
-		self.enviar = 'S'
-		self.tippro = 'VND'
-		self.qntpre = 1
+		pass
 
 class Produtos(Base):
 	"""docstring for Orcamentos2"""
 	def __init__(self):
-		self.nompro = ''
+		pass
 
 	def preco_tabela(self,codpro):
 		con = Connect()
