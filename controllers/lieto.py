@@ -13,9 +13,9 @@ def cobranca():
 	formBoletos = ''	
 	if form_pesq.process().accepted:
 		if request.vars.retorno != None:
-			
-			retorno = open(request.vars.retorno,'r')
-			for linha in retorno:
+			arquivo = request.vars.retorno.file
+			file = open(arquivo,'r')
+			for linha in file:
 				print linha
 
 			formBoletos = LOAD(c='lieto', f='boletos',args=[boletos], target='boletos', ajax=True)
