@@ -21,7 +21,65 @@
             </div>
         </div>
     </div>
-</div>
+
 <div id="mensagem" title="Título da mensagem" style="display:none">
     <p>Aqui fica o conteúdo da mensagem.</p>
 </div>
+
+<button id = 'baixar' type="button" class="btn btn-primary right">Baixar Boleots</button>
+
+	<table id="boletos" class="display" cellspacing="0" width="80%">
+	    <thead>
+	        <tr>           
+	            <th>Documento</th>
+	            <th>Vencimento</th>
+	            <th class="text-right">Valor</th>
+	            <th class="text-right">Valor Pago</th>
+	            <th class="text-right">Juros</th>
+	            <th class="text-right">Mora</th>            
+	        </tr>
+	    </thead>
+	    <tbody>
+	        {{for r in boletos:}}
+	        {{print r['documento']}}
+	        <tr id="{{=r['documento']}}" >
+	            <td>{{=r['documento']}}</td>
+	            <td>{{=r['vencimento']}}</td>
+	            <td class="text-right">{{=r['valor']}}</td>
+	            <td class="text-right">{{=r['valor_pago']}}</td>
+	            <td class="text-right">{{=r['juros']}}</td>
+	            <td class="text-right">{{=r['mora']}}</td>      
+	        </tr>
+	        {{pass}}
+	    </tbody>
+	</table>
+</div>
+<script>
+$(document).ready(function(){
+    $('#boletos').DataTable({
+        select: true,
+        paging: false,
+        scrollY: 300,
+        scrollCollapse: true,
+        searching: false,
+        order: [[ 4, 'asc' ]],
+        language: {"url": "//cdn.datatables.net/plug-ins/1.10.13/i18n/Portuguese-Brasil.json"},
+    });
+
+    var table = $('#boletos').DataTable();
+ 
+    $('#boletos tbody').on( 'click', 'tr', function () {
+        $(this).toggleClass('selected');
+    } );
+ 
+    $('#baixar').click( function () {
+        var resultado = table.rows('.selected').ids();
+        var i;
+        ids = []
+        for (i = 0; i < resultado.length; i++) { 
+            ids[i] = resultado[i];
+            };
+        $.redirect("{{=URL('baixar')}}",ids);
+    });
+});
+</script>

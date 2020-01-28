@@ -7,12 +7,22 @@ def cobranca():
 		,submit_button='Carregar Produtos')
 
 	gridRetorno = file = ''
-
+	boletos = []
 	if form.process().accepted:
 		if request.vars.csvfile != None:
 			file = request.vars.csvfile.file
+
 			for linha in file:
-				print str(linha[0:1]).zfill(1)
+				if str(linha[0:1]).zfill(1) == '1':
+					boleto = dict(documento =  linha[116:125],
+								  vencimento = linha[146:151],
+								  valor = float(linha[152:164]),
+								  valor_pago = float(linha[253:265]),
+								  juros = float(linha[201:213]),
+								  mora = float(linha[266:278])
+          						  )
+
+					boletos.append(boleto)
 
 			#print lista
 
@@ -39,8 +49,10 @@ def cobranca():
 	elif form.errors:
 		response.flash = 'Erro no Formulário'
 	'''
+	return dict(form=form,gridRetorno=gridRetorno,file=file,boletos=boletos)
 
-	return dict(form=form,gridRetorno=gridRetorno,file=file)
+def baixar(ids):
+	print ids
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
