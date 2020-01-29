@@ -14,42 +14,44 @@
 
     {{=form.custom.end}}
 
-	<button id = 'baixar' type="button" class="btn btn-primary right">Baixar Boleots</button>
+	<button id="baixar" type="button" class="btn btn-primary right">Baixar Boletos</button>
 
 	<table id="boletos" class="display" cellspacing="0" width="100%">
 		<thead>
 			<tr>           
+				<th>Id</th>
 				<th>Documento</th>
-				<th>Parcela</th>
-				<th>Tipo</th>
+				<th>Codigo</th>
+				<th>Cliente</th>
 				<th>Vencimento</th>
-				<th>Data Credito</th>
+				<th>Credito</th>
 				<th class="text-right">Valor</th>
-				<th class="text-right">Valor Pago</th>
+				<th class="text-right">Pago</th>
+				<th class="text-right">Desconto</th>
 				<th class="text-right">Juros</th>
-				<th class="text-right">Mora</th>            
+         
 			</tr>
 		</thead>
 		<tbody>
 			{{for r in boletos:}}
-			{{print r['documento']}}
-			<tr id="{{=r['documento']}}" >
+			<tr id="{{=r['rowId']}}" >
+				<td>{{=r['rowId']}}</td>
 				<td>{{=r['documento']}}</td>
-				<td>{{=r['parcela']}}</td>
-				<td>{{=r['tipo']}}</td>
+				<td>{{=r['codigo']}}</td>
+				<td>{{=r['cliente']}}</td>
 				<td>{{=r['vencimento']}}</td>
 				<td>{{=r['data_credito']}}</td>
 				<td class="text-right">{{=r['valor']}}</td>
 				<td class="text-right">{{=r['valor_pago']}}</td>
+				<td class="text-right">{{=r['desconto']}}</td>
 				<td class="text-right">{{=r['juros']}}</td>
-				<td class="text-right">{{=r['mora']}}</td>      
 			</tr>
 			{{pass}}
 		</tbody>
 	</table>
 </div>
 
-<script>
+<script type="text/javascript">
 $(document).ready(function(){
     $('#boletos').DataTable({
         select: true,
@@ -73,11 +75,29 @@ $(document).ready(function(){
         ids = []
         for (i = 0; i < resultado.length; i++) { 
             ids[i] = resultado[i];
-            };
-        $.redirect("{{=URL('baixar')}}",ids);
+        };
+        //$.redirect("{{=URL('baixar')}}",ids);
+        $.ajax({
+            type: "POST",
+            url: "{{=URL('lieto','baixar_boletos')}}",
+            data: {
+              ids: ids,
+              valor: "{{=boletos}}"
+            }, 
+            success: function(result) {
+              alert('ok')
+            }
+        });
     });
+    // desabilita botão 
+	$("input[value = 'Mostrar Boletos']").hide();
+  	$("input[name = 'csvfile']").on('change',function() {
+    	$("input[value = 'Mostrar Boletos']").click();
+  	});
+
 });
 </script>
+
 
 
 

@@ -16,46 +16,60 @@ def cobranca():
 
 	if form.process().accepted:
 		if request.vars.csvfile != None:
+			receber = Receber()
+			clientes =Clientes()
 			file =  request.vars.csvfile.file
 			for linha in file:
-				if str(linha[0:1]).zfill(1) == '1':
-					boleto = dict(documento =  linha[38:44],
-								  parcela =  linha[46:47],
-								  tipo =  str(linha[48:1]),
-								  vencimento = str(linha[147:152].zfill(6)),
-								  data_credito = str(linha[147:152].zfill(6)),
-								  valor = float(linha[153:165]),
-								  valor_pago = float(linha[254:266]),
-								  juros = float(linha[201:213]),
-								  mora = float(linha[266:278])
-		  						  )
+				if str(linha[0:1]).zfill(1) == '1' and str(linha[108:110]).zfill(2) == '06':			
+					dcto = linha[37:44]
+					parcela = linha[45:47]
+					tipo = str(linha[47:48]) if str(linha[47:48]) == 'X' else 'A'
+					documento = dcto + '-' + parcela + tipo
+					vencimento = '{}/{}/{}'.format(linha[146:148].zfill(2),linha[148:150].zfill(2),linha[150:152].zfill(2)) 
+					credito =    '{}/{}/{}'.format(linha[295:297].zfill(2),linha[297:299].zfill(2),linha[299:301].zfill(2)) 
+					
+					# Buscar Receber
+					query = "NUMDOC = {} and TIPDOC = '{}' and NUMPAR LIKE '{}%'".format(int(dcto),tipo,parcela)
+					rec = receber.select('NUMIDE,CODCLI',query).fetchone()
+					#Buscar Cliente
+					query = "codcli = {}".format(rec[1])
+					cliente = clientes.select('codcli,nomcli', query).fetchone()
 
+					boleto = dict(rowId = rec[0],
+								  documento =  documento,
+								  codigo = cliente[0],
+								  cliente = cliente[1],
+								  vencimento = vencimento,
+								  data_credito = credito,
+								  valor = round(float(linha[152:165])/100,2),
+								  valor_pago = round(float(linha[253:266])/100,2),
+								  desconto = round(float(linha[240:253])/100,2),
+								  juros = round(float(linha[201:214])/100 + float(linha[266:279])/100,2),
+								  )
 
 					boletos.append(boleto)
-			
+
 
 	elif form.errors:
 		response.flash = 'Erro no Formulário'
 
-	
-
 	return dict(form=form, boletos = boletos)
 
-def boletos():
 
-	
+def baixar_boletos():
+	ids = request.vars['ids[]']
+	boletos = request.vars['boletos']
 
-	return dict(boletos = boletos)
+	for boleto in boletos:
+		pass
 
-def baixar():
-	ids = request.vars.ids
-	print ids
+		
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
 	selectable = lambda ids: exportar_full(ids)
-	#query = (Pedidos.logistica == 'fulfillment') & (Pedidos.enviado == None)
-	query = (Pedidos.logistica == 'fulfillment')
+	query = (Pedidos.logistica == 'fulfillment') & (Pedidos.enviado == None)
+	#query = (Pedidos.logistica == 'fulfillment')
 	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
@@ -146,10 +160,10 @@ def lieto_orcamentos1(venda):
 	orcamentos1.numorc = 0
 	orcamentos1.pedcli = ''
 	orcamentos1.pdeped = 0
-	orcamentos1.pdeqnt = 100
-	orcamentos1.pdeval = 100
+	orcamentos1.pdeqnt = 0
+	orcamentos1.pdeval = 0
 	orcamentos1.pdepon = 0
-	orcamentos1.codcon = 2
+	orcamentos1.codcon = 1
 	orcamentos1.codcor = 15
 	orcamentos1.codtra = 273
 	orcamentos1.codred = 0
@@ -172,8 +186,10 @@ def lieto_orcamentos1(venda):
 		lastId = orcamentos1.last_id() # Retorna último Id Tabela ORCAMENTOS1
 		numdoc = int(lastId) + 1
 		orcamentos1.numdoc = int(lastId) + 1
-		orcamentos1.datdoc = str(request.now.date())
-		orcamentos1.datpro = str(request.now.date())
+		#orcamentos1.datdoc = str(request.now.date())
+		#orcamentos1.datpro = str(request.now.date())
+		orcamentos1.datdoc = str(venda.date_created)
+		orcamentos1.datpro = str(venda.date_created)
 
 		orcamentos1.insert()
 
@@ -243,7 +259,7 @@ def lieto_pedidos1(numorc):
 	numdoc = (numorc*100) + 01
 	
 	# Buscar Orcamento
-	fields = "codcli,numorc,pedcli,pedven,pdeped,pdeqnt,pdeval,pdepon,codtab,codven,porcom,codcon,codcor,codtra,codred,valfre,tipfre"
+	fields = "codcli,numorc,pedcli,pedven,pdeped,pdeqnt,pdeval,pdepon,codtab,codven,porcom,codcon,codcor,codtra,codred,valfre,tipfre,datdoc,datpro"
 	condicao = " numdoc = {}".format(numorc)
 	orcamento = orcamentos1.select(fields,condicao).fetchone()
 
@@ -270,8 +286,8 @@ def lieto_pedidos1(numorc):
 	pedidos1.codred = orcamento[14]
 	pedidos1.valfre = orcamento[15]
 	pedidos1.tipfre = orcamento[16]
-	pedidos1.datdoc = str(request.now.date())
-	pedidos1.datpro = str(request.now.date())
+	pedidos1.datdoc = str(orcamento[17])
+	pedidos1.datpro = str(orcamento[18])
 	pedidos1.totped = total
 	#pedidos1.datfat = ''
 	#pedidos1.numnot = 0
@@ -394,7 +410,7 @@ class Base(object):
 		insere = "INSERT INTO %s (%s) VALUES (%s)" %(self.__class__.__name__.upper(),
 													', '.join(self.__dict__.keys()),
 													valor)
-		print insere
+		#print insere
 		con.cur.execute(insere)
 		con.commit()
 
@@ -425,6 +441,7 @@ class Base(object):
 			fields,
 			self.__class__.__name__.upper(), #Tabela 
 			condicao) 
+		#print select
 		result = con.cur.execute(select)
 		return result
 
@@ -440,8 +457,9 @@ class Pedidos2(Base):
 
 class Receber(Base):
 	"""docstring for Pedido"""
-	def __init__(self, numide=0):
-		super(Receber,self).__init__()
+	def __init__(self):
+		pass
+		'''
 		self.numide = 0
 		self.numped = 0
 		self.numdoc = 0
@@ -465,6 +483,7 @@ class Receber(Base):
 		self.sitdoc = ''
 		self.idelot = 0
 		self.sernot = ''
+		'''
 
 class Clientes(Base):
 	"""docstring for Clientes"""
@@ -521,7 +540,32 @@ class Produtos(Base):
 		select = 'SELECT PREPRO FROM TABELA WHERE CODPRO = {} ORDER BY CODTAB DESC'.format(codpro)
 		return con.cur.execute(select).fetchone()[0]
 
+class Lotes(Base):
+	"""docstring for Orcamentos2"""
+	def __init__(self):
+		pass
 
+	def last_id(self):
+		con = Connect()
+		select = 'SELECT NUMIDE FROM LOTES ORDER BY NUMIDE DESC'
+		return con.cur.execute(select).fetchone()[0]
 
+class Recebimentos(Base):
+	"""docstring for Orcamentos2"""
+	def __init__(self):
+		pass
+	
+	def lastId(self):
+		con = Connect()
+		select = "select gen_id(GEN_RECEBIMENTOS, 1) from rdb$database"
+		return con.cur.execute(select).fetchone()[0]
 
-
+class Fluxo(Base):
+	"""docstring for Orcamentos2"""
+	def __init__(self):
+		pass
+	
+	def lastId(self):
+		con = Connect()
+		select = "select gen_id(GEN_FLUXO, 1) from rdb$database"
+		return con.cur.execute(select).fetchone()[0]
