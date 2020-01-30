@@ -3,8 +3,8 @@
 
 import codecs
 
-#ERPFDB = "D:/lieto/Dados/ERP.FDB"
-#SERVERNAME = "localhost"
+ERPFDB = "D:/lieto/Dados/ERP.FDB"
+SERVERNAME = "localhost"
 
 def cobranca():
 
@@ -48,6 +48,7 @@ def cobranca():
 								  )
 
 					boletos.append(boleto)
+					session.boletos = boletos
 
 
 	elif form.errors:
@@ -58,12 +59,73 @@ def cobranca():
 
 def baixar_boletos():
 	ids = request.vars['ids[]']
-	boletos = request.vars['boletos']
+	boletos =session.boletos
+
+	lote = Lotes()
+	lote.numide = lote.last_id() + 1 
+	lote.codcor = 6 
+	#lote.datpag  = boletos[0]['data_credito']
+	lote.valpag = 0
+	lote.numche = 0
+	lote.tipdoc = 'R' 
+	lote.obspag = ' '
 
 	for boleto in boletos:
-		pass
+		if boleto['rowId']:
+			receber = Receber()
+			query = 'numide = {}'.format(boleto['rowId'])
+			rec = receber.select('datpag,numpar', query).fetchone()
 
-		
+			print rec[0]
+			if rec[0] == 'null':
+				print 'aqui'
+
+
+				recebimento = Recebimentos()
+
+				recebimento.numide = recebimento.last_id()
+				recebimento.iderec = boleto['rowId']
+				recebimento.datpag = boleto['data_credito']
+				recebimento.valpag = boleto['valor_pago']
+				recebimento.codcor = 6 
+				recebimento.obspag = ''
+				recebimento.idelot = lote.numide
+
+				#recebimento.insert()
+
+				lote.valpag += boleto['valor_pago']
+
+				fluxo = Fluxo()
+
+				fluxo.numide = fluxo.last_id()
+				fluxo.codcor = 6
+				fluxo.datdoc = boleto['data_credito']
+				fluxo.hordoc = request.now.hour
+				fluxo.valdoc = boleto['valor_pago']
+				fluxo.hisdoc = "REC. {}-{} de (C{}) {}".format(boleto['documento'],rec[1],boleto['codigo'], boleto['cliente'])
+				fluxo.credeb = '+'
+				fluxo.codpag = 0
+				fluxo.origem = 'REC'
+				fluxo.iderec = boleto['rowId']
+				fluxo.tippag = 'OUT'
+
+				#fluxo.insert()
+
+				query = 'numide = {}'.format(boleto['rowId'])
+				receber.datpag = boleto['data_credito']
+				receber.valpag = boleto['valor_pago']
+				receber.valjur = boleto['juros']
+
+				#receber.update(query)
+
+	#lote.insert()
+
+	
+	print lote.__dict__
+	print recebimento.__dict__
+	print fluxo.__dict__
+
+	return	
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
