@@ -3,8 +3,8 @@
 
 import codecs
 
-ERPFDB = "D:/lieto/Dados/ERP.FDB"
-SERVERNAME = "localhost"
+#ERPFDB = "D:/lieto/Dados/ERP.FDB"
+#SERVERNAME = "localhost"
 
 def cobranca():
 
@@ -71,14 +71,16 @@ def baixar_boletos():
 	lote.obspag = ' '
 
 	for boleto in boletos:
+
 		if boleto['rowId']:
 			receber = Receber()
 			query = 'numide = {}'.format(boleto['rowId'])
 			rec = receber.select('datpag,numpar', query).fetchone()
+			
+			if rec[0]:
 
-			print rec[0]
-			if rec[0] == 'null':
-				print 'aqui'
+				print 'asdfasdf'
+				
 
 
 				recebimento = Recebimentos()
@@ -617,7 +619,7 @@ class Recebimentos(Base):
 	def __init__(self):
 		pass
 	
-	def lastId(self):
+	def last_id(self):
 		con = Connect()
 		select = "select gen_id(GEN_RECEBIMENTOS, 1) from rdb$database"
 		return con.cur.execute(select).fetchone()[0]
@@ -627,7 +629,7 @@ class Fluxo(Base):
 	def __init__(self):
 		pass
 	
-	def lastId(self):
+	def last_id(self):
 		con = Connect()
 		select = "select gen_id(GEN_FLUXO, 1) from rdb$database"
 		return con.cur.execute(select).fetchone()[0]
