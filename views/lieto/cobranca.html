@@ -29,6 +29,7 @@
 				<th class="text-right">Pago</th>
 				<th class="text-right">Desconto</th>
 				<th class="text-right">Juros</th>
+                <th>Status</th>
          
 			</tr>
 		</thead>
@@ -45,6 +46,7 @@
 				<td class="text-right">{{=r['valor_pago']}}</td>
 				<td class="text-right">{{=r['desconto']}}</td>
 				<td class="text-right">{{=r['juros']}}</td>
+                <td>{{=r['status']}}</td>
 			</tr>
 			{{pass}}
 		</tbody>
@@ -85,7 +87,8 @@ $(document).ready(function(){
               valor: "{{=boletos}}"
             }, 
             success: function(result) {
-              alert('ok')
+              alert('valor Baixado: ' + result);
+              location.reload();
             }
         });
     });

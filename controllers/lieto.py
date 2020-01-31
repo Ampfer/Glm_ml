@@ -25,15 +25,17 @@ def cobranca():
 					parcela = linha[45:47]
 					tipo = str(linha[47:48]) if str(linha[47:48]) == 'X' else 'A'
 					documento = dcto + '-' + parcela + tipo
-					vencimento = '{}/{}/{}'.format(linha[146:148].zfill(2),linha[148:150].zfill(2),linha[150:152].zfill(2)) 
-					credito =    '{}/{}/{}'.format(linha[295:297].zfill(2),linha[297:299].zfill(2),linha[299:301].zfill(2)) 
+					vencimento = '{}.{}.20{}'.format(linha[146:148].zfill(2),linha[148:150].zfill(2),linha[150:152].zfill(2)) 
+					credito =    '{}.{}.20{}'.format(linha[295:297].zfill(2),linha[297:299].zfill(2),linha[299:301].zfill(2)) 
 					
 					# Buscar Receber
 					query = "NUMDOC = {} and TIPDOC = '{}' and NUMPAR LIKE '{}%'".format(int(dcto),tipo,parcela)
-					rec = receber.select('NUMIDE,CODCLI',query).fetchone()
+					rec = receber.select('NUMIDE,CODCLI,DATPAG',query).fetchone()
 					#Buscar Cliente
 					query = "codcli = {}".format(rec[1])
 					cliente = clientes.select('codcli,nomcli', query).fetchone()
+					status = 'Aberto' if rec[2] is None else 'Pago'
+
 
 					boleto = dict(rowId = rec[0],
 								  documento =  documento,
@@ -45,6 +47,7 @@ def cobranca():
 								  valor_pago = round(float(linha[253:266])/100,2),
 								  desconto = round(float(linha[240:253])/100,2),
 								  juros = round(float(linha[201:214])/100 + float(linha[266:279])/100,2),
+								  status = status
 								  )
 
 					boletos.append(boleto)
@@ -62,9 +65,8 @@ def baixar_boletos():
 	boletos =session.boletos
 
 	lote = Lotes()
-	lote.numide = lote.last_id() + 1 
+	lote.numide = int(lote.last_id()) + 1 
 	lote.codcor = 6 
-	#lote.datpag  = boletos[0]['data_credito']
 	lote.valpag = 0
 	lote.numche = 0
 	lote.tipdoc = 'R' 
@@ -77,15 +79,11 @@ def baixar_boletos():
 			query = 'numide = {}'.format(boleto['rowId'])
 			rec = receber.select('datpag,numpar', query).fetchone()
 			
-			if rec[0]:
-
-				print 'asdfasdf'
-				
-
+			if rec[0] is None:
 
 				recebimento = Recebimentos()
 
-				recebimento.numide = recebimento.last_id()
+				recebimento.numide = int(recebimento.last_id())
 				recebimento.iderec = boleto['rowId']
 				recebimento.datpag = boleto['data_credito']
 				recebimento.valpag = boleto['valor_pago']
@@ -93,41 +91,43 @@ def baixar_boletos():
 				recebimento.obspag = ''
 				recebimento.idelot = lote.numide
 
-				#recebimento.insert()
+				recebimento.insert()
 
 				lote.valpag += boleto['valor_pago']
+				lote.datpag  = boleto['data_credito']
 
 				fluxo = Fluxo()
 
-				fluxo.numide = fluxo.last_id()
+				fluxo.numide = int(fluxo.last_id())
 				fluxo.codcor = 6
 				fluxo.datdoc = boleto['data_credito']
-				fluxo.hordoc = request.now.hour
+				fluxo.hordoc = "{}:{}:{}".format(str(request.now.hour).zfill(2), str(request.now.minute).zfill(2),str(request.now.second).zfill(2))
 				fluxo.valdoc = boleto['valor_pago']
-				fluxo.hisdoc = "REC. {}-{} de (C{}) {}".format(boleto['documento'],rec[1],boleto['codigo'], boleto['cliente'])
+				fluxo.hisdoc = "REC. {}-{} de (C{}) {}".format(boleto['documento'],rec[1],boleto['codigo'], boleto['cliente'])[0:60]
 				fluxo.credeb = '+'
 				fluxo.codpag = 0
 				fluxo.origem = 'REC'
-				fluxo.iderec = boleto['rowId']
+				fluxo.iderec = recebimento.numide
 				fluxo.tippag = 'OUT'
 
-				#fluxo.insert()
+				fluxo.insert()
 
 				query = 'numide = {}'.format(boleto['rowId'])
 				receber.datpag = boleto['data_credito']
 				receber.valpag = boleto['valor_pago']
 				receber.valjur = boleto['juros']
 
-				#receber.update(query)
+				receber.update(query)
 
-	#lote.insert()
+	if lote.valpag > 0:
+		lote.insert()
 
 	
-	print lote.__dict__
-	print recebimento.__dict__
-	print fluxo.__dict__
+	#print lote.__dict__
+	#print recebimento.__dict__
+	#print fluxo.__dict__
 
-	return	
+	return lote.valpag
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
