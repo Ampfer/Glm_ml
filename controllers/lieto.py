@@ -125,7 +125,7 @@ def baixar_boletos():
 
 def pedidos():
 	orcamentos1 = Orcamentos1()
-	query = "codven = 146 and sitorc = 'A' "
+	query = "codven = 146 and sitorc = 'A' and tiporc = 'P' "
 	lista = orcamentos1.select('numdoc,datdoc,codcli,valfre',query).fetchall()
 	clientes = Clientes()
 	orcamentos2 = Orcamentos2()
