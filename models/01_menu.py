@@ -63,6 +63,11 @@ response.menu+=[
     ('Sicronizar_estoque', False, URL(r=request, c='ferramentas', f='sicronizar_estoque')),
     ])]
 response.menu+=[
+    (T('Lieto'), False, URL(request.application,'default','index'), [
+    ('Cobrança Bradesco', False, URL(r=request, c='lieto', f='cobranca')),
+    ('Pedidos', False, URL(r=request, c='lieto', f='pedidos')),
+    ])]
+response.menu+=[
     (T('Login ML'), False, URL(request.application,'default','login'),
     )]
 

@@ -26,7 +26,7 @@ def cobranca():
 					tipo = str(linha[47:48]) if str(linha[47:48]) == 'X' else 'A'
 					documento = dcto + '-' + parcela + tipo
 					vencimento = '{}.{}.20{}'.format(linha[146:148].zfill(2),linha[148:150].zfill(2),linha[150:152].zfill(2)) 
-					credito =    '{}.{}.20{}'.format(linha[295:297].zfill(2),linha[297:299].zfill(2),linha[299:301].zfill(2)) 
+					credito =    '{}.{}.20{}'.format(linha[110:112].zfill(2),linha[112:114].zfill(2),linha[114:116].zfill(2)) 
 					
 					# Buscar Receber
 					query = "NUMDOC = {} and TIPDOC = '{}' and NUMPAR LIKE '{}%'".format(int(dcto),tipo,parcela)
@@ -58,7 +58,6 @@ def cobranca():
 		response.flash = 'Erro no Formulário'
 
 	return dict(form=form, boletos = boletos)
-
 
 def baixar_boletos():
 	ids = request.vars['ids[]']
@@ -122,12 +121,37 @@ def baixar_boletos():
 	if lote.valpag > 0:
 		lote.insert()
 
-	
-	#print lote.__dict__
-	#print recebimento.__dict__
-	#print fluxo.__dict__
-
 	return lote.valpag
+
+def pedidos():
+	orcamentos1 = Orcamentos1()
+	query = "codven = 146 and sitorc = 'A' "
+	lista = orcamentos1.select('numdoc,datdoc,codcli,valfre',query).fetchall()
+	clientes = Clientes()
+	orcamentos2 = Orcamentos2()
+	orcamentos = []
+	for row in lista:
+		query = "codcli = {}".format(row[2])
+		cliente = clientes.select('codcli,nomcli', query).fetchone()
+		condicao = 'numdoc = {}'.format(row[0])
+		try:
+			total_itens = orcamentos2.select('sum(qntpro*prepro)',condicao).fetchone()[0]
+			valor = float(total_itens) or 0
+		except:
+			valor = 0
+		print total_itens
+		
+		orcamento = dict(
+			data = str(row[1]),
+			rowId = row[0],
+			codigo = row[2],
+			cliente = cliente[1],
+			valor = valor
+			)
+		orcamentos.append(orcamento)
+
+	return dict(orcamentos=orcamentos)
+
 
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -505,7 +529,7 @@ class Base(object):
 			fields,
 			self.__class__.__name__.upper(), #Tabela 
 			condicao) 
-		#print select
+		print select
 		result = con.cur.execute(select)
 		return result
 

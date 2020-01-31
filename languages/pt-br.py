@@ -201,6 +201,7 @@
 'Layout': 'Layout',
 'Layout Plugins': 'Plugins de Layout',
 'Layouts': 'Layouts',
+'Lieto': 'Lieto',
 'Link da Logomarca:': 'Link da Logomarca:',
 'Live chat': 'Chat ao vivo',
 'Live Chat': 'Chat ao vivo',

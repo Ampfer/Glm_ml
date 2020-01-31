@@ -1,0 +1,71 @@
+{{extend 'layout.html'}}
+<div class="container">
+    {{=titulo("PEDIDOS ","Transferir Orçamentos para Pedidos")}}
+
+	<button id="salvar" type="button" class="btn btn-primary right">Salvar Pedidos</button>
+
+	<table id="orcamentos" class="display" cellspacing="0" width="100%">
+		<thead>
+			<tr>
+				<th>Data</th>           
+				<th>Documento</th>
+				<th>Codigo</th>
+				<th>Cliente</th>
+				<th class="text-right">Valor</th>        
+			</tr>
+		</thead>
+		<tbody>
+			{{for r in orcamentos:}}
+			<tr id="{{=r['rowId']}}" >
+				<td>{{=r['data']}}</td>
+				<td>{{=r['rowId']}}</td>
+				<td>{{=r['codigo']}}</td>
+				<td>{{=r['cliente']}}</td>
+				<td class="text-right">{{=r['valor']}}</td>
+			</tr>
+			{{pass}}
+		</tbody>
+	</table>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#orcamentos').DataTable({
+        select: true,
+        paging: false,
+        scrollY: 300,
+        scrollCollapse: true,
+        searching: false,
+        order: [[ 4, 'asc' ]],
+        language: {"url": "//cdn.datatables.net/plug-ins/1.10.13/i18n/Portuguese-Brasil.json"},
+    });
+
+    var table = $('#orcamentos').DataTable();
+ 
+    $('#orcamentos tbody').on( 'click', 'tr', function () {
+        $(this).toggleClass('selected');
+    } );
+ 
+    $('#salvar').click( function () {
+        var resultado = table.rows('.selected').ids();
+        var i;
+        ids = []
+        for (i = 0; i < resultado.length; i++) { 
+            ids[i] = resultado[i];
+        };
+        //$.redirect("{{=URL('baixar')}}",ids);
+        $.ajax({
+            type: "POST",
+            url: "{{=URL('lieto','pedidos')}}",
+            data: {
+              ids: ids,
+              valor: "{{=orcamentos}}"
+            }, 
+            success: function(result) {
+              alert('ok ');
+              //location.reload();
+            }
+        });
+    });
+});
+</script>
