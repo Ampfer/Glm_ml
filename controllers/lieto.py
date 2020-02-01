@@ -3,8 +3,8 @@
 
 import codecs
 
-#ERPFDB = "D:/lieto/Dados/ERP.FDB"
-#SERVERNAME = "localhost"
+ERPFDB = "D:/lieto/Dados/ERP.FDB"
+SERVERNAME = "localhost"
 
 def cobranca():
 
@@ -139,7 +139,6 @@ def pedidos():
 			valor = float(total_itens) or 0
 		except:
 			valor = 0
-		print total_itens
 		
 		orcamento = dict(
 			data = str(row[1]),
@@ -152,7 +151,33 @@ def pedidos():
 
 	return dict(orcamentos=orcamentos)
 
+def salvar_pedidos():
+	ids = []
+	
+	if type(request.vars['ids[]']) == list:
+		ids = request.vars['ids[]']
+	else:
+		ids.append(request.vars['ids[]'])
+	
+	sucesso = 0
+	erro = 0
 
+	for id in ids:
+
+		try:
+			numdoc = lieto_pedidos1(int(id))
+			lieto_pedidos2(int(numdoc),int(id))
+			sucesso += 1
+		except Exception as e:
+			erro += 1
+
+		#mensagem = """{} pedido(s) salvo(s) com sucesso
+		#{} erro(s) ao salvar""".format(sucesso,erro)
+
+		mensagem = "{} pedido(s) salvo(s) com sucesso \n{} erro(s) ao salvar".format(sucesso,erro)
+		
+	return mensagem
+		
 def vendas_full():
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
 	selectable = lambda ids: exportar_full(ids)
@@ -407,7 +432,6 @@ def lieto_pedidos1(numorc):
 	else:
 		pedidos1.insert()
 
-	print numdoc
 	return numdoc
 
 def lieto_pedidos2(numdoc,numorc):
@@ -529,7 +553,7 @@ class Base(object):
 			fields,
 			self.__class__.__name__.upper(), #Tabela 
 			condicao) 
-		print select
+		#print select
 		result = con.cur.execute(select)
 		return result
 

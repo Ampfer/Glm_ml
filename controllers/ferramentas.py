@@ -118,28 +118,40 @@ def sicronizar_estoque():
 		estoque = (float(saldo)-float(qtde)) if (float(saldo)-float(qtde)) > 0 else 0
 		Produtos[produto.id] = dict(estoque1 = estoque)
 
-	print time.time() - med
-	print time.time() - ini
 	
 	return
+
+def teste():
+	print estoque_erp(504)
+	print qtde_vendida(504)
 
 def estoque_erp(codpro):
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
-	select = "select SUM(qntent) from entradas2 where codpro = {}".format(codpro)
-	qtent = cur.execute(select).fetchone()
-	select = "select SUM(qntpro) from pedidos2 where codpro = {}".format(codpro)
-	qtsai = cur.execute(select).fetchone()
-	select = "select SUM(qntpro) from mestoque where entsai = 'E' and codpro = {}".format(codpro)
-	qtace = cur.execute(select).fetchone()
-	select = "select SUM(qntpro) from mestoque where entsai = 'S' and codpro = {}".format(codpro)
-	qtacs = cur.execute(select).fetchone()
-	select = "select SUM(qntpro) from devolucoes2 where codpro = {}".format(codpro)
-	qtdev = cur.execute(select).fetchone()
-
-	saldo = float(qtent[0] or 0) - float(qtsai[0] or 0) + float(qtace[0] or 0) - float(qtacs[0] or 0) + float(qtdev[0] or 0)
 	
+	try:
+		select = "select tabela from produtos where codpro = {}".format(codpro)
+		tabela = cur.execute(select).fetchone()[0]
+	except:
+		tabela = 'N'
+
+	if tabela == 'S':
+		select = "select SUM(qntent) from entradas2 where codpro = {}".format(codpro)
+		qtent = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from pedidos2 where codpro = {}".format(codpro)
+		qtsai = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from mestoque where entsai = 'E' and codpro = {}".format(codpro)
+		qtace = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from mestoque where entsai = 'S' and codpro = {}".format(codpro)
+		qtacs = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from devolucoes2 where codpro = {}".format(codpro)
+		qtdev = cur.execute(select).fetchone()
+
+		saldo = float(qtent[0] or 0) - float(qtsai[0] or 0) + float(qtace[0] or 0) - float(qtacs[0] or 0) + float(qtdev[0] or 0)
+	else:
+		saldo = 0
+
 	con.close()
 	
 	return saldo

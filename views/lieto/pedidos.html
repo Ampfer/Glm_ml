@@ -56,14 +56,13 @@ $(document).ready(function(){
         //$.redirect("{{=URL('baixar')}}",ids);
         $.ajax({
             type: "POST",
-            url: "{{=URL('lieto','pedidos')}}",
+            url: "{{=URL('lieto','salvar_pedidos')}}",
             data: {
               ids: ids,
-              valor: "{{=orcamentos}}"
-            }, 
+              }, 
             success: function(result) {
-              alert('ok ');
-              //location.reload();
+              alert(result);
+              location.reload();
             }
         });
     });

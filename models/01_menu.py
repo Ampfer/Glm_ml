@@ -65,7 +65,7 @@ response.menu+=[
 response.menu+=[
     (T('Lieto'), False, URL(request.application,'default','index'), [
     ('Cobrança Bradesco', False, URL(r=request, c='lieto', f='cobranca')),
-    ('Pedidos', False, URL(r=request, c='lieto', f='pedidos')),
+    ('Gerar Pedidos', False, URL(r=request, c='lieto', f='pedidos')),
     ])]
 response.menu+=[
     (T('Login ML'), False, URL(request.application,'default','login'),
