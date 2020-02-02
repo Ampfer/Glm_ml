@@ -52,7 +52,6 @@ response.menu+=[
     (T('Vendas'), False, URL(request.application,'default','index'), [
     ('Importar Vendas', False, URL(r=request, c='vendas', f='importar_vendas')),
     ('Exportar Vendas', False, URL(r=request, c='vendas', f='exportar_vendas')),
-    ('Vendas Full', False, URL(r=request, c='lieto', f='vendas_full')),
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [
@@ -66,6 +65,11 @@ response.menu+=[
     (T('Lieto'), False, URL(request.application,'default','index'), [
     ('Cobrança Bradesco', False, URL(r=request, c='lieto', f='cobranca')),
     ('Gerar Pedidos', False, URL(r=request, c='lieto', f='pedidos')),
+    ])]
+response.menu+=[
+    (T('Full'), False, URL(request.application,'default','index'), [
+    ('Vendas Full', False, URL(r=request, c='lieto', f='vendas_full')),
+    ('Envios', False, URL(r=request, c='full', f='envios_full_lista')),
     ])]
 response.menu+=[
     (T('Login ML'), False, URL(request.application,'default','login'),

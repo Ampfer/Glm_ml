@@ -1,0 +1,29 @@
+{{extend 'layout.html'}}
+{{include 'modal.html'}}
+<div class="container">
+    {{=titulo("ENVIOS  ","Cadastro de Envios",btnNovo,btnVoltar)}}
+    <ul class="nav nav-pills">
+        <li class="active"><a data-toggle="tab" href="#home">Envio</a></li>
+        <li><a data-toggle="tab" href="#menu1">Itens</a></li>
+        <li><a data-toggle="tab" href="#menu2">Produtos</a></li>
+    </ul>
+    <div class="tab-content">
+        <div id="home" class="tab-pane fade in active">
+            {{=form_envio.custom.begin}}       
+            <div class="row">
+                {{=campo(2,form_envio.custom.label.codigo,form_envio.custom.widget.codigo)}}
+                {{=campo(2,form_envio.custom.label.data_envio,form_envio.custom.widget.data_envio)}} 
+                {{=campo(2,form_envio.custom.label.status,form_envio.custom.widget.status)}} 
+            </div>
+            <hr>
+            {{=btnRodape(form_envio.custom.submit,btnExcluir)}}
+            {{=form_envio.custom.end}}
+        </div>
+        <div id="menu1" class="tab-pane fade">
+            {{=form_itens}}
+        </div>
+        <div id="menu2" class="tab-pane fade">
+            
+        </div>
+    </div>
+</div>
