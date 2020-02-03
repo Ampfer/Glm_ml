@@ -42,4 +42,22 @@ def envios_full():
     return locals()
 
 def envio_itens():
-    pass
+    
+    id_envio = int(request.args(0))
+
+    Envios_Itens.envio_id.default = id_envio
+    fields = [Envios_Itens.id,Envios_Itens.anuncio_id,Envios_Itens.quantidade]
+
+    formItens = grid(Envios_Itens.envio_id==id_envio,
+                    alt='250px',args=[id_envio],formname = "envioitem",
+                    searchable = False, deletable=True,fields=fields
+                    )
+
+    btnVoltar = voltar1('itens')
+
+    if formItens.update_form:
+        btnExcluir = excluir("#")
+    else:
+        btnExcluir = ''
+
+    return dict(formItens=formItens,btnExcluir=btnExcluir,btnVoltar=btnVoltar)

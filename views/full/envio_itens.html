@@ -1,0 +1,13 @@
+{{include 'modal.html'}}
+{{if formItens.create_form or formItens.update_form:}}
+    {{=formItens[1].custom.begin}}   
+    <div class="row">
+        {{=campo(6,formItens[1].custom.label.anuncio_id,formItens[1].custom.widget.anuncio_id)}} 
+        {{=campo(2,formItens[1].custom.label.quantidade,formItens[1].custom.widget.quantidade)}} 
+    </div>
+    <hr>
+    {{=btnRodape(formItens[1].custom.submit,btnVoltar,btnExcluir)}}
+    {{=formItens[1].custom.end}}
+{{else:}}
+    {{=formItens}}
+{{pass}}

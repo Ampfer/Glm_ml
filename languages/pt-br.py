@@ -343,6 +343,7 @@
 'Valor do Frete': 'Valor do Frete',
 'Valor Frete Grátis': 'Valor Frete Grátis',
 'Valor:': 'Valor:',
+'Value already in database or empty': 'Value already in database or empty',
 'Value not allowed': 'Value not allowed',
 'Value not in database': 'Value not in database',
 'Variação:': 'Variação:',

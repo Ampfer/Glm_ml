@@ -34,6 +34,7 @@ def publicar(funcao,titulo,target):
     return A(SPAN(_class="glyphicon glyphicon-cloud-upload"),titulo,_class="btn btn-success",_id='publicar',
     _href='#', _onclick="ajax('%s',[],'%s');" % (URL(funcao),target))
 
+'''
 def grid(query,maxtextlength=50,paginate=100,**kwargs):
     
     grid = SQLFORM.grid(query,
@@ -50,6 +51,28 @@ def grid(query,maxtextlength=50,paginate=100,**kwargs):
         pass   
     
     return grid
+
+'''
+
+def grid(query,maxtextlength=50,pag=100,alt='400px',**kwargs):
+    
+    grid = SQLFORM.grid(query,
+                        user_signature=False,
+                        showbuttontext=False,
+                        csv=None,
+                        maxtextlength=maxtextlength,
+                        details=False,
+                        paginate=pag,
+                        **kwargs)
+    try:
+        grid.element('.web2py_grid .web2py_table .web2py_htmltable')['_style'] = 'overflow: scroll; height:%s' %(alt)
+    except Exception as e:
+        pass   
+    
+    return grid
+
+
+
 
 def titulo(titulo,subTitulo,*args):
     subTitulo = '<small>%s</small>' %(subTitulo)
