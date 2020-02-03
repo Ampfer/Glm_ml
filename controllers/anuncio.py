@@ -195,10 +195,10 @@ def anuncios_produtos():
     idFamilia = Anuncios[idAnuncio].familia
 
     #q1 = db(Produtos.familia == idFamilia)
-    q1 = (Produtos.id == Familias_Produtos.produto) & (Familias_Produtos.familia == idFamilia)
+    q1 = (db.produtos.id == Familias_Produtos.produto) & (Familias_Produtos.familia == idFamilia)
 
     formProduto = SQLFORM.factory(
-        Field('produto',label='Produto:',requires=IS_IN_DB(db(q1),Produtos.id,'%(nome)s',zero='Selecione um Produto')),
+        Field('produto',label='Produto:',requires=IS_IN_DB(db(q1),db.produtos.id,'%(nome)s',zero='Selecione um Produto')),
         Field('quantidade','integer',default=1,label='Quantidade:'),
         table_name='pesquisarproduto',
         submit_button='Adicionar',
@@ -219,8 +219,8 @@ def anuncios_produtos():
         Anuncios_Produtos.update_or_insert(query, anuncio = idAnuncio, produto = idProduto, quantidade = qtde)
 
         #### Atualiza Atributos ####
-        marca = Produtos[idProduto].marca    
-        ean = Produtos[idProduto].ean
+        marca = db.produtos[idProduto].marca    
+        ean = db.produtos[idProduto].ean
         sku = '%05d' % int(idProduto)
 
         if marca:
@@ -244,13 +244,13 @@ def anuncios_produtos():
     elif formProduto.errors:
         response.flash = 'Erro no Formulário...'
  
-    query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==Produtos.id)
+    query = (Anuncios_Produtos.anuncio==idAnuncio)&(Anuncios_Produtos.produto==db.produtos.id)
 
-    fields = (Anuncios_Produtos.quantidade,Anuncios_Produtos.produto, Produtos.atributo, Produtos.variacao,Produtos.preco, Produtos.estoque, Anuncios_Produtos.preco_sugerido)
+    fields = (Anuncios_Produtos.quantidade,Anuncios_Produtos.produto, db.produtos.atributo, db.produtos.variacao,db.produtos.preco, db.produtos.estoque, Anuncios_Produtos.preco_sugerido)
 
     formProdutos = grid(query,50,args=[idAnuncio],fields=fields,
                    create=False, editable=False, searchable=False, 
-                   orderby = Produtos.nome)
+                   orderby = db.produtos.nome)
     
     return dict(formProdutos=formProdutos,formProduto=formProduto,)
 
@@ -411,7 +411,7 @@ def buscar_variacao(idAnuncio,imagens):
 
         rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
         for row in rows:
-            produto = Produtos[row.produto]
+            produto = db.produtos[row.produto]
             variacaoProduto = dict(id=row.variacao_id,
                                    price=float(row.preco_sugerido),
                                    attribute_combinations = [dict(name = produto.atributo,value_name=produto.variacao,id=produto.id)],
@@ -686,7 +686,7 @@ def atualizar_anuncios(xitens):
             for variacao in item['variations']:
             
                 for atributo in variacao['attribute_combinations']:
-                    query = (Anuncios_Produtos.anuncio ==idAnuncio) & (Produtos.id == Anuncios_Produtos.produto) & (Produtos.variacao == atributo['value_name'])    
+                    query = (Anuncios_Produtos.anuncio ==idAnuncio) & (db.produtos.id == Anuncios_Produtos.produto) & (db.produtos.variacao == atributo['value_name'])    
                     anunciosProdutos = db(query).select().first()
                     try:
                         anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
@@ -836,7 +836,7 @@ def dadosfiscais(idProduto):
         from meli import Meli 
         meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-        produto = db(Produtos.id == idProduto).select().first()
+        produto = db(db.produtos.id == idProduto).select().first()
         sku = '%05d' % idProduto
 
         if produto.cst == '60':
@@ -907,11 +907,11 @@ def atualizar_produtos():
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()
 	# Buscar produto banco firebird
-	produtos = db(Produtos.id > 0).select()
+	produtos = db(db.produtos.id > 0).select()
 	for row in produtos:
 		select = "select CODPRO,ORIPRO,CLAFIS,SITDEN FROM PRODUTOS WHERE CODPRO = {}".format(row.id)
 		produto = cur.execute(select).fetchone()
 		try:
-			Produtos[int(row.id)] = dict(origem=produto[1],ncm=produto[2], cst=produto[3])
+			db.produtos[int(row.id)] = dict(origem=produto[1],ncm=produto[2], cst=produto[3])
 		except:
 			pass

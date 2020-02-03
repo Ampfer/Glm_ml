@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 def produtos_atualizar():
-    produtos = db(Produtos.familia != None).select()
+    produtos = db(db.produtos.familia != None).select()
     for produto in produtos:
         print produto
         Familias_Produtos.update_or_insert(Familias_Produtos.familia==produto.familia and Familias_Produtos.produto == produto.id,
@@ -26,8 +26,8 @@ def empresa():
     return dict(formEmpresa=formEmpresa)
 
 def clientes():
-    fields = (Clientes.id,Clientes.nome)
-    formClientes = grid(Clientes,formname="formClienteCompras",fields=fields)
+    fields = (db.clientes.id,db.clientes.nome)
+    formClientes = grid(db.clientes,formname="formClienteCompras",fields=fields)
             
     formClientes = DIV(formClientes, _class="well")
 
@@ -44,13 +44,13 @@ def cliente():
     idCliente = request.args(0) or "0"
 
     if idCliente == "0":
-        formCliente = SQLFORM(Clientes,field_id='id', _id='formCliente')
+        formCliente = SQLFORM(db.clientes,field_id='id', _id='formCliente')
 
         btnNovo=btnExcluir=btnVoltar = ''
         formClienteCompras = "Primeiro Cadastre um Cliente"
     else:
         formClienteCompras = " "
-        formCliente = SQLFORM(Clientes,idCliente,_id='formCliente',field_id='id')
+        formCliente = SQLFORM(db.clientes,idCliente,_id='formCliente',field_id='id')
 
         btnExcluir = excluir("#")
         btnNovo = novo("cliente")
@@ -110,8 +110,8 @@ def marca():
 
 def produtos():
 
-    fields = (Produtos.id,Produtos.nome,Produtos.atributo,Produtos.variacao,Produtos.estoque,Produtos.largura, Produtos.altura,Produtos.comprimento, Produtos.peso)
-    formProdutos = grid(Produtos,formname="produtos",fields=fields,create=False,deletable=False)
+    fields = (db.produtos.id,db.produtos.nome,db.produtos.atributo,db.produtos.variacao,db.produtos.estoque,db.produtos.largura, db.produtos.altura,db.produtos.comprimento, db.produtos.peso)
+    formProdutos = grid(db.produtos,formname="produtos",fields=fields,create=False,deletable=False)
             
     formProdutos = DIV(formProdutos, _class="well")
 
@@ -127,10 +127,10 @@ def produto():
     idProduto = request.args(0) or "0"
 
     if idProduto == "0":
-        formProduto = SQLFORM(Produtos,field_id='id', _id='formProduto')
+        formProduto = SQLFORM(db.produtos,field_id='id', _id='formProduto')
         formProdutoDescricao  = formProdutoImagem = 'Primeiro Cadastre uma Familia'
     else:
-        formProduto = SQLFORM(Produtos,idProduto,_id='formProduto',field_id='id')
+        formProduto = SQLFORM(db.produtos,idProduto,_id='formProduto',field_id='id')
         formProdutoDescricao = LOAD(c='cadastro',f='produtos_descricao',args=[idProduto], target='produtosdescricao', ajax=True,)       
         formProdutoImagem = LOAD(c='cadastro', f='produtos_imagens',args=[idProduto], target='produtoimagem', ajax=True)
 
@@ -151,7 +151,7 @@ def produto():
 def produtos_descricao():
     
     idProduto = int(request.args(0))
-    idDescricao = Produtos[idProduto].descricao
+    idDescricao = db.produtos[idProduto].descricao
     if idDescricao == None:
       formDescricao = SQLFORM(Descricoes,field_id='id', _id='formdescricao')
     else:
@@ -159,7 +159,7 @@ def produtos_descricao():
 
     if formDescricao.process().accepted:
         response.flash = 'Salvo !'
-        Produtos[idProduto] = dict(descricao=int(formDescricao.vars.id))
+        db.produtos[idProduto] = dict(descricao=int(formDescricao.vars.id))
         response.js = "$('#produtsdescricao').get(0).reload()"
 
     elif formDescricao.errors:
@@ -298,10 +298,10 @@ def familia_produtos():
                 body=lambda row: A(TAG.button(I(_class='glyphicon glyphicon-edit')),
                _href=URL('produto',args=row.id)))] 
 
-    query = (Familias_Produtos.familia == session.idFamilia) & (Produtos.id == Familias_Produtos.produto)
-    fields= [Produtos.id,Produtos.nome,Produtos.atributo,Produtos.variacao,Produtos.preco, Produtos.estoque]
+    query = (Familias_Produtos.familia == session.idFamilia) & (db.produtos.id == Familias_Produtos.produto)
+    fields= [db.produtos.id,db.produtos.nome,db.produtos.atributo,db.produtos.variacao,db.produtos.preco, db.produtos.estoque]
     #links = [lambda row: A('remover',_onclick="return confirm('Deseja Remover Produto ?');",callback=URL('cadastro', 'remove_produto', args=[row.id]))]
-    formProdutos = grid(db(query),orderby=Produtos.nome,args=[session.idFamilia],fields=fields,
+    formProdutos = grid(db(query),orderby=db.produtos.nome,args=[session.idFamilia],fields=fields,
                              create=False,editable=False,deletable = True,searchable=False,
                              formname="familiaprodutos",links=links)
 
@@ -310,11 +310,11 @@ def familia_produtos():
 
 def selecionar_produtos():
 
-    fields = [Produtos.id,Produtos.nome]
+    fields = [db.produtos.id,db.produtos.nome]
 
     selectable = [('Adcionar Produtos', lambda ids: redirect(URL('adiciona_produto',vars=dict(ids=ids)))),]
 
-    formPesquisa = grid(Produtos,50,fields=fields,orderby=Produtos.nome,create=False,editable=False,
+    formPesquisa = grid(db.produtos,50,fields=fields,orderby=db.produtos.nome,create=False,editable=False,
                 deletable=False,selectable=selectable,formname="pesquisa")
 
     return dict(formPesquisa=formPesquisa)
@@ -339,7 +339,7 @@ def adiciona_produto():
    
 def remove_produto():
     idProduto = int(request.args(0))
-    Produtos[idProduto] = dict(familia=None)
+    db.produtos[idProduto] = dict(familia=None)
     response.js = "$('#familiaProdutos').get(0).reload()"
 
 def familias_imagens():
@@ -393,7 +393,7 @@ def atualiza_imagem():
                 pass
        
 def importar_imagem_produto():
-    produtos = db(Produtos.id >0).select(orderby=Produtos.id)
+    produtos = db(db.produtos.id >0).select(orderby=db.produtos.id)
 
     for produto in produtos:
         anuncio = db(Anuncios_Produtos.produto == produto.id).select().first()
@@ -410,7 +410,7 @@ def importar_imagem_produto():
 
 def importar_descricao_produtos():
 
-    produtos = db(Produtos.id >0).select(orderby=Produtos.id)
+    produtos = db(db.produtos.id >0).select(orderby=db.produtos.id)
 
     for produto in produtos:
         anuncio = db(Anuncios_Produtos.produto == produto.id).select().first()
@@ -418,13 +418,13 @@ def importar_descricao_produtos():
             anuncioId = anuncio['anuncio']
             descricaoId = db(Anuncios.id == anuncioId).select().first()['descricao']
             if descricaoId:
-                Produtos[produto.id] = dict(descricao = descricaoId)
+                db.produtos[produto.id] = dict(descricao = descricaoId)
             else:
                 familiaId = db(Anuncios.id == anuncioId).select().first()['familia']
                 descricaoId = db(Familias.id == familiaId).select().first()['descricao']
                 descricao = Descricoes[descricaoId].descricao
-                if Produtos[produto.id].descricao:
+                if db.produtos[produto.id].descricao:
                     pass
                 else:
                     id = Descricoes.insert(descricao=descricao)
-                    Produtos[produto.id] = dict(descricao = id)
+                    db.produtos[produto.id] = dict(descricao = id)

@@ -36,7 +36,7 @@ def atualiza_produtos():
 	rows = db(Importar_Produtos.id > 0).select()
 	for row in rows:
 		try:
-			produto = Produtos[int(row.codigo)]
+			produto = db.produtos[int(row.codigo)]
 			nome = produto.nome 
 			preco = produto.preco
 			marca = produto.marca
@@ -45,7 +45,7 @@ def atualiza_produtos():
 			nome = marca = ean = ''
 			preco  = 0
 
-		Produtos.update_or_insert(Produtos.id == row.codigo,
+		db.produtos.update_or_insert(db.produtos.id == row.codigo,
                 id = row.codigo,
                 nome=row.nome if row.nome else nome,
                 preco = row.preco if row.preco else preco,
@@ -98,9 +98,9 @@ def zerar_estoque():
 
 	form = FORM.confirm('Zerar Estoque',{'Voltar':URL('default','index')})
 	if form.accepted:
-		produtos = db(Produtos.id > 0).select()
+		produtos = db(db.produtos.id > 0).select()
 		for produto in produtos:
-			Produtos[produto.id] = dict(estoque=0)
+			db.produtos[produto.id] = dict(estoque=0)
 	return dict(form=form)
 
 """
@@ -108,7 +108,7 @@ SINCRONIZAR ESTOQUE
 """
 def sicronizar_estoque():
 	import time
-	produtos = db(Produtos.id>0).select()
+	produtos = db(db.produtos.id>0).select()
 	ini =  time.time()
 
 	for produto in produtos:
@@ -116,7 +116,7 @@ def sicronizar_estoque():
 		med = time.time()
 		qtde = qtde_vendida(produto.id)
 		estoque = (float(saldo)-float(qtde)) if (float(saldo)-float(qtde)) > 0 else 0
-		Produtos[produto.id] = dict(estoque1 = estoque)
+		db.produtos[produto.id] = dict(estoque1 = estoque)
 
 	
 	return
@@ -261,7 +261,7 @@ def buscar_variacao_estoque(idAnuncio):
     variacao = [] 
     rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
     for row in rows:
-        produto = Produtos[row.produto]
+        produto = db.produtos[row.produto]
         variacaoProduto = dict(id=row.variacao_id,
                                available_quantity=float(produto.estoque),
                                )
@@ -274,7 +274,7 @@ def ean():
     for row in rows:
         if row.forma == 'Individual':
             idProduto = db(Anuncios_Produtos.anuncio==row.id).select().first()['produto']
-            ean = db(Produtos.id==idProduto).select().first()['ean']
+            ean = db(db.produtos.id==idProduto).select().first()['ean']
             if ean:
             	query = (Anuncios_Atributos.anuncio == row.id) & (Anuncios_Atributos.atributo == 3)
             	Anuncios_Atributos.update_or_insert(query,anuncio=row.id, atributo = 3, valor= ean)
@@ -334,7 +334,7 @@ def exportar_produtos():
 	for familia in familias:
 		produtos = db(Familias_Produtos.familia == familia.id).select()
 		descricao_curta = Descricoes[familia.descricao].descricao
-		prod = Produtos[produtos[0].produto]
+		prod = db.produtos[produtos[0].produto]
 		marca = Marcas[familia.marca].marca
 
 		query = (Familias_Imagens.familia == familia.id) & (Familias_Imagens.imagem==Imagens.id)
@@ -366,7 +366,7 @@ def exportar_produtos():
 		tray.append(lista_tray(b))
 
 		for produto in produtos:
-			prod = Produtos[produto.produto]
+			prod = db.produtos[produto.produto]
 
 			b = dict (codigo = prod.id,
 					  descricao=  '%s:%s' % (prod.atributo,prod.variacao),

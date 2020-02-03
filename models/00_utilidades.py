@@ -114,26 +114,26 @@ def sugerido(anuncio,idProduto = 0):
 
     if idProduto == 0:
 
-        q = (Produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==idAnuncio)
+        q = (db.produtos.id == Anuncios_Produtos.produto) & (Anuncios_Produtos.anuncio==idAnuncio)
         if anuncio.forma == 'Individual':
-            max = Produtos.estoque.max()
+            max = db.produtos.estoque.max()
             estoque = db(q).select(max).first()[max] or 0
-            max = Produtos.preco.max()
+            max = db.produtos.preco.max()
             preco = db(q).select(max).first()[max] or 0
         elif anuncio.forma =='Multiplos':
-            sum = Produtos.estoque.sum()
+            sum = db.produtos.estoque.sum()
             estoque = db(q).select(sum).first()[sum] or 0
-            max = Produtos.preco.max() 
+            max = db.produtos.preco.max() 
             preco = db(q).select(max).first()[max] or 0
         elif anuncio.forma =='Kit':
-            min = Produtos.estoque.min()
+            min = db.produtos.estoque.min()
             estoque = db(q).select(min).first()[min] or 0
-            sum = Produtos.preco.sum() 
+            sum = db.produtos.preco.sum() 
             preco = db(q).select(sum).first()[sum]  or 0
         if anuncio.forma == 'Pack':
-            min = (Produtos.estoque/Anuncios_Produtos.quantidade).min()
+            min = (db.produtos.estoque/Anuncios_Produtos.quantidade).min()
             estoque = db(q).select(min).first()[min] or 0
-            sum = (Produtos.preco*Anuncios_Produtos.quantidade).sum() 
+            sum = (db.produtos.preco*Anuncios_Produtos.quantidade).sum() 
             preco = db(q).select(sum).first()[sum]  or 0
 
     else:

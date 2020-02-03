@@ -79,7 +79,7 @@ def importar_vendas():
 						mlitem = '%s\n%s' %(mlitem,row['description'])
 					#print mlitem
 
-				Clientes.update_or_insert(Clientes.id == item['buyer']['id'],
+				db.clientes.update_or_insert(db.clientes.id == item['buyer']['id'],
 	                id = item['buyer']['id'],
 	                nome = "%s %s" %(item['buyer']['first_name'],item['buyer']['last_name']),
 	                cnpj_cpf = item['buyer']['billing_info']['doc_number'],
@@ -141,7 +141,7 @@ def exportar(ids):
 	clientesIds = []
 	for pedido in pedidos:
 		clientesIds.append(pedido.buyer_id)
-	clientes = db(Clientes.id.belongs(clientesIds)).select()
+	clientes = db(db.clientes.id.belongs(clientesIds)).select()
 	salvar_cliente(clientes)
 	salvar_pedidos(pedidos)
 	salvar_itens(itens)
@@ -166,7 +166,7 @@ def salvar_cliente(clientes):
 			select = "select codcid from cidades where nomcid = '{}'".format(c.cidade)
 			xcodcid = cur.execute(select).fetchone()
 			if xcodcid:
-				Clientes[c.id] = dict(codcid = codcid)
+				db.clientes[c.id] = dict(codcid = codcid)
 				codcid = xcodcid
 		if id:
 			update = """UPDATE CLIENTES 
@@ -269,7 +269,7 @@ def salvar_pedidos(pedidos):
 		select = 'SELECT CODTAB FROM TABELA ORDER BY CODTAB DESC'
 		tabela = cur.execute(select).fetchone()[0]
 		# Retorna Id do Cliente
-		cnpj_cpf = db(Clientes.id == pedido.buyer_id).select(Clientes.cnpj_cpf).first()['cnpj_cpf']
+		cnpj_cpf = db(db.clientes.id == pedido.buyer_id).select(db.clientes.cnpj_cpf).first()['cnpj_cpf']
 		select = "select codcli from clientes where cgccpf = '%s'" %(cnpj_cpf)
 		codcli = cur.execute(select).fetchone()[0]
 

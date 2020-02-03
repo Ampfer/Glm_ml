@@ -3,14 +3,13 @@
 
 import codecs
 
-ERPFDB = "D:/lieto/Dados/ERP.FDB"
-SERVERNAME = "localhost"
+#ERPFDB = "D:/lieto/Dados/ERP.FDB"
+#SERVERNAME = "localhost"
 
 def cobranca():
 
 	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo Retorno:',requires=notempty)
 		,submit_button='Mostrar Boletos')
-
 
 	boletos = []
 
@@ -52,7 +51,6 @@ def cobranca():
 
 					boletos.append(boleto)
 					session.boletos = boletos
-
 
 	elif form.errors:
 		response.flash = 'Erro no Formulário'
