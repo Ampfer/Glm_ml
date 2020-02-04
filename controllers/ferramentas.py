@@ -116,9 +116,8 @@ def sicronizar_estoque():
 		med = time.time()
 		qtde = qtde_vendida(produto.id)
 		estoque = (float(saldo)-float(qtde)) if (float(saldo)-float(qtde)) > 0 else 0
-		db.produtos[produto.id] = dict(estoque1 = estoque)
+		db.produtos[produto.id] = dict(estoque = estoque)
 
-	
 	return
 
 def teste():
