@@ -26,9 +26,11 @@ def envios_full():
 
         form_itens = LOAD(c='full',f='envio_itens',args=[id_envio],
                      content='Aguarde, carregando...',target='itens',ajax=True)
+        form_produtos = LOAD(c='full',f='envio_produtos',args=[id_envio],
+             content='Aguarde, carregando...',target='produtos',ajax=True)
 
         btnExcluir = excluir("#")
-        btnNovo = novo("entrada")
+        btnNovo = novo("envios_full")
 
     btnVoltar = voltar('envios_full_lista')
 
@@ -48,10 +50,21 @@ def envio_itens():
     Envios_Itens.envio_id.default = id_envio
     fields = [Envios_Itens.id,Envios_Itens.anuncio_id,Envios_Itens.quantidade]
 
+    def salva_produto(form):
+
+        produtos = db(Anuncios_Produtos.anuncio == form.vars.anuncio_id).select()
+        for produto in produtos:
+            query = (Envios_Produtos.envio_id == request.args[0]) & (Envios_Produtos.produtos_id == produto['produto'])
+            Envios_Produtos.update_or_insert(query,
+                envio_id = request.args[0],
+                produtos_id = produto['produto'],
+                quantidade = form.vars.quantidade
+                )
+
     formItens = grid(Envios_Itens.envio_id==id_envio,
-                    alt='250px',args=[id_envio],formname = "envioitem",
-                    searchable = False, deletable=True,fields=fields
-                    )
+                    alt='250px',args=[id_envio],formname = "produtos",
+                    searchable = False, deletable=True,fields=fields, oncreate = salva_produto,
+                    onupdate =salva_produto,                    )
 
     btnVoltar = voltar1('itens')
 
@@ -61,3 +74,12 @@ def envio_itens():
         btnExcluir = ''
 
     return dict(formItens=formItens,btnExcluir=btnExcluir,btnVoltar=btnVoltar)
+
+def envio_produtos():
+    id_envio = int(request.args(0))
+    
+    formProdutos = grid(Envios_Produtos.envio_id==id_envio,
+                    alt='250px',args=[id_envio],formname = "produtos",
+                    searchable = False, deletable=False, editable = False, create = False)
+
+    return dict(formProdutos = formProdutos)

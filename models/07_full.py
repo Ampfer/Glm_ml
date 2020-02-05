@@ -15,4 +15,10 @@ Envios_Itens = db.define_table('envios_itens',
 
 Envios_Itens.id.readable = Envios_Itens.id.writable = False
 Envios_Itens.envio_id.readable = Envios_Itens.envio_id.writable = False
-#Envios_Itens.anuncio_id.requires = IS_IN_DB(db,"anuncios.id",'%(titulo)s')
+Envios_Itens.quantidade.requires = notempty
+
+Envios_Produtos = db.define_table('envios_produtos',
+	Field('envio_id','reference envios_full', label='Envio:'),
+	Field('produtos_id','reference produtos',label='Produto:',unique = True),
+	Field('quantidade','decimal(7,2)',label='Quantidade:')
+	)
