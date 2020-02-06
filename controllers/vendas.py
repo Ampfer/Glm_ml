@@ -130,12 +130,12 @@ def exportar_vendas():
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
 	selectable = lambda ids: exportar(ids)
-	gridPedidos = grid(Pedidos.logistica != 'fulfillment' ,create=False, editable=False,deletable=False,formname="pedidos",
+	query = (Pedidos.logistica == 'cross_docking') & (Pedidos.enviado == None)
+	
+	gridPedidos = grid(query ,create=False, editable=False,deletable=False,formname="pedidos",
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
 	gridPedidos = DIV(gridPedidos, _class="well")
-
-	response.flash = 'Pedidos Exportados com Sucesso....'
 	
 	return dict(gridPedidos=gridPedidos)
 
@@ -150,6 +150,7 @@ def exportar(ids):
 	salvar_cliente(clientes)
 	salvar_pedidos(pedidos)
 	salvar_itens(itens)
+	response.flash = 'Pedidos Exportados com Sucesso....'
 	return
 
 def salvar_cliente(clientes):

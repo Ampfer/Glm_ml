@@ -564,6 +564,7 @@ def importar_anuncios():
 def buscar_anuncio(item_id=None,offset=0,limit=50):
 
     import json
+    xitens = []
     
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)

@@ -122,7 +122,7 @@ def anuncios_full():
     
     gridAnunciosFull = grid(Anuncios.localizacao == 'FULL',
                     alt='250px',args=[id],formname = "anunciosfull",maxtextlength=100,fields=fields,
-                    searchable = False, deletable=False, editable = False, create = False,)
+                    searchable = True, deletable=False, editable = False, create = False,)
 
     return dict(gridAnunciosFull=gridAnunciosFull)
 
