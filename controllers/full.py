@@ -116,16 +116,19 @@ def envio_produtos():
 
 def anuncios_full():
 
-    #links = dict(header='Estoque GLM', body = lambda row : saldo_full(int(id)))
+    Anuncios.full_glm = Field.Virtual('full_glm',lambda row: saldo_full(row.anuncios), label='Estoque Full')
 
-    fields = [Anuncios.id,Anuncios.titulo,Anuncios.localizacao, Anuncios.estoque]
+    fields = [Anuncios.id,Anuncios.titulo,Anuncios.localizacao, Anuncios.estoque, Anuncios.full_glm]
+    
     gridAnunciosFull = grid(Anuncios.localizacao == 'FULL',
                     alt='250px',args=[id],formname = "anunciosfull",maxtextlength=100,fields=fields,
                     searchable = False, deletable=False, editable = False, create = False,)
 
     return dict(gridAnunciosFull=gridAnunciosFull)
 
-def saldo_full(id):
+def saldo_full(anuncio):
+
+    id = int(anuncio.id)
 
     query = (Envios_Itens.anuncio_id == id) & (Envios_Full.id == Envios_Itens.envio_id) & (Envios_Full.status == "Concluido")
     qt_envio = db(query).select(Envios_Itens.quantidade.sum()).first()[Envios_Itens.quantidade.sum()] or 0

@@ -533,8 +533,6 @@ def alterar_item():
 
 def importar_anuncios():
 
-    import json
-
     form = SQLFORM.factory(
         Field('anuncio_id','string',label='Id do Anuncio:'),
         Field('offset','integer',label='Inicio:', default=0),
@@ -553,31 +551,38 @@ def importar_anuncios():
         limit = form.vars.limit 
 
         # Cunsulta de itens na Api do mercado livre
-        from meli import Meli
-        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-
-        if anuncio_id:
-            argsItem = "items/%s" %(anuncio_id)
-            busca = meli.get(argsItem,{'access_token':session.ACCESS_TOKEN})
-
-            if busca.status_code == 200:
-                itens = json.loads(busca.content)    
-                xitens.append(itens)
-        else:
-            argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,offset,limit)
-            busca = meli.get(argsItem)
-            
-            if busca.status_code == 200:
-                itens = json.loads(busca.content)    
-                xitens = itens['results']
+        xitens = buscar_anuncio(anuncio_id,offset,limit)
         
         atualizar_anuncios(xitens)
-        
         
     elif form.errors:
         response.flash = 'Erro no Formulário'
 
     return dict(form=form,itens = xitens,btnAtualizar=btnAtualizar)
+
+
+def buscar_anuncio(item_id=None,offset=0,limit=50):
+
+    import json
+    
+    from meli import Meli
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+
+    if item_id: 
+        argsItem = "items/%s" %(item_id)
+        busca = meli.get(argsItem,{'access_token':session.ACCESS_TOKEN})
+
+        if busca.status_code == 200:
+            itens = json.loads(busca.content)    
+            xitens.append(itens)
+    else:
+        argsItem = "sites/MLB/search?seller_id=%s&offset=%s&limit=%s" %(USER_ID,offset,limit)
+        busca = meli.get(argsItem)
+        
+        if busca.status_code == 200:
+            itens = json.loads(busca.content)    
+            xitens = itens['results']
+    return xitens
 
 
 def multiplos():
