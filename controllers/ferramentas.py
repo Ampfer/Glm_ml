@@ -106,23 +106,26 @@ def zerar_estoque():
 """
 SINCRONIZAR ESTOQUE
 """
-def sicronizar_estoque():
-	import time
-	produtos = db(db.produtos.id>0).select()
-	ini =  time.time()
+def importar_estoque():
 
-	for produto in produtos:
-		saldo = estoque_erp(produto.id)
-		med = time.time()
-		qtde = qtde_vendida(produto.id)
-		estoque = (float(saldo)-float(qtde)) if (float(saldo)-float(qtde)) > 0 else 0
-		db.produtos[produto.id] = dict(estoque = estoque)
+	form = FORM.confirm('Importar Estoque',{'Voltar':URL('default','index')})
 
-	return
+	if form.accepted:
+		produtos = db(db.produtos.id>0).select()
 
-def teste():
-	print estoque_erp(504)
-	print qtde_vendida(504)
+		for produto in produtos:
+			saldo = estoque_erp(produto.id)
+			qtde = qtde_vendida(produto.id)
+			qtde_reservada = reservado(produto.id)
+			saldo_corrigido = float(saldo)-float(qtde)-float(qtde_reservada)
+
+			estoque = saldo_corrigido if saldo_corrigido > 0 else 0
+
+			db.produtos[produto.id] = dict(estoque = estoque)
+
+		response.flash = 'Estoque Imoprtado com Sucesso....'
+
+	return dict(form=form)
 
 def estoque_erp(codpro):
 	import fdb
@@ -179,6 +182,15 @@ def qtde_vendida(codpro):
 """
 **************************************************
 """
+def reservado(produtos_id):
+    
+    query = (Envios_Full.status == "Reservado") & (Envios_Produtos.envio_id == Envios_Full.id)
+    query = query & '(Envios_Produtos.produtos_id == {})'.format(produtos_id)
+    produtos= db(query).select()
+    soma = 0
+    for row in produtos:
+        soma += int(row.envios_produtos.quantidade)
+    return soma
 
 def atualizar_sugerido():
 	anuncios = db(Anuncios.id > 0).select()

@@ -5,6 +5,7 @@ TIPOANUNCIO = {'gold_pro':'Premium','gold_special':'Clássico'}
 STATUS = {'active':'Ativo','paused':'Pausado'}
 FORMA = ('Individual','Multiplos','Kit','Pack')
 FRETE = {'comprador':'Por conta do Comprador','gratis':'Frete Grátis'}
+LOCALIZACAO = ['MATRIZ', 'FULL']
 
 Categorias = db.define_table('categorias',
     Field('categoria','string',label='Categoria:',length=100),
@@ -29,6 +30,7 @@ Anuncios = db.define_table('anuncios',
     Field('garantia','string',label='Garantia',length=100),
     Field('status','string',label='Status:',length=30),
     Field('forma','string',label='Forma:',length=30),
+    Field('localizacao','string',label='Localização:',length=30),
     Field('alterado','string',label='Alterado:',length=1),
     Field('descricao','reference descricoes', label='Descrição:'),
     Field('vendido','integer'),
@@ -40,6 +42,7 @@ Anuncios.preco.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.desconto.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.estoque.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Anuncios.tipo.requires = IS_IN_SET(TIPOANUNCIO,zero=None)
+Anuncios.localizacao.requires = IS_IN_SET(LOCALIZACAO,zero=None)
 Anuncios.tipo.represent = lambda tipo, row: TIPOANUNCIO[tipo]
 Anuncios.frete.requires = IS_IN_SET(FRETE,zero=None)
 #Anuncios.fretegratis.writable = Anuncios.fretegratis.readable = False

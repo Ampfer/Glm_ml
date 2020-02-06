@@ -2,7 +2,16 @@
 {{if formItens.create_form or formItens.update_form:}}
     {{=formItens[1].custom.begin}}   
     <div class="row">
-        {{=campo(6,formItens[1].custom.label.anuncio_id,formItens[1].custom.widget.anuncio_id)}} 
+        <div class="col-md-5">
+            {{=formItens[1].custom.label.anuncio_id}}
+            <div class="input-group">
+                {{=formItens[1].custom.widget.anuncio_id}}
+                <span class="input-group-btn">
+                    {{=btnPesquisar}}
+                </span>
+            </div><!-- /input-group -->
+        </div>
+
         {{=campo(2,formItens[1].custom.label.quantidade,formItens[1].custom.widget.quantidade)}} 
     </div>
     <hr>
@@ -19,6 +28,13 @@
    			$("#envios_itens_quantidade").focus();
 		});
     });
+</script>
+
+<script type="text/javascript">
+    function selecionar(id){
+        $('#envios_itens_anuncio_id').val(id).focus();
+        hide_modal();
+    };
 </script>
 
 

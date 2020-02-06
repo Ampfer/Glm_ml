@@ -207,6 +207,7 @@
 'Live chat': 'Chat ao vivo',
 'Live Chat': 'Chat ao vivo',
 'Local:': 'Local:',
+'Localização:': 'Localização:',
 'Log In': 'Log In',
 'Login': 'Autentique-se',
 'login': 'Entrar',

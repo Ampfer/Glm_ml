@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 def importar_vendas():
+	
 	import json
 	from datetime import datetime
 
@@ -126,6 +127,7 @@ def importar_vendas():
 	return dict(itens=itens,form=form)
 
 def exportar_vendas():
+
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
 	selectable = lambda ids: exportar(ids)
 	gridPedidos = grid(Pedidos.logistica != 'fulfillment' ,create=False, editable=False,deletable=False,formname="pedidos",
@@ -133,9 +135,12 @@ def exportar_vendas():
         
 	gridPedidos = DIV(gridPedidos, _class="well")
 
+	response.flash = 'Pedidos Exportados com Sucesso....'
+	
 	return dict(gridPedidos=gridPedidos)
 
 def exportar(ids):
+
 	pedidos = db(Pedidos.id.belongs(ids)).select()
 	itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
 	clientesIds = []
@@ -148,6 +153,7 @@ def exportar(ids):
 	return
 
 def salvar_cliente(clientes):
+
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 	cur = con.cursor()

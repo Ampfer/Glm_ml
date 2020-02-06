@@ -55,11 +55,11 @@ response.menu+=[
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [
-    ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
+    ('Importar Estoque', False, URL(r=request, c='ferramentas', f='importar_estoque')),
     ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='atualizar_estoque')),
+    ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
     ('Zerar Estoque', False, URL(r=request, c='ferramentas', f='zerar_estoque')),
     ('Atualizar Preços', False, URL(r=request, c='ferramentas', f='atualizar_preco')),
-    ('Sicronizar_estoque', False, URL(r=request, c='ferramentas', f='sicronizar_estoque')),
     ])]
 response.menu+=[
     (T('Lieto'), False, URL(request.application,'default','index'), [

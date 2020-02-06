@@ -18,7 +18,7 @@ def envios_full():
 
         form_envio = SQLFORM(Envios_Full,field_id='id',_id='form_envio')
 
-        form_itens = ''
+        form_itens = form_produtos = ''
         btnExcluir = btnNovo = ''
         
     else:
@@ -35,6 +35,11 @@ def envios_full():
     btnVoltar = voltar('envios_full_lista')
 
     if form_envio.process().accepted:
+        if form_envio.vars.status == 'Concluido':
+            anuncios = db(Envios_Itens.envio_id == form_envio.vars.id).select()
+            for row in anuncios:
+                Anuncios[int(row.anuncio_id)] = dict(localizacao = 'FULL')
+
         response.flash = 'Salvo com sucesso!'
         redirect(URL('envios_full', args=[form_envio.vars.id]))
 
@@ -60,20 +65,45 @@ def envio_itens():
                 produtos_id = produto['produto'],
                 quantidade = form.vars.quantidade
                 )
+        return
+
+    def validacao(form):
+
+        query = (Envios_Itens.envio_id == request.args[0]) & (Envios_Itens.anuncio_id == form.vars.anuncio_id) 
+        existe = db(query).select()
+        if existe and request.args[1] == 'new':
+            form.errors = True
+            response.flash = 'Anuncio já exite....!'
+        return
 
     formItens = grid(Envios_Itens.envio_id==id_envio,
-                    alt='250px',args=[id_envio],formname = "produtos",
+                    alt='250px',args=[id_envio],formname = "anuncios",
                     searchable = False, deletable=True,fields=fields, oncreate = salva_produto,
-                    onupdate =salva_produto,                    )
+                    onupdate =salva_produto, onvalidation=validacao
+                    )
 
     btnVoltar = voltar1('itens')
+    btnPesquisar = pesquisar('full','pesquisar_anuncio','Pesquisar Anuncio')
 
     if formItens.update_form:
         btnExcluir = excluir("#")
     else:
         btnExcluir = ''
 
-    return dict(formItens=formItens,btnExcluir=btnExcluir,btnVoltar=btnVoltar)
+    return dict(formItens=formItens,btnExcluir=btnExcluir,btnVoltar=btnVoltar,btnPesquisar=btnPesquisar)
+
+def pesquisar_anuncio():
+    fields = [Anuncios.id,Anuncios.titulo,Anuncios.tipo,Anuncios.localizacao]
+    links=[dict(header='Selecionar',
+                body=lambda row: A(TAG.button(I(_class='glyphicon glyphicon-edit')),
+               _href='#', _onclick="selecionar(%s);" %row.id))]
+
+    ##pesq =grid(Anuncios,csv=False,details=False,maxtextlength=50,fields=fields,orderby=Anuncios.titulo,
+    #   paginate=5,create=False,editable=False,deletable=False,links=links)
+    pesq =grid(Anuncios,maxtextlength=100,fields=fields,orderby=Anuncios.titulo,
+                        create=False,editable=False,deletable=False,links=links,alt='300px')
+
+    return locals()
 
 def envio_produtos():
     id_envio = int(request.args(0))
