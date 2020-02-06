@@ -79,7 +79,7 @@ def envio_itens():
     formItens = grid(Envios_Itens.envio_id==id_envio,
                     alt='250px',args=[id_envio],formname = "anuncios",
                     searchable = False, deletable=True,fields=fields, oncreate = salva_produto,
-                    onupdate =salva_produto, onvalidation=validacao
+                    onupdate =salva_produto, onvalidation=validacao,maxtextlength=100
                     )
 
     btnVoltar = voltar1('itens')
@@ -113,3 +113,28 @@ def envio_produtos():
                     searchable = False, deletable=False, editable = False, create = False)
 
     return dict(formProdutos = formProdutos)
+
+def anuncios_full():
+
+    #links = dict(header='Estoque GLM', body = lambda row : saldo_full(int(id)))
+
+    fields = [Anuncios.id,Anuncios.titulo,Anuncios.localizacao, Anuncios.estoque]
+    gridAnunciosFull = grid(Anuncios.localizacao == 'FULL',
+                    alt='250px',args=[id],formname = "anunciosfull",maxtextlength=100,fields=fields,
+                    searchable = False, deletable=False, editable = False, create = False,)
+
+    return dict(gridAnunciosFull=gridAnunciosFull)
+
+def saldo_full(id):
+
+    query = (Envios_Itens.anuncio_id == id) & (Envios_Full.id == Envios_Itens.envio_id) & (Envios_Full.status == "Concluido")
+    qt_envio = db(query).select(Envios_Itens.quantidade.sum()).first()[Envios_Itens.quantidade.sum()] or 0
+    
+    item_id = db(Anuncios.id == id).select(Anuncios.item_id).first()['item_id']
+    print item_id
+    
+    query = (Pedidos.date_created >= '2020-02-01') & (Pedidos.logistica == 'fulfillment') & (Pedidos_Itens.shipping_id == Pedidos.id) & "(Pedidos_Itens.item_id == '{}')".format(item_id)
+    qt_vendida = db(query).select(Pedidos_Itens.quantidade.sum()).first()[Pedidos_Itens.quantidade.sum()] or 0
+    
+    return float(qt_envio) - float(qt_vendida)
+

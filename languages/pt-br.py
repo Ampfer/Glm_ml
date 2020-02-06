@@ -138,6 +138,7 @@
 'Enter a number': 'Enter a number',
 'Enter a number between %(min)g and %(max)g': 'Enter a number between %(min)g and %(max)g',
 'Enter an integer between %(min)g and %(max)g': 'Informe um valor inteiro entre %(min)g e %(max)g',
+'Enter date as %(format)s': 'Enter date as %(format)s',
 'Enter from %(min)g to %(max)g characters': 'Enter from %(min)g to %(max)g characters',
 'Entre 1 e 50 !': 'Entre 1 e 50 !',
 'Enviado:': 'Enviado:',

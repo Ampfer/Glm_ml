@@ -6,6 +6,7 @@ Envios_Full = db.define_table('envios_full',
 	Field('status',	'string', label = 'Status', length = 30),
     )
 Envios_Full.status.requires= IS_IN_SET(STATUS_FULL,zero=None)
+Envios_Full.data_envio.requires = data
 
 Envios_Itens = db.define_table('envios_itens',
 	Field('envio_id','reference envios_full', label='Envio:'),

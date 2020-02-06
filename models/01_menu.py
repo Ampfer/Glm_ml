@@ -69,7 +69,8 @@ response.menu+=[
 response.menu+=[
     (T('Full'), False, URL(request.application,'default','index'), [
     ('Vendas Full', False, URL(r=request, c='lieto', f='vendas_full')),
-    ('Envios', False, URL(r=request, c='full', f='envios_full_lista')),
+    ('Envios Full', False, URL(r=request, c='full', f='envios_full_lista')),
+    ('Anuncios Full', False, URL(r=request, c='full', f='anuncios_full')),
     ])]
 response.menu+=[
     (T('Login ML'), False, URL(request.application,'default','login'),
