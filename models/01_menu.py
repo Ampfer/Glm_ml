@@ -51,7 +51,7 @@ response.menu+=[
 response.menu+=[
     (T('Vendas'), False, URL(request.application,'default','index'), [
     ('Importar Vendas', False, URL(r=request, c='vendas', f='importar_vendas')),
-    ('Exportar Vendas', False, URL(r=request, c='vendas', f='exportar_vendas')),
+    ('Exportar Vendas', False, URL(r=request, c='lieto', f='exportar_vendas')),
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [

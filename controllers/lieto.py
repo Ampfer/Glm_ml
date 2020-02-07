@@ -191,18 +191,17 @@ def exportar_vendas():
 
 def exportar(ids):
 	session.full = False
-	orcamentos = db(Pedidos.id.belongs(ids)).select()
-	for orcamento in orcamentos:
-		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
+	vendas = db(Pedidos.id.belongs(ids)).select()
+	for venda in vendas:
+		cliente_ml = db(db.clientes.id == venda.buyer_id).select().first()
 		lieto_clientes(cliente_ml)
-		numorc = lieto_orcamentos1(orcamento)
-		itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
-		lieto_orcamentos2(itens)
+		numorc = lieto_orcamentos1(venda)
+		itens = db(Pedidos_Itens.shipping_id==venda.id).select()
+		lieto_orcamentos2(numorc,itens)
 	
 	session.flash = 'Pedidos Exportados com Sucesso....'
 	return
 
-		
 def vendas_full():
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -218,13 +217,13 @@ def vendas_full():
 
 def exportar_full(ids):
 	session.full = True
-	orcamentos = db(Pedidos.id.belongs(ids)).select()
-	for orcamento in orcamentos:
-		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
+	venda = db(Pedidos.id.belongs(ids)).select()
+	for venda in venda:
+		cliente_ml = db(db.clientes.id == venda.buyer_id).select().first()
 		lieto_clientes(cliente_ml)
-		numorc = lieto_orcamentos1(orcamento)
-		itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
-		lieto_orcamentos2(itens)
+		numorc = lieto_orcamentos1(venda)
+		itens = db(Pedidos_Itens.shipping_id==venda.id).select()
+		lieto_orcamentos2(numorc,itens)
 		numdoc = lieto_pedidos1(numorc)
 		lieto_pedidos2(numdoc,numorc)
 
@@ -347,11 +346,11 @@ def lieto_orcamentos1(venda):
 
 	return numdoc
 
-def lieto_orcamentos2(itens):
+def lieto_orcamentos2(numdoc,itens):
 	orcamentos2 = Orcamentos2()
 	
 	for item in itens:
-		numdoc = db(Pedidos.id == item.shipping_id).select().first()['numdoc']
+		#numdoc = db(Pedidos.id == item.shipping_id).select().first()['numdoc']
 		anuncio = db(Anuncios.item_id == item.item_id).select().first()
 		anuncioId = anuncio['id']
 		anuncioForma = anuncio['forma']
@@ -453,7 +452,7 @@ def lieto_pedidos1(numorc):
 	pedidos1.numnot = 0
 	pedidos1.obsped = ''
 	pedidos1.obsord = ''
-	pedidos1.conimp = 'ON'
+	pedidos1.conimp = '0N'
 	pedidos1.pedsub = 0
 	pedidos1.fretra = 0
 	pedidos1.pedimp = 'N'
