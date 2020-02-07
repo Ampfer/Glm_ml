@@ -134,7 +134,6 @@ def saldo_full(anuncio):
     qt_envio = db(query).select(Envios_Itens.quantidade.sum()).first()[Envios_Itens.quantidade.sum()] or 0
     
     item_id = db(Anuncios.id == id).select(Anuncios.item_id).first()['item_id']
-    print item_id
     
     query = (Pedidos.date_created >= '2020-02-01') & (Pedidos.logistica == 'fulfillment') & (Pedidos_Itens.shipping_id == Pedidos.id) & "(Pedidos_Itens.item_id == '{}')".format(item_id)
     qt_vendida = db(query).select(Pedidos_Itens.quantidade.sum()).first()[Pedidos_Itens.quantidade.sum()] or 0

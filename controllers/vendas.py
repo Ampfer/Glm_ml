@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 def importar_vendas():
 	
 	import json
@@ -126,6 +127,18 @@ def importar_vendas():
 
 	return dict(itens=itens,form=form)
 
+def ibge_cidade(cep):
+	import requests
+	import json
+	response = requests.get('https://viacep.com.br/ws/{}/json/'.format(cep))
+	if response.status_code == 200:
+		codigo = json.loads(response.content)['ibge']
+	else:
+		codigo = ''
+	return codigo		
+
+# substiuido por rotina no controler lieto
+
 def exportar_vendas():
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -252,16 +265,6 @@ def salvar_cliente(clientes):
 
 		con.commit()
 	con.close()
-
-def ibge_cidade(cep):
-	import requests
-	import json
-	response = requests.get('https://viacep.com.br/ws/{}/json/'.format(cep))
-	if response.status_code == 200:
-		codigo = json.loads(response.content)['ibge']
-	else:
-		codigo = ''
-	return codigo		
 
 def salvar_pedidos(pedidos):
 	import fdb

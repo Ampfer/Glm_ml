@@ -131,9 +131,9 @@ def pedidos():
 	for row in lista:
 		query = "codcli = {}".format(row[2])
 		cliente = clientes.select('codcli,nomcli', query).fetchone()
-		condicao = 'numdoc = {}'.format(row[0])
+		query = 'numdoc = {}'.format(row[0])
 		try:
-			total_itens = orcamentos2.select('sum(qntpro*prepro)',condicao).fetchone()[0]
+			total_itens = orcamentos2.select('sum(qntpro*prepro)',query).fetchone()[0]
 			valor = float(total_itens) or 0
 		except:
 			valor = 0
@@ -175,20 +175,49 @@ def salvar_pedidos():
 		mensagem = "{} pedido(s) salvo(s) com sucesso \n{} erro(s) ao salvar".format(sucesso,erro)
 		
 	return mensagem
-		
-def vendas_full():
+
+def exportar_vendas():
+
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
-	selectable = lambda ids: exportar_full(ids)
-	query = (Pedidos.logistica == 'fulfillment') & (Pedidos.enviado == None)
-	#query = (Pedidos.logistica == 'fulfillment')
-	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
+	selectable = lambda ids: exportar(ids)
+	query = (Pedidos.logistica == 'cross_docking') & (Pedidos.enviado == None)
+	
+	gridPedidos = grid(query ,create=False, editable=False,deletable=False,formname="pedidos", alt='250px',
 		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
         
 	gridPedidos = DIV(gridPedidos, _class="well")
+	
+	return dict(gridPedidos=gridPedidos)
+
+def exportar(ids):
+	session.full = False
+	orcamentos = db(Pedidos.id.belongs(ids)).select()
+	for orcamento in orcamentos:
+		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
+		lieto_clientes(cliente_ml)
+		numorc = lieto_orcamentos1(orcamento)
+		itens = db(Pedidos_Itens.shipping_id.belongs(ids)).select()
+		lieto_orcamentos2(itens)
+	
+	session.flash = 'Pedidos Exportados com Sucesso....'
+	return
+
+		
+def vendas_full():
+
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
+	selectable = lambda ids: exportar_full(ids)
+	query = (Pedidos.logistica == 'fulfillment') & (Pedidos.enviado == None)
+
+	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
+		fields=fields,orderby =~ Pedidos.date_created,selectable=selectable,selectable_submit_button='Exportar Pedidos',)
+        
+	#gridPedidos = DIV(gridPedidos, _class="well")
 
 	return dict(gridPedidos=gridPedidos)
 
 def exportar_full(ids):
+	session.full = True
 	orcamentos = db(Pedidos.id.belongs(ids)).select()
 	for orcamento in orcamentos:
 		cliente_ml = db(db.clientes.id == orcamento.buyer_id).select().first()
@@ -200,8 +229,10 @@ def exportar_full(ids):
 		lieto_pedidos2(numdoc,numorc)
 
 	session.flash = "Pedido Importado com Sucesso....!"
+	return
 
 def lieto_clientes(cliente_ml):
+
 	cliente = Clientes()
 	cliente.nomcli = cliente_ml.nome[:50].upper().decode('utf-8')
 	cliente.nomfan = cliente_ml.apelido[:30].upper().decode('utf-8')
@@ -218,7 +249,7 @@ def lieto_clientes(cliente_ml):
 	cliente.datalt = '{}'.format(request.now.date())
 	cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(cliente.cidcli)
 	cliente.emanfe = cliente_ml.email
-	cliente.codven = 146
+	cliente.codven = 148 if session.full else 146
 	cliente.codcon = 31
 	cliente.codcor = 15
 	cliente.codtra = 273
@@ -236,8 +267,8 @@ def lieto_clientes(cliente_ml):
 	cli = cliente.buscar_cliente_cnpj(cliente_ml.cnpj_cpf)
 	
 	if cli:
-		condicao = "CGCCPF = '%s'" %(cliente_ml.cnpj_cpf)
-		cliente.update(condicao)		
+		query = "CGCCPF = '%s'" %(cliente_ml.cnpj_cpf)
+		cliente.update(query)		
 	else:
 		cliente.codcli = int(cliente.lastId())
 		cliente.datcad = '%s' %(request.now.date())
@@ -259,20 +290,21 @@ def lieto_orcamentos1(venda):
 	obsord = """
 	Total Mercado Livre: {}
 	Tarifas: {}
-	""".format(venda.valor,venda.taxa)
+	Pedido ML : {}
+	""".format(venda.valor,venda.taxa,venda.id)
 
 	orcamentos1.codcli = codcli
-	orcamentos1.pedven = ''
+	orcamentos1.pedven = str(venda.id)
 	orcamentos1.codtab = str(tabela)
-	orcamentos1.codven = 148
+	orcamentos1.codven = 148 if session.full else 146
 	orcamentos1.obsord = obsord
 	orcamentos1.porcom = ((0.02*(float(venda.valor) - float(venda.taxa))) / float(venda.valor))*100
 	orcamentos1.codemp = 3
 	orcamentos1.numorc = 0
 	orcamentos1.pedcli = ''
 	orcamentos1.pdeped = 0
-	orcamentos1.pdeqnt = 0
-	orcamentos1.pdeval = 0
+	orcamentos1.pdeqnt = 0 if session.full else 100
+	orcamentos1.pdeval = 0 if session.full else 100
 	orcamentos1.pdepon = 0
 	orcamentos1.codcon = 1
 	orcamentos1.codcor = 15
@@ -287,12 +319,19 @@ def lieto_orcamentos1(venda):
 	orcamentos1.numlot = 0
 	orcamentos1.horent = ''
 
-	numdoc = venda.numdoc or 0
-	orc =  orcamentos1.buscar(numdoc)
+	#numdoc = venda.numdoc or 0
+	#orc =  orcamentos1.buscar(numdoc)
 
-	if orc:	
-		condicao = "NUMDOC = '%s'" %(int(orc[0]))
-		orcamentos1.update(condicao)
+	query = "pedven = '{}'".format(venda.id)
+	try:
+		numdoc = orcamentos1.select('NUMDOC',query).fetchone()[0]
+	except:
+		numdoc = None
+
+	if numdoc:
+		print 'orcamento ja cadastrado'	
+		#query = "NUMDOC = '%s'" %(int(numdoc))
+		#orcamentos1.update(query)
 	else:
 		lastId = orcamentos1.last_id() # Retorna último Id Tabela ORCAMENTOS1
 		numdoc = int(lastId) + 1
@@ -328,15 +367,15 @@ def lieto_orcamentos2(itens):
 	
 			prod = Produtos()
 			# Buscar produto banco firebird
-			condicao = "CODPRO = {}".format(row.produto)
-			produto = prod.select('CODPRO,CODINT,NOMPRO,UNIPRO', condicao).fetchone()
+			query = "CODPRO = {}".format(row.produto)
+			produto = prod.select('CODPRO,CODINT,NOMPRO,UNIPRO', query).fetchone()
 			# Buscar preco tabela banco firebird
 			preco_tabela = prod.preco_tabela(produto[0])
 			# calcular porcentagem de desconto do item
 			pdepro = round((1-((item.valor/indice) / preco_tabela)) * 100,2)
 			# verificar se existe item cadastrado
-			condicao = "NUMDOC = {} AND CODPRO = {}".format(int(numdoc),int(produto[0]))
-			existe = orcamentos2.select('*',condicao).fetchone()
+			query = "NUMDOC = {} AND CODPRO = {}".format(int(numdoc),int(produto[0]))
+			existe = orcamentos2.select('*',query).fetchone()
 		
 			orcamentos2.numdoc = int(numdoc)
 			orcamentos2.codpro = int(produto[0])
@@ -353,7 +392,7 @@ def lieto_orcamentos2(itens):
 			orcamentos2.qntpre = 1
 
 			if existe:
-				orcamentos2.update(condicao)
+				orcamentos2.update(query)
 			else:
 				try:
 					orcamentos2.insert()
@@ -371,12 +410,12 @@ def lieto_pedidos1(numorc):
 	
 	# Buscar Orcamento
 	fields = "codcli,numorc,pedcli,pedven,pdeped,pdeqnt,pdeval,pdepon,codtab,codven,porcom,codcon,codcor,codtra,codred,valfre,tipfre,datdoc,datpro"
-	condicao = " numdoc = {}".format(numorc)
-	orcamento = orcamentos1.select(fields,condicao).fetchone()
+	query = " numdoc = {}".format(numorc)
+	orcamento = orcamentos1.select(fields,query).fetchone()
 
 	# total do orçamento 
-	condicao = 'numdoc = {}'.format(numorc)
-	total_itens = orcamentos2.select('sum(qntpro*prepro)',condicao).fetchone()[0]
+	query = 'numdoc = {}'.format(numorc)
+	total_itens = orcamentos2.select('sum(qntpro*prepro)',query).fetchone()[0]
 	total = float(total_itens) + float(orcamento[15])
 	
 	pedidos1.numdoc = numdoc
@@ -419,14 +458,13 @@ def lieto_pedidos1(numorc):
 	pedidos1.fretra = 0
 	pedidos1.pedimp = 'N'
 
-
-
-	condicao = 'numdoc = {}'.format(numdoc)
-	pedido = pedidos1.select('*',condicao).fetchone()
+	query = 'numdoc = {}'.format(numdoc)
+	pedido = pedidos1.select('*',query).fetchone()
 
 	if pedido:
-		condicao = "NUMDOC = '%s'" %(numdoc)
-		pedidos1.update(condicao)
+		print 'pedido ja cadastrado'	
+		#query = "NUMDOC = '%s'" %(numdoc)
+		#pedidos1.update(query)
 	else:
 		pedidos1.insert()
 
@@ -440,8 +478,8 @@ def lieto_pedidos2(numdoc,numorc):
 
 	# buscar itens do orçamento
 	fields = 'codpro,codint,nompro,unipro,qntpro,pdepro,precus,preori,prepro,tippro'
-	condicao = 'NUMDOC = {}'.format(numorc)
-	itens = orcamentos2.select(fields,condicao).fetchall()
+	query = 'NUMDOC = {}'.format(numorc)
+	itens = orcamentos2.select(fields,query).fetchall()
 	total_peso = 0
 	for item in itens:
 
@@ -458,15 +496,15 @@ def lieto_pedidos2(numdoc,numorc):
 		pedidos2.tippro = item[9]
 
 		# buscar peso na tabela de produtos
-		condicao = 'CODPRO = {}'.format(item[0])
-		peso = float(produtos.select('pesbru',condicao).fetchone()[0])
+		query = 'CODPRO = {}'.format(item[0])
+		peso = float(produtos.select('pesbru',query).fetchone()[0])
 
 		total_peso = total_peso + peso
 
-		condicao = 'NUMDOC = {} AND CODPRO = {}'.format(numdoc,item[0])
-		existe = pedidos2.select('*',condicao).fetchone()
+		query = 'NUMDOC = {} AND CODPRO = {}'.format(numdoc,item[0])
+		existe = pedidos2.select('*',query).fetchone()
 		if existe:
-			pedidos2.update(condicao)
+			pedidos2.update(query)
 		else:
 			pedidos2.insert()
 
@@ -474,15 +512,15 @@ def lieto_pedidos2(numdoc,numorc):
 	pedidos1 = Pedidos1()
 	pedidos1.pesliq = total_peso
 	pedidos1.pesbru = total_peso + 0.100
-	condicao = 'NUMDOC = {}'.format(numdoc)
-	pedidos1.update(condicao)
+	query = 'NUMDOC = {}'.format(numdoc)
+	pedidos1.update(query)
 	
 	#Atializa Tabela Orcamento 1
 	orcamentos1 = Orcamentos1()
 	orcamentos1.pedimp = 'S'
 	orcamentos1.sitorc ='E'
-	condicao = 'NUMDOC = {}'.format(numorc)
-	orcamentos1.update(condicao)
+	query = 'NUMDOC = {}'.format(numorc)
+	orcamentos1.update(query)
 
 	return
 
