@@ -277,7 +277,7 @@ def lieto_clientes(cliente_ml):
 
 def lieto_orcamentos1(venda):
 	orcamentos1 = Orcamentos1()
-	venda_itens = db(db.pedidos_itens.shipping_id  == venda.id).select()
+	#venda_itens = db(db.pedidos_itens.shipping_id  == venda.id).select()
 
 	# Retorna última Tabela de Preços
 	tabela = orcamentos1.tabela()
@@ -286,14 +286,13 @@ def lieto_orcamentos1(venda):
 	cliente = Clientes()
 	codcli = cliente.buscar_cliente_cnpj(cnpj_cpf)[0]
 
-	obsord = """
-	Total Mercado Livre: {}
+	obsord = """Total Mercado Livre: {}
 	Tarifas: {}
-	Pedido ML : {}
-	""".format(venda.valor,venda.taxa,venda.id)
+	Pedido ML : {}""".format(venda.valor,venda.taxa,venda.id)
 
 	orcamentos1.codcli = codcli
-	orcamentos1.pedven = str(venda.id)
+	orcamentos1.pedven = ''
+	orcamentos1.codmlb = str(venda.id)
 	orcamentos1.codtab = str(tabela)
 	orcamentos1.codven = 148 if session.full else 146
 	orcamentos1.obsord = obsord
@@ -321,7 +320,7 @@ def lieto_orcamentos1(venda):
 	#numdoc = venda.numdoc or 0
 	#orc =  orcamentos1.buscar(numdoc)
 
-	query = "pedven = '{}'".format(venda.id)
+	query = "codmlb = '{}'".format(venda.id)
 	try:
 		numdoc = orcamentos1.select('NUMDOC',query).fetchone()[0]
 	except:
@@ -335,8 +334,6 @@ def lieto_orcamentos1(venda):
 		lastId = orcamentos1.last_id() # Retorna último Id Tabela ORCAMENTOS1
 		numdoc = int(lastId) + 1
 		orcamentos1.numdoc = int(lastId) + 1
-		#orcamentos1.datdoc = str(request.now.date())
-		#orcamentos1.datpro = str(request.now.date())
 		orcamentos1.datdoc = str(venda.date_created)
 		orcamentos1.datpro = str(venda.date_created)
 
@@ -408,7 +405,7 @@ def lieto_pedidos1(numorc):
 	numdoc = (numorc*100) + 01
 	
 	# Buscar Orcamento
-	fields = "codcli,numorc,pedcli,pedven,pdeped,pdeqnt,pdeval,pdepon,codtab,codven,porcom,codcon,codcor,codtra,codred,valfre,tipfre,datdoc,datpro"
+	fields = "codcli,numorc,pedcli,pedven,pdeped,pdeqnt,pdeval,pdepon,codtab,codven,porcom,codcon,codcor,codtra,codred,valfre,tipfre,datdoc,datpro,codmlb"
 	query = " numdoc = {}".format(numorc)
 	orcamento = orcamentos1.select(fields,query).fetchone()
 
@@ -437,9 +434,8 @@ def lieto_pedidos1(numorc):
 	pedidos1.tipfre = orcamento[16]
 	pedidos1.datdoc = str(orcamento[17])
 	pedidos1.datpro = str(orcamento[18])
+	pedidos1.codmlb = str(orcamento[19])
 	pedidos1.totped = total
-	#pedidos1.datfat = ''
-	#pedidos1.numnot = 0
 	pedidos1.conimp = ''
 	pedidos1.codemp = 3
 	pedidos1.qntvol = 1
@@ -452,7 +448,7 @@ def lieto_pedidos1(numorc):
 	pedidos1.numnot = 0
 	pedidos1.obsped = ''
 	pedidos1.obsord = ''
-	pedidos1.conimp = '0N'
+	pedidos1.conimp = '0N' if session.full else 'N0'
 	pedidos1.pedsub = 0
 	pedidos1.fretra = 0
 	pedidos1.pedimp = 'N'
@@ -466,6 +462,12 @@ def lieto_pedidos1(numorc):
 		#pedidos1.update(query)
 	else:
 		pedidos1.insert()
+		
+		#Atualiza Tabela Orcamento 1
+		query = "NUMDOC = '%s'" %(int(numorc))
+		orcamentos1.pedimp = 'S'
+		orcamentos1.sitorc = 'E'
+		orcamentos1.update(query)
 
 	return numdoc
 
@@ -514,13 +516,6 @@ def lieto_pedidos2(numdoc,numorc):
 	query = 'NUMDOC = {}'.format(numdoc)
 	pedidos1.update(query)
 	
-	#Atializa Tabela Orcamento 1
-	orcamentos1 = Orcamentos1()
-	orcamentos1.pedimp = 'S'
-	orcamentos1.sitorc ='E'
-	query = 'NUMDOC = {}'.format(numorc)
-	orcamentos1.update(query)
-
 	return
 
 #*************************************************

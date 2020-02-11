@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 
+def temp():
+	query = (Pedidos.numdoc != None) & (Pedidos.numdoc != 0)
+	vendas = db(query).select()
+	for venda in vendas:
+		orc = Pedidos1()
+		orc.codmlb = venda.id
+		query = "numorc = '{}'".format(venda.numdoc)
+		try:
+			orcamento = orc.update(query)
+		except Exception as e:
+			raise
+		else:
+			pass
+		finally:
+			pass
+		
 def importar_vendas():
 	
 	import json
