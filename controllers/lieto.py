@@ -100,7 +100,7 @@ def baixar_boletos():
 				fluxo.datdoc = boleto['data_credito']
 				fluxo.hordoc = "{}:{}:{}".format(str(request.now.hour).zfill(2), str(request.now.minute).zfill(2),str(request.now.second).zfill(2))
 				fluxo.valdoc = boleto['valor_pago']
-				fluxo.hisdoc = "REC. {}-{} de (C{}) {}".format(boleto['documento'],rec[1],boleto['codigo'], boleto['cliente'])[0:60]
+				fluxo.hisdoc = "REC. {}-{} de (C{}) {}".format(boleto['documento'],rec[1],boleto['codigo'], boleto['cliente'].encode('UTF-8'))[0:60]
 				fluxo.credeb = '+'
 				fluxo.codpag = 0
 				fluxo.origem = 'REC'
@@ -328,6 +328,7 @@ def lieto_orcamentos1(venda):
 
 	if numdoc:
 		print 'orcamento ja cadastrado'	
+		Pedidos[venda.id] = dict(numdoc = numdoc, enviado='SIM')
 		#query = "NUMDOC = '%s'" %(int(numdoc))
 		#orcamentos1.update(query)
 	else:
