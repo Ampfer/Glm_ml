@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 def produtos_atualizar():
     produtos = db(db.produtos.familia != None).select()
     for produto in produtos:

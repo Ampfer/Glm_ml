@@ -31,7 +31,7 @@ class Base(object):
 		insere = "INSERT INTO %s (%s) VALUES (%s)" %(self.__class__.__name__.upper(),
 													', '.join(self.__dict__.keys()),
 													valor)
-		#print insere
+		print insere
 		con.cur.execute(insere)
 		con.commit()
 

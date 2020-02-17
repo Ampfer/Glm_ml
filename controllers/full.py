@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def envios_full_lista():
 
     grid_envios = grid(Envios_Full,formname="lista_envios",orderby=~Envios_Full.data_envio)

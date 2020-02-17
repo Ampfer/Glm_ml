@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 def importar_produtos():
 
 	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo csv:',requires=notempty)

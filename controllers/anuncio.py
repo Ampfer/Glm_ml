@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def categorias():
     fields = (Categorias.categoria_id,Categorias.categoria,Categorias.frete)
     formCategorias = grid(Categorias,150,formname="formCategorias",fields=fields, orderby=Categorias.categoria)
