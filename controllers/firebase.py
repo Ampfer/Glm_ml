@@ -11,17 +11,33 @@ from urllib import urlencode
 
 FIREBASE_API_ROOT_URL = 'https://us-central1-amplog-48beb.cloudfunctions.net/api'
 
-def atualiza_produto_firebase():
+def teste():
+	a = None
+	b= float(a or 0)
+	print b
+
+def atualizar_produtos_firebase():
 	produtos = Produtos()
 	fields = "codpro, nompro, codbar, pesbru, locpro"
-	query = "codgru = 1 and tabela = 'S' and codpro = 81"
-	results = produtos.select(fields,query).fetchone()
+	query = "codgru = 1 and tabela = 'S' "
+	results = produtos.select(fields,query).fetchall()
+ 	c=0
+ 	for res in results:
+ 		c=c+1
+ 		post_produto_firebase(res)
+ 	return c
+
+
+def post_produto_firebase(results):
+
 	produto = dict(
 		codpro = results[0],
 		nompro = results[1],
 		codbar = results[2],
-		pesbru = float(results[3]),
-		locpro = results[4] 
+		pesbru = float(results[3] or 0),
+		locpro = results[4],
+		qteest = 0,
+		proalt = False
 	)
 
 	response = post("/produtos",body=produto)

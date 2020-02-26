@@ -233,13 +233,13 @@ def exportar_full(ids):
 def lieto_clientes(cliente_ml):
 
 	cliente = Clientes()
-	cliente.nomcli = cliente_ml.nome[:50].upper().decode('utf-8')
-	cliente.nomfan = cliente_ml.apelido[:30].upper().decode('utf-8')
+	cliente.nomcli = cliente_ml.nome[:50].upper().decode('utf-8').replace("'","")
+	cliente.nomfan = cliente_ml.apelido[:30].upper().decode('utf-8').replace("'","")
 	cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
-	cliente.endcli = cliente_ml.endereco[:50].upper().decode('utf-8')
-	cliente.baicli = cliente_ml.bairro[:35].upper().decode('utf-8') if cliente_ml.bairro else 'CENTRO'
-	cliente.cidcli = (cliente_ml.cidade[:35].upper()).decode('utf-8')
-	cliente.estcli = buscar_uf(cliente_ml.estado).decode('utf-8')
+	cliente.endcli = cliente_ml.endereco[:50].upper().decode('utf-8').replace("'","")
+	cliente.baicli = cliente_ml.bairro[:35].upper().decode('utf-8').replace("'","") if cliente_ml.bairro else 'CENTRO'
+	cliente.cidcli = (cliente_ml.cidade[:35].upper()).decode('utf-8').replace("'","")
+	cliente.estcli = buscar_uf(cliente_ml.estado).decode('utf-8').replace("'","")
 	cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
 	cliente.emacli = cliente_ml.email[:40]
 	cliente.telcli = cliente_ml.fone if cliente_ml.fone else ' '
@@ -377,7 +377,7 @@ def lieto_orcamentos2(numdoc,itens):
 			orcamentos2.numdoc = int(numdoc)
 			orcamentos2.codpro = int(produto[0])
 			orcamentos2.codint = str(produto[1])
-			orcamentos2.nompro = produto[2].encode('UTF-8')
+			orcamentos2.nompro = produto[2].encode('UTF-8').replace("'","")
 			orcamentos2.unipro = str(produto[3])
 			orcamentos2.qntpro = float(item.quantidade*indice)
 			orcamentos2.pdepro = float(pdepro)
