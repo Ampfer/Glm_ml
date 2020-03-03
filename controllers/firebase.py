@@ -11,10 +11,6 @@ from urllib import urlencode
 
 FIREBASE_API_ROOT_URL = 'https://us-central1-amplog-48beb.cloudfunctions.net/api'
 
-def teste():
-	a = None
-	b= float(a or 0)
-	print b
 
 def atualizar_produtos_firebase():
 	produtos = Produtos()

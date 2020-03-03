@@ -258,6 +258,7 @@
 'Other Plugins': 'Outros Plugins',
 'Other Recipes': 'Outras Receitas',
 'Overview': 'Visão Geral',
+'Pagamento:': 'Pagamento:',
 'Password': 'Senha',
 'Permission': 'Permission',
 'Permissions': 'Permissions',

@@ -142,3 +142,14 @@ def saldo_full(anuncio):
     
     return float(qt_envio) - float(qt_vendida)
 
+def pedidos_full():
+
+    fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado,Pedidos.status,Pedidos.pagamento)
+    query = (Pedidos.logistica == 'fulfillment')
+
+    gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
+        fields=fields,orderby =~ Pedidos.date_created,selectable_submit_button='Exportar Pedidos',)
+        
+    #gridPedidos = DIV(gridPedidos, _class="well")
+
+    return dict(gridPedidos=gridPedidos)

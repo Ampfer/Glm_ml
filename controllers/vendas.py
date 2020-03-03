@@ -119,6 +119,7 @@ def importar_vendas():
 					buyer_id = item['buyer']['id'],
 					date_created = datetime.strptime(item['date_created'][:10],'%Y-%m-%d'),
 					status = shipping['status'],
+					pagamento = item['payments'][0]['status'],
 					logistica = shipping['logistic']['type']
 					#total = pedido.valor,
 					)
