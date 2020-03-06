@@ -124,7 +124,7 @@ def anuncios_full():
     
     gridAnunciosFull = grid(Anuncios.localizacao == 'FULL',
                     alt='250px',args=[id],formname = "anunciosfull",maxtextlength=100,fields=fields,
-                    searchable = True, deletable=False, editable = False, create = False,)
+                    searchable = True, deletable=False, editable = False, create = False, orderby= Anuncios.titulo)
 
     return dict(gridAnunciosFull=gridAnunciosFull)
 
@@ -153,3 +153,18 @@ def pedidos_full():
     #gridPedidos = DIV(gridPedidos, _class="well")
 
     return dict(gridPedidos=gridPedidos)
+
+
+def atualizar_status():
+    from meli import Meli 
+    import json
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+
+    rows = db(Pedidos_Itens.logistica == 'fulfillment').select()
+
+    for row in rows:
+        args = "orders/%s" %(row.id)
+        busca = meli.get(args,{'access_token':session.ACCESS_TOKEN})
+        if busca.status_code == 200:
+            item = json.loads(busca.content)
+            Pedidos_Itens[int(row.id)] = dict(status=item['status']) 

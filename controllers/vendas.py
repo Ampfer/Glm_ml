@@ -119,7 +119,7 @@ def importar_vendas():
 					buyer_id = item['buyer']['id'],
 					date_created = datetime.strptime(item['date_created'][:10],'%Y-%m-%d'),
 					status = shipping['status'],
-					pagamento = item['payments'][0]['status'],
+					pagamento = item['status'],
 					logistica = shipping['logistic']['type']
 					#total = pedido.valor,
 					)
@@ -130,6 +130,7 @@ def importar_vendas():
 					item = item['order_items'][0]['item']['title'],
 					item_id = item['order_items'][0]['item']['id'],
 					logistica = shipping['logistic']['type'],
+					status = item['status'],
 					quantidade =  item['order_items'][0]['quantity'],
 					valor = item['order_items'][0]['unit_price'],
 					taxa = taxa,
