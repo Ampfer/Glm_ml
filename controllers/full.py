@@ -137,7 +137,7 @@ def saldo_full(anuncio):
     
     item_id = db(Anuncios.id == id).select(Anuncios.item_id).first()['item_id']
     
-    query = (Pedidos.date_created >= '2020-02-01') & (Pedidos.logistica == 'fulfillment') & (Pedidos_Itens.shipping_id == Pedidos.id) & "(Pedidos_Itens.item_id == '{}')".format(item_id)
+    query = (Pedidos.date_created >= '2020-02-01') & (Pedidos.logistica == 'fulfillment') & (Pedidos_Itens.shipping_id == Pedidos.id) & (Pedidos_Itens.status == 'paid') & "(Pedidos_Itens.item_id == '{}')".format(item_id)
     qt_vendida = db(query).select(Pedidos_Itens.quantidade.sum()).first()[Pedidos_Itens.quantidade.sum()] or 0
     
     return float(qt_envio) - float(qt_vendida)
@@ -168,3 +168,8 @@ def atualizar_status():
         if busca.status_code == 200:
             item = json.loads(busca.content)
             Pedidos_Itens[int(row.id)] = dict(status=item['status']) 
+
+def atualizar_status_pedido():
+    itens = db(Pedidos_Itens.status == 'cancelled').select()
+    for item in itens:
+        Pedidos[int(item.shipping_id)] = dict(pagamento=item.status)
