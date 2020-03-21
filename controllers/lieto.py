@@ -6,6 +6,11 @@ import codecs
 #ERPFDB = "D:/lieto/Dados/ERP.FDB"
 #SERVERNAME = "localhost"
 
+from unicodedata import normalize
+
+def remover_acentos(txt, codif='utf-8'):
+	return normalize('NFKD', txt.decode(codif)).encode('ASCII', 'ignore')
+
 def cobranca():
 
 	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo Retorno:',requires=notempty)
@@ -233,12 +238,31 @@ def exportar_full(ids):
 def lieto_clientes(cliente_ml):
 
 	cliente = Clientes()
+
+	'''
 	cliente.nomcli = cliente_ml.nome[:50].upper().decode('utf-8').replace("'","")
 	cliente.nomfan = cliente_ml.apelido[:30].upper().decode('utf-8').replace("'","")
 	cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
 	cliente.endcli = cliente_ml.endereco[:50].upper().decode('utf-8').replace("'","")
 	cliente.baicli = cliente_ml.bairro[:35].upper().decode('utf-8').replace("'","") if cliente_ml.bairro else 'CENTRO'
-	cliente.cidcli = (cliente_ml.cidade[:35].upper()).decode('utf-8').replace("'","")
+	cliente.cidcli = (cliente_ml.cidade[:35]).decode('utf-8').replace("'","").upper()
+	cliente.estcli = buscar_uf(cliente_ml.estado).decode('utf-8').replace("'","")
+	cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
+	cliente.emacli = cliente_ml.email[:40]
+	cliente.telcli = cliente_ml.fone if cliente_ml.fone else ' '
+	cliente.cgccpf = cliente_ml.cnpj_cpf
+	cliente.numcli = cliente_ml.numero
+	cliente.datalt = '{}'.format(request.now.date())
+	cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(remover_acentos(cliente_ml.cidade[:35]).upper())
+	#cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(remover_acentos(cliente.cidcli))
+	'''
+
+	cliente.nomcli = remover_acentos(cliente_ml.nome[:50]).replace("'","").upper()
+	cliente.nomfan = remover_acentos(cliente_ml.apelido[:30]).replace("'","").upper()
+	cliente.fisjur = 'J' if cliente_ml.tipo == 'CNPJ' else 'F'
+	cliente.endcli = remover_acentos(cliente_ml.endereco[:50]).replace("'","").upper()
+	cliente.baicli = remover_acentos(cliente_ml.bairro[:35]).replace("'","").upper() if cliente_ml.bairro else 'CENTRO'
+	cliente.cidcli = remover_acentos(cliente_ml.cidade[:35]).replace("'","").upper()
 	cliente.estcli = buscar_uf(cliente_ml.estado).decode('utf-8').replace("'","")
 	cliente.cepcli = '{}-{}'.format(cliente_ml.cep[:5],cliente_ml.cep[-3:])
 	cliente.emacli = cliente_ml.email[:40]
@@ -247,6 +271,7 @@ def lieto_clientes(cliente_ml):
 	cliente.numcli = cliente_ml.numero
 	cliente.datalt = '{}'.format(request.now.date())
 	cliente.coccli = cliente_ml.codcid if cliente_ml.codcid else cliente.buscar_coccli(cliente.cidcli)
+
 	cliente.emanfe = cliente_ml.email
 	cliente.codven = 148 if session.full else 146
 	cliente.codcon = 31
