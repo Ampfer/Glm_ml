@@ -142,9 +142,14 @@ USER_ID = 158428813
 
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
+<<<<<<< HEAD
 #ERPFDB = "C:\Lieto\Dados\ERP.FDB"
 #SERVERNAME = "mpfrserv"
 #SERVERNAME = "ec2-54-81-192-88.compute-1.amazonaws.com"
+=======
+#ERPFDB = "C:\Lieto\Dados\ERP.FDB"
+#SERVERNAME = "localhost"
+>>>>>>> 69e0479ba5406ec0abb0c973db161a7b6de69dbf
 
 ERPFDB = "D:/lieto/Dados/ERP.FDB"
 SERVERNAME = "localhost"
