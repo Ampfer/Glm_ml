@@ -142,15 +142,15 @@ USER_ID = 158428813
 
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
-#ERPFDB = "C:\Lieto\Dados\ERP.FDB"
+ERPFDB = "C:\Lieto\Dados\ERP.FDB"
 #SERVERNAME = "mpfrserv"
-#SERVERNAME = "ec2-54-81-192-88.compute-1.amazonaws.com"
+SERVERNAME = "18.230.73.54"
 
 #ERPFDB = "C:\Lieto\Dados\ERP.FDB"
 #SERVERNAME = "localhost"
 
-ERPFDB = "D:/lieto/Dados/ERP.FDB"
-SERVERNAME = "localhost"
+#ERPFDB = "D:/lieto/Dados/ERP.FDB"
+#SERVERNAME = "localhost"
 
 def login():
     from meli import Meli
