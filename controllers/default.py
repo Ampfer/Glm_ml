@@ -66,20 +66,35 @@ def call():
 
 
 def login():
-    print session.ACCESS_TOKEN
     from meli import Meli
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
-    return "<a href='"+meli.auth_url(redirect_URI=REDIRECT_URI)+"'> Click para Fazer Login na conta do Mercado Livre </a>"
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+    if request.env.REMOTE_ADDR == '127.0.0.1':
+        return "<a href='"+meli.auth_url(redirect_URI=REDIRECT_URI)+"'> Click para Fazer Login na conta do Mercado Livre </a>"
+    else:
+        return "<a href='{}'> Click para Atualizar Token </a>".format(URL('atualizar_token'))
 
 def autorize():
     from meli import Meli
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
     if request.vars.code:
         meli.authorize(request.vars.code, REDIRECT_URI)
+ 
     session.ACCESS_TOKEN = meli.access_token
-    session.REFRESH_TOKEN = meli.access_token
+    session.REFRESH_TOKEN = meli.refresh_token
     Empresa[1] = dict(token1 = session.ACCESS_TOKEN, token2=session.REFRESH_TOKEN)
-    #meli = Meli(client_id=CLIENT_ID,client_secret=session.CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=REFRESH_TOKEN)
+    
     return meli.access_token
 
+def atualizar_token():
+    from meli import Meli
+    
+    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+    meli.get_refresh_token()
+ 
+    session.ACCESS_TOKEN = meli.access_token
+    session.REFRESH_TOKEN = meli.refresh_token
+    Empresa[1] = dict(token1 = session.ACCESS_TOKEN, token2=session.REFRESH_TOKEN)
+    
+    return meli.access_token
 

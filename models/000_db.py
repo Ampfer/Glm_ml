@@ -136,21 +136,31 @@ auth.settings.reset_password_requires_verification = True
 #CLIENT_SECRET = "iiRaQEEVWHyQvo2rzSaToHZQkOpkrS7k"
 
 # Usuário GLM Ferramentas
-CLIENT_ID = 911703094686182
-CLIENT_SECRET = "x7pGQceaNzerJ3hzVg1kddDp9DY4nikW"
-USER_ID = 158428813
+#CLIENT_ID = 911703094686182
+#CLIENT_SECRET = "x7pGQceaNzerJ3hzVg1kddDp9DY4nikW"
+#USER_ID = 158428813
 
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
-ERPFDB = "C:\Lieto\Dados\ERP.FDB"
+print  myconf.get('ml.client_secret')
+print "{}".format(myconf.get('ml.client_id'))
+print myconf.get('ml.user_id')
+
+CLIENT_ID = int(myconf.get('ml.client_id'))
+CLIENT_SECRET = "{}".format(myconf.get('ml.client_secret'))
+USER_ID = int(myconf.get('ml.user_id'))
+
+if request.env.REMOTE_ADDR == '127.0.0.1':
+    SERVERNAME = "localhost"
+else:
+    SERVERNAME = "18.230.73.54"
+
+if request.env.SERVER_NAME == 'DESKTOP-F8B4BD1':
+    ERPFDB = "D:/lieto/Dados/ERP.FDB"
+else:
+    ERPFDB = "C:\Lieto\Dados\ERP.FDB"
+
 #SERVERNAME = "mpfrserv"
-SERVERNAME = "18.230.73.54"
-
-#ERPFDB = "C:\Lieto\Dados\ERP.FDB"
-#SERVERNAME = "localhost"
-
-#ERPFDB = "D:/lieto/Dados/ERP.FDB"
-#SERVERNAME = "localhost"
 
 def login():
     from meli import Meli
