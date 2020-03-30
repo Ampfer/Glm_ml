@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+@auth.requires_membership('admin')
 def selecionar_produtos():
     fields = [Produtos.id,Produtos.nome]
 

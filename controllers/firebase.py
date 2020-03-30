@@ -11,7 +11,7 @@ from urllib import urlencode
 
 FIREBASE_API_ROOT_URL = 'https://us-central1-amplog-48beb.cloudfunctions.net/api'
 
-
+@auth.requires_membership('admin')
 def atualizar_produtos_firebase():
 	produtos = Produtos()
 	fields = "codpro, nompro, codbar, pesbru, locpro"
@@ -23,7 +23,7 @@ def atualizar_produtos_firebase():
  		post_produto_firebase(res)
  	return c
 
-
+@auth.requires_membership('admin')
 def post_produto_firebase(results):
 
 	produto = dict(
@@ -44,6 +44,7 @@ def post_produto_firebase(results):
 
 	#produto_firebase_set(produto)
 
+@auth.requires_membership('admin')
 def buscar_produtos_firebase():
 	response = get("/produtos")
 	
@@ -51,7 +52,7 @@ def buscar_produtos_firebase():
 		resposta = json.loads(response.content)
 	return response
 
-
+@auth.requires_membership('admin')
 def post(path, body=None, params={}):
     headers = {'Accept': 'application/json', 'Content-type':'application/json'}
     uri = make_path(path)
@@ -61,6 +62,7 @@ def post(path, body=None, params={}):
     response = requests.post(uri, data=body, params=urlencode(params), headers=headers)
     return response
 
+@auth.requires_membership('admin')
 def get(path, params={}):
 	params = dict(codbar=7898901274209)
 	headers = {'Accept': 'application/json', 'Content-type':'application/json','x-format-new':'true'}
@@ -68,7 +70,7 @@ def get(path, params={}):
 	response = requests.get(uri, params=urlencode(params), headers=headers)
 	return response
 
-
+@auth.requires_membership('admin')
 def make_path(path, params={}):        
 	if not (re.search("^http", path)):
 	    if not (re.search("^\/", path)):

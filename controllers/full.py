@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+@auth.requires_membership('admin')
 def envios_full_lista():
 
     grid_envios = grid(Envios_Full,formname="lista_envios",orderby=~Envios_Full.data_envio)
@@ -12,6 +13,7 @@ def envios_full_lista():
 
     return dict(grid_envios=grid_envios)
 
+@auth.requires_membership('admin')
 def envios_full():
     id_envio = request.args(0) or "0"
 
@@ -50,6 +52,7 @@ def envios_full():
     
     return locals()
 
+@auth.requires_membership('admin')
 def envio_itens():
     
     id_envio = int(request.args(0))
@@ -94,6 +97,7 @@ def envio_itens():
 
     return dict(formItens=formItens,btnExcluir=btnExcluir,btnVoltar=btnVoltar,btnPesquisar=btnPesquisar)
 
+@auth.requires_membership('admin')
 def pesquisar_anuncio():
     fields = [Anuncios.id,Anuncios.titulo,Anuncios.tipo,Anuncios.localizacao]
     links=[dict(header='Selecionar',
@@ -107,6 +111,7 @@ def pesquisar_anuncio():
 
     return locals()
 
+@auth.requires_membership('admin')
 def envio_produtos():
     id_envio = int(request.args(0))
     
@@ -116,6 +121,7 @@ def envio_produtos():
 
     return dict(formProdutos = formProdutos)
 
+@auth.requires_membership('admin')
 def anuncios_full():
 
     Anuncios.full_glm = Field.Virtual('full_glm',lambda row: saldo_full(row.anuncios), label='Estoque Full')
@@ -128,6 +134,7 @@ def anuncios_full():
 
     return dict(gridAnunciosFull=gridAnunciosFull)
 
+@auth.requires_membership('admin')
 def saldo_full(anuncio):
 
     id = int(anuncio.id)
@@ -142,6 +149,7 @@ def saldo_full(anuncio):
     
     return float(qt_envio) - float(qt_vendida)
 
+@auth.requires_membership('admin')
 def pedidos_full():
 
     fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado,Pedidos.status,Pedidos.pagamento)
@@ -154,7 +162,7 @@ def pedidos_full():
 
     return dict(gridPedidos=gridPedidos)
 
-
+@auth.requires_membership('admin')
 def atualizar_status():
     from meli import Meli 
     import json
@@ -169,6 +177,7 @@ def atualizar_status():
             item = json.loads(busca.content)
             Pedidos_Itens[int(row.id)] = dict(status=item['status']) 
 
+@auth.requires_membership('admin')
 def atualizar_status_pedido():
     itens = db(Pedidos_Itens.status == 'cancelled').select()
     for item in itens:

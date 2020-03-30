@@ -64,7 +64,7 @@ def call():
     """
     return service()
 
-
+@auth.requires_membership('admin')
 def login():
     from meli import Meli
     meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
@@ -73,6 +73,7 @@ def login():
     else:
         return "<a href='{}'> Click para Atualizar Token </a>".format(URL('atualizar_token'))
 
+@auth.requires_membership('admin')
 def autorize():
     from meli import Meli
 
@@ -86,6 +87,7 @@ def autorize():
     
     return meli.access_token
 
+@auth.requires_membership('admin')
 def atualizar_token():
     from meli import Meli
     

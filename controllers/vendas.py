@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+@auth.requires_membership('admin')
 def temp():
 	query = (Pedidos.numdoc != None) & (Pedidos.numdoc != 0)
 	vendas = db(query).select()
@@ -15,7 +16,8 @@ def temp():
 			pass
 		finally:
 			pass
-		
+
+@auth.requires_membership('admin')	
 def importar_vendas():
 	
 	import json
@@ -145,6 +147,7 @@ def importar_vendas():
 
 	return dict(itens=itens,form=form)
 
+@auth.requires_membership('admin')
 def ibge_cidade(cep):
 	import requests
 	import json
@@ -156,7 +159,7 @@ def ibge_cidade(cep):
 	return codigo		
 
 # substiuido por rotina no controler lieto
-
+@auth.requires_membership('admin')
 def exportar_vendas():
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -170,6 +173,7 @@ def exportar_vendas():
 	
 	return dict(gridPedidos=gridPedidos)
 
+@auth.requires_membership('admin')
 def exportar(ids):
 
 	pedidos = db(Pedidos.id.belongs(ids)).select()
@@ -184,6 +188,7 @@ def exportar(ids):
 	response.flash = 'Pedidos Exportados com Sucesso....'
 	return
 
+@auth.requires_membership('admin')
 def salvar_cliente(clientes):
 
 	import fdb
@@ -284,6 +289,7 @@ def salvar_cliente(clientes):
 		con.commit()
 	con.close()
 
+@auth.requires_membership('admin')
 def salvar_pedidos(pedidos):
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
@@ -351,6 +357,7 @@ def salvar_pedidos(pedidos):
 	 
 	return
 
+@auth.requires_membership('admin')
 def salvar_itens(itens):
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')

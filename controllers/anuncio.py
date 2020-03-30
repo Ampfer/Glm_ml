@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+@auth.requires_membership('admin')
 def categorias():
     fields = (Categorias.categoria_id,Categorias.categoria,Categorias.frete)
     formCategorias = grid(Categorias,150,formname="formCategorias",fields=fields, orderby=Categorias.categoria)
@@ -17,6 +18,7 @@ def categorias():
 
     return dict(formCategorias=formCategorias)
 
+@auth.requires_membership('admin')
 def categoria():
     idCategoria = request.args(0) or "0"
 
@@ -39,6 +41,7 @@ def categoria():
 
     return dict(formCategoria=formCategoria, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
 
+@auth.requires_membership('admin')
 def atualizar_categorias():
     categorias = db(Categorias.id > 0).select()
     for item in categorias:
@@ -51,7 +54,8 @@ def atualizar_categorias():
                 categoria_id = item['categoria_id'],
                 frete = categoria['valorFrete'],
                 )
-        
+
+@auth.requires_membership('admin')      
 def anuncios():
 
     def delete_anuncio(table,id):
@@ -74,6 +78,7 @@ def anuncios():
 
     return dict(formAnuncios=formAnuncios)
 
+@auth.requires_membership('admin')
 def anuncio():
 
     idAnuncio = request.args(0) or "0"
@@ -137,6 +142,7 @@ def anuncio():
                 formAnuncioImagem=formAnuncioImagem, formAnuncioPublicar=formAnuncioPublicar,
                 formAnuncioPreco=formAnuncioPreco,formAnuncioAtributos=formAnuncioAtributos,)
 
+@auth.requires_membership('admin')
 def sugerir_categoria():
     if request.vars.categoria == '':
         from meli import Meli
@@ -156,6 +162,7 @@ def sugerir_categoria():
             
             return "jQuery('#anuncios_categoria').append(new Option('%s', '%s')).val('%s');" % (categoria['categoria'],sugestao['id'],sugestao['id'])
 
+@auth.requires_membership('admin')
 def anuncios_descricao():
 
     idAnuncio = int(request.args(0))
@@ -185,7 +192,8 @@ def anuncios_descricao():
         response.flash = 'Erro no Formulário !' 
 
     return dict(formDescricao=formDescricao)        
-   
+
+@auth.requires_membership('admin')
 def anuncios_produtos():
     idAnuncio = int(request.args(0))
     anuncio = Anuncios[idAnuncio]
@@ -256,6 +264,7 @@ def anuncios_produtos():
     
     return dict(formProdutos=formProdutos,formProduto=formProduto,)
 
+@auth.requires_membership('admin')
 def anuncios_atributos():
     idAnuncio = idAnuncio = int(request.args(0))
 
@@ -265,6 +274,7 @@ def anuncios_atributos():
     formAtributos = grid(Anuncios_Atributos.anuncio==idAnuncio,args=[idAnuncio], formname= 'anunciosatributos')
     return dict(formAtributos=formAtributos)
 
+@auth.requires_membership('admin')
 def anuncios_imagens():
     idAnuncio = int(request.args(0))
 
@@ -276,6 +286,7 @@ def anuncios_imagens():
 
     return dict(imagens=imagens,btnAtualizar=btnAtualizar,btnAtualizar1=btnAtualizar1)
 
+@auth.requires_membership('admin')
 def atualiza_imagem_familia():
     idAnuncio = int(request.args(0))
     idFamilia = Anuncios[idAnuncio].familia
@@ -287,6 +298,7 @@ def atualiza_imagem_familia():
         Anuncios_Imagens.update_or_insert(q2,anuncio=idAnuncio,imagem=imagem)
     response.js = "$('#anunciosimagens').get(0).reload();"
 
+@auth.requires_membership('admin')
 def atualiza_imagem_produto():
     idAnuncio = int(request.args(0))
     anuncio_produto = db(Anuncios_Produtos.anuncio == idAnuncio).select().first()
@@ -299,12 +311,13 @@ def atualiza_imagem_produto():
         Anuncios_Imagens.update_or_insert(q2,anuncio=idAnuncio,imagem=imagem)
     response.js = "$('#anunciosimagens').get(0).reload();"
     
-
+@auth.requires_membership('admin')
 def remove_imagem():
     idImagem = int(request.args(0))
     del Anuncios_Imagens[idImagem]
     response.js = "$('#anunciosimagens').get(0).reload()"
 
+@auth.requires_membership('admin')
 def anuncios_preco():
     
     idAnuncio = int(request.args(0))
@@ -346,6 +359,7 @@ def anuncios_preco():
 
     return dict(form=form,es=es,ep=ep,desconto=desconto)
 
+@auth.requires_membership('admin')
 def anuncios_publicar():
     idAnuncio = int(request.args(0))
     anuncio = Anuncios[idAnuncio]
@@ -403,7 +417,7 @@ def anuncios_publicar():
     
     return dict(anuncio=anuncio,btnPublicar=btnPublicar)
 
-
+@auth.requires_membership('admin')
 def buscar_variacao(idAnuncio,imagens):
     variacao = []
     if session.anuncio['forma'] == 'Multiplos':
@@ -424,6 +438,7 @@ def buscar_variacao(idAnuncio,imagens):
             variacao.append(variacaoProduto)
     return variacao
 
+@auth.requires_membership('admin')
 def anunciar_item():
     idAnuncio = session.anuncio['id']
 
@@ -476,6 +491,7 @@ def anunciar_item():
 
     return
 
+@auth.requires_membership('admin')
 def alterar_item():
     idAnuncio = session.anuncio['id']
 
@@ -533,6 +549,7 @@ def alterar_item():
 
     return 
 
+@auth.requires_membership('admin')
 def importar_anuncios():
 
     form = SQLFORM.factory(
@@ -562,7 +579,7 @@ def importar_anuncios():
 
     return dict(form=form,itens = xitens,btnAtualizar=btnAtualizar)
 
-
+@auth.requires_membership('admin')
 def buscar_anuncio(item_id=None,offset=0,limit=50):
 
     import json
@@ -587,7 +604,7 @@ def buscar_anuncio(item_id=None,offset=0,limit=50):
             xitens = itens['results']
     return xitens
 
-
+@auth.requires_membership('admin')
 def multiplos():
     # Cunsulta de itens na Api do mercado livre
     import json
@@ -607,7 +624,7 @@ def multiplos():
     atualizar_anuncios(xitens)
     return
 
-
+@auth.requires_membership('admin')
 def atualizar_anuncios(xitens):
 
     #Loop nos itens encontrados
@@ -700,10 +717,9 @@ def atualizar_anuncios(xitens):
                         anunciosProdutosId = anunciosProdutos['anuncios_produtos']['id']
                         Anuncios_Produtos[anunciosProdutosId] = dict(variacao_id = variacao['id'],imagens_ids = variacao['picture_ids'],quantidade = variacao['available_quantity'] )
                     except: 
-                        pass
-		
+                        pass		
 
-
+@auth.requires_membership('admin')
 def buscar_valor_frete(item_id):
     import json
     valorfrete = 0
@@ -716,7 +732,7 @@ def buscar_valor_frete(item_id):
         valorfrete = frete['coverage']['all_country']['list_cost']
     return valorfrete
 
-
+@auth.requires_membership('admin')
 def imagem_upload(idAnuncio):
     #### Buscando as Imagens do Anuncio ####
     import os
@@ -753,6 +769,7 @@ def imagem_upload(idAnuncio):
 
     return imagens
 
+@auth.requires_membership('admin')
 def sincronizar_anuncios():
     import json
     from meli import Meli
@@ -779,7 +796,7 @@ def sincronizar_anuncios():
 
     return dict(form=form)
 
-
+@auth.requires_membership('admin')
 def atualizar_sku():
 
 	if session.ACCESS_TOKEN:
@@ -810,7 +827,7 @@ def atualizar_sku():
 				status = 'Antes Faça o Login....'
 	return 
 
-
+@auth.requires_membership('admin')
 def sku():
     #id ancunio
 	anuncios = db(Anuncios.id>0).select()
@@ -822,6 +839,8 @@ def sku():
 											atributo = 313,
 											valor = sku
 											)
+
+@auth.requires_membership('admin')
 def sku1():
     #id produto
     anuncios = db(Anuncios.forma != 'Multiplos').select()
@@ -838,6 +857,7 @@ def sku1():
         except:
             pass
 
+@auth.requires_membership('admin')
 def dadosfiscais(idProduto):
 
     if session.ACCESS_TOKEN:
@@ -888,7 +908,7 @@ def dadosfiscais(idProduto):
         status = 'Antes Faça o Login....'
     return 
 
-
+@auth.requires_membership('admin')
 def vicular_sku():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
@@ -910,6 +930,7 @@ def vicular_sku():
 				pass
 	return
 
+@auth.requires_membership('admin')
 def atualizar_produtos():
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')

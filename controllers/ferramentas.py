@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+@auth.requires_membership('admin')
 def importar_produtos():
 
 	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo csv:',requires=notempty)
@@ -33,6 +34,7 @@ def importar_produtos():
 
 	return dict(form=form,gridProdutos=gridProdutos,file=file)
 
+@auth.requires_membership('admin')
 def atualiza_produtos():
 	rows = db(Importar_Produtos.id > 0).select()
 	for row in rows:
@@ -55,6 +57,7 @@ def atualiza_produtos():
                 ean = row.ean if row.ean else ean,
                 )
 
+@auth.requires_membership('admin')
 def atualizar_estoque():
 
 	anuncios = db(Anuncios.id > 0).select()
@@ -95,6 +98,7 @@ def atualizar_estoque():
 
 	return dict(form=form)
 
+@auth.requires_membership('admin')
 def zerar_estoque():
 
 	form = FORM.confirm('Zerar Estoque',{'Voltar':URL('default','index')})
@@ -107,6 +111,7 @@ def zerar_estoque():
 """
 SINCRONIZAR ESTOQUE
 """
+@auth.requires_membership('admin')
 def importar_estoque():
 
 	form = FORM.confirm('Importar Estoque',{'Voltar':URL('default','index')})
@@ -128,6 +133,7 @@ def importar_estoque():
 
 	return dict(form=form)
 
+@auth.requires_membership('admin')
 def estoque_erp(codpro):
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
@@ -159,6 +165,7 @@ def estoque_erp(codpro):
 	
 	return saldo
 
+@auth.requires_membership('admin')
 def qtde_vendida(codpro):
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
@@ -183,6 +190,7 @@ def qtde_vendida(codpro):
 """
 **************************************************
 """
+@auth.requires_membership('admin')
 def reservado(produtos_id):
     
     query = (Envios_Full.status == "Reservado") & (Envios_Produtos.envio_id == Envios_Full.id)
@@ -193,6 +201,7 @@ def reservado(produtos_id):
         soma += int(row.envios_produtos.quantidade)
     return soma
 
+@auth.requires_membership('admin')
 def atualizar_sugerido():
 	anuncios = db(Anuncios.id > 0).select()
 	for anuncio in anuncios:
@@ -201,11 +210,13 @@ def atualizar_sugerido():
 	#response.js = "$('#teste').get(0).reload()"
 	response.js = "location.reload(true)"
 
+@auth.requires_membership('admin')
 def alterar_desconto():
 	id = int(request.post_vars.id)
 	valor = request.post_vars.valor
 	Anuncios[id] = dict(desconto = valor)
 
+@auth.requires_membership('admin')
 def alterar_preco():
 	id = int(request.post_vars.id)
 	valor = request.post_vars.valor
@@ -215,6 +226,7 @@ def alterar_preco():
 	desc = round((1-(float(valor)*(1-float(desconto/100)))/float(ep))*100,2)
 	Anuncios[id] = dict(preco = valor,desconto = desc)
 
+@auth.requires_membership('admin')
 def sincronizar_preco():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
@@ -239,6 +251,7 @@ def sincronizar_preco():
 	response.js = "location.reload(true)"
 	return
 
+@auth.requires_membership('admin')
 def atualizar_preco():
 	Anuncios.sugerido = Field.Virtual('sugerido',lambda row: sugerido(row.anuncios)['preco'], label='Sugerido')
 	fields = (Anuncios.id,Anuncios.titulo,Anuncios.categoria,Anuncios.tipo,Anuncios.forma,Anuncios.frete,Anuncios.fretegratis,Anuncios.desconto,Anuncios.preco,Anuncios.sugerido)
@@ -259,6 +272,7 @@ def atualizar_preco():
 
 	return dict(formPrecos=formPrecos)
 
+@auth.requires_membership('admin')
 def buscar_variacao_preco(idAnuncio,preco):
     variacao = []
     rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
@@ -269,6 +283,7 @@ def buscar_variacao_preco(idAnuncio,preco):
         variacao.append(variacaoProduto)
     return variacao
 
+@auth.requires_membership('admin')
 def buscar_variacao_estoque(idAnuncio):
     variacao = [] 
     rows = db(Anuncios_Produtos.anuncio==idAnuncio).select()
@@ -280,7 +295,7 @@ def buscar_variacao_estoque(idAnuncio):
         variacao.append(variacaoProduto)
     return variacao
 
-
+@auth.requires_membership('admin')
 def ean():
     rows = db(Anuncios.id>0).select()
     for row in rows:
@@ -291,6 +306,7 @@ def ean():
             	query = (Anuncios_Atributos.anuncio == row.id) & (Anuncios_Atributos.atributo == 3)
             	Anuncios_Atributos.update_or_insert(query,anuncio=row.id, atributo = 3, valor= ean)
 
+@auth.requires_membership('admin')
 def atualizar_ean():
 	rows = db(Anuncios.id>0).select()
 	for row in rows:
@@ -318,6 +334,7 @@ def atualizar_ean():
 				status = 'Antes Faça o Login....'
 				item = ''   
 
+@auth.requires_membership('admin')
 def buscar_descricao(produtoId):
 
 	try:
@@ -330,6 +347,7 @@ def buscar_descricao(produtoId):
 
 	return descricao_curta
 
+@auth.requires_membership('admin')
 def exportar_produtos():
 
 	if type(request.vars.ids) is list:
@@ -442,6 +460,7 @@ def exportar_produtos():
 
 	return dict(tray=tray)
 
+@auth.requires_membership('admin')
 def lista_tray(b):
 	xpeso = b['peso'] or 0
 	peso =  float(xpeso) * 1000
@@ -467,6 +486,7 @@ def lista_tray(b):
 	tray_produtos_row.append('') #Endereço da imagem do produto 6
 	return tray_produtos_row
 
+@auth.requires_membership('admin')
 def lista_tray_variacao(b):	
 	tray_variacao_row = []
 	xpeso = b['peso'] or 0

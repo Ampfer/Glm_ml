@@ -8,9 +8,11 @@ import codecs
 
 from unicodedata import normalize
 
+@auth.requires_membership('admin')
 def remover_acentos(txt, codif='utf-8'):
 	return normalize('NFKD', txt.decode(codif)).encode('ASCII', 'ignore')
 
+@auth.requires_membership('admin')
 def cobranca():
 
 	form = SQLFORM.factory(Field('csvfile','upload',uploadfield=False,label='Arquivo Retorno:',requires=notempty)
@@ -62,6 +64,7 @@ def cobranca():
 
 	return dict(form=form, boletos = boletos)
 
+@auth.requires_membership('admin')
 def baixar_boletos():
 	ids = request.vars['ids[]']
 	boletos =session.boletos
@@ -126,6 +129,7 @@ def baixar_boletos():
 
 	return lote.valpag
 
+@auth.requires_membership('admin')
 def pedidos():
 	orcamentos1 = Orcamentos1()
 	query = "codven = 146 and sitorc = 'A' and tiporc = 'P' "
@@ -154,6 +158,7 @@ def pedidos():
 
 	return dict(orcamentos=orcamentos)
 
+@auth.requires_membership('admin')
 def salvar_pedidos():
 	ids = []
 	
@@ -181,6 +186,7 @@ def salvar_pedidos():
 		
 	return mensagem
 
+@auth.requires_membership('admin')
 def exportar_vendas():
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -194,6 +200,7 @@ def exportar_vendas():
 	
 	return dict(gridPedidos=gridPedidos)
 
+@auth.requires_membership('admin')
 def exportar(ids):
 	session.full = False
 	vendas = db(Pedidos.id.belongs(ids)).select()
@@ -207,6 +214,7 @@ def exportar(ids):
 	session.flash = 'Pedidos Exportados com Sucesso....'
 	return
 
+@auth.requires_membership('admin')
 def vendas_full():
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado)
@@ -220,6 +228,7 @@ def vendas_full():
 
 	return dict(gridPedidos=gridPedidos)
 
+@auth.requires_membership('admin')
 def exportar_full(ids):
 	session.full = True
 	venda = db(Pedidos.id.belongs(ids)).select()
@@ -235,6 +244,7 @@ def exportar_full(ids):
 	session.flash = "Pedido Importado com Sucesso....!"
 	return
 
+@auth.requires_membership('admin')
 def lieto_clientes(cliente_ml):
 
 	cliente = Clientes()
@@ -300,6 +310,7 @@ def lieto_clientes(cliente_ml):
 
 	return 
 
+@auth.requires_membership('admin')
 def lieto_orcamentos1(venda):
 	orcamentos1 = Orcamentos1()
 	#venda_itens = db(db.pedidos_itens.shipping_id  == venda.id).select()
@@ -369,6 +380,7 @@ def lieto_orcamentos1(venda):
 
 	return numdoc
 
+@auth.requires_membership('admin')
 def lieto_orcamentos2(numdoc,itens):
 	orcamentos2 = Orcamentos2()
 	
@@ -424,6 +436,7 @@ def lieto_orcamentos2(numdoc,itens):
 					orcamentos2.insert()
 	return
 
+@auth.requires_membership('admin')
 def lieto_pedidos1(numorc):
 	pedidos1 = Pedidos1()
 	orcamentos1 = Orcamentos1()
@@ -497,6 +510,7 @@ def lieto_pedidos1(numorc):
 
 	return numdoc
 
+@auth.requires_membership('admin')
 def lieto_pedidos2(numdoc,numorc):
 
 	pedidos2 = Pedidos2()

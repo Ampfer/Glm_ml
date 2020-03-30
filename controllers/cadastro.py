@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+@auth.requires_membership('admin')
 def produtos_atualizar():
     produtos = db(db.produtos.familia != None).select()
     for produto in produtos:
@@ -7,7 +8,8 @@ def produtos_atualizar():
         Familias_Produtos.update_or_insert(Familias_Produtos.familia==produto.familia and Familias_Produtos.produto == produto.id,
             familia=produto.familia,
             produto= produto.id)
-    
+
+@auth.requires_membership('admin')   
 def empresa():
     idEmpresa = db(Empresa.id == 1).select().first() or "0"
 
@@ -26,6 +28,7 @@ def empresa():
 
     return dict(formEmpresa=formEmpresa)
 
+@auth.requires_membership('admin')
 def clientes():
     fields = (db.clientes.id,db.clientes.nome)
     formClientes = grid(db.clientes,formname="formClienteCompras",fields=fields)
@@ -40,6 +43,7 @@ def clientes():
 
     return locals()
 
+@auth.requires_membership('admin')
 def cliente():
 
     idCliente = request.args(0) or "0"
@@ -67,6 +71,7 @@ def cliente():
 
     return dict(formCliente=formCliente,btnExcluir=btnExcluir, btnVoltar=btnVoltar, btnNovo=btnNovo, formClienteCompras=formClienteCompras)
 
+@auth.requires_membership('admin')
 def marcas():
     def teste(table,id):
         print 'xxx',formMarcas.errors
@@ -78,6 +83,7 @@ def marcas():
         redirect(URL('marca',args=idMarca))
     return dict(formMarcas=formMarcas)
 
+@auth.requires_membership('admin')
 def marca():
     idMarca = request.args(0) or "0"
     
@@ -109,6 +115,7 @@ def marca():
 
     return dict(formMarca=formMarca, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir,imagem=imagem)
 
+@auth.requires_membership('admin')
 def produtos():
 
     fields = (db.produtos.id,db.produtos.nome,db.produtos.atributo,db.produtos.variacao,db.produtos.estoque,db.produtos.largura, db.produtos.altura,db.produtos.comprimento, db.produtos.peso)
@@ -124,6 +131,7 @@ def produtos():
 
     return dict(formProdutos=formProdutos)
 
+@auth.requires_membership('admin')
 def produto():
     idProduto = request.args(0) or "0"
 
@@ -149,6 +157,7 @@ def produto():
     return dict(formProduto=formProduto,formProdutoDescricao = formProdutoDescricao,
                 formProdutoImagem=formProdutoImagem,btnVoltar=btnVoltar)
 
+@auth.requires_membership('admin')
 def produtos_descricao():
     
     idProduto = int(request.args(0))
@@ -168,6 +177,7 @@ def produtos_descricao():
 
     return dict(formDescricao=formDescricao)
 
+@auth.requires_membership('admin')
 def produtos_imagens():
     idProduto = int(request.args(0))
     formImagem = SQLFORM(Imagens)
@@ -181,12 +191,14 @@ def produtos_imagens():
     imagens = db(query).select()
 
     return dict(formImagem=formImagem, imagens=imagens)
-    
+
+@auth.requires_membership('admin')   
 def remove_imagem_produto():
     idImagem = int(request.args(0))
     del Produtos_Imagens[idImagem]
     response.js = "$('#produtoimagem').get(0).reload()"
 
+@auth.requires_membership('admin')
 def familias():
 
     fields = (Familias.id,Familias.nome, Familias.catalogo,Familias.web)
@@ -207,7 +219,7 @@ def familias():
 
     return dict(formFamilias=formFamilias)
 
-
+@auth.requires_membership('admin')
 def familia():
 
     idFamilia = request.args(0) or "0"
@@ -255,6 +267,7 @@ def familia():
     return dict(url=url,formFamilia=formFamilia,formFamiliaProdutos=formFamiliaProdutos, formFamiliaDescricao=formFamiliaDescricao,
         formFamiliaImagem=formFamiliaImagem,btnVoltar=btnVoltar,imagem=imagem,btnProximo=btnProximo, btnAnterior=btnAnterior)
 
+@auth.requires_membership('admin')
 def familias_descricao():
     
     idFamilia = int(request.args(0))
@@ -273,6 +286,7 @@ def familias_descricao():
         response.flash = 'Erro no Formulário !' 
 
     return dict(formDescricao=formDescricao)
+
 '''
 def familia_produtos():
 
@@ -289,6 +303,7 @@ def familia_produtos():
     
     return dict(btnAdicionar=btnAdicionar,formProdutos=formProdutos)
 '''
+@auth.requires_membership('admin')
 def familia_produtos():
 
     session.idFamilia = int(request.args(0))
@@ -309,6 +324,7 @@ def familia_produtos():
     
     return dict(btnAdicionar=btnAdicionar,formProdutos=formProdutos)
 
+@auth.requires_membership('admin')
 def selecionar_produtos():
 
     fields = [db.produtos.id,db.produtos.nome]
@@ -320,6 +336,7 @@ def selecionar_produtos():
 
     return dict(formPesquisa=formPesquisa)
 
+@auth.requires_membership('admin')
 def adiciona_produto():
 
     if type(request.vars.ids) is list:
@@ -337,12 +354,14 @@ def adiciona_produto():
 #        Produtos[idProduto] = dict(familia=session.idFamilia)
     
     redirect(request.env.http_web2py_component_location,client_side=True)    
-   
+
+@auth.requires_membership('admin')  
 def remove_produto():
     idProduto = int(request.args(0))
     db.produtos[idProduto] = dict(familia=None)
     response.js = "$('#familiaProdutos').get(0).reload()"
 
+@auth.requires_membership('admin')
 def familias_imagens():
     idFamilia = int(request.args(0))
     formImagem = SQLFORM(Imagens)
@@ -356,23 +375,27 @@ def familias_imagens():
     imagens = db(query).select()
 
     return dict(formImagem=formImagem, imagens=imagens)
-    
+
+@auth.requires_membership('admin')    
 def remove_imagem():
     idImagem = int(request.args(0))
     del Familias_Imagens[idImagem]
     response.js = "$('#familiaimagem').get(0).reload()"
 
+@auth.requires_membership('admin')
 def selecionar_imagem():
     import os
     caminho = os.path.join('applications','glm_ml', 'static','imagens')
     arquivos = os.listdir(caminho)
     return dict(arquivos=arquivos, caminho=caminho)
 
+@auth.requires_membership('admin')
 def atributos():
     fields = (Atributos.atributo_id, Atributos.nome,)
     formAtributos = grid(Atributos, formname = 'categoriaatributos',)
     return dict(formAtributos=formAtributos)
 
+@auth.requires_membership('admin')
 def nome_imagem():
     rows = db(Familias.marca == 37).select()
     for row in rows:
@@ -380,6 +403,7 @@ def nome_imagem():
         imagem = img.replace('web','').replace('png','jpg')
         Familias[row.id] = dict(imagem = imagem)
 
+@auth.requires_membership('admin')
 def atualiza_imagem():
     import os
     rows = db(Familias.id > 0).select()
@@ -392,7 +416,8 @@ def atualiza_imagem():
                 Familias_Imagens.insert(familia=row.id, imagem = id)
             except:
                 pass
-       
+
+@auth.requires_membership('admin')     
 def importar_imagem_produto():
     produtos = db(db.produtos.id >0).select(orderby=db.produtos.id)
 
@@ -409,6 +434,7 @@ def importar_imagem_produto():
                     produto = produto.id, 
                     imagem = imagem.imagem)
 
+@auth.requires_membership('admin')
 def importar_descricao_produtos():
 
     produtos = db(db.produtos.id >0).select(orderby=db.produtos.id)
