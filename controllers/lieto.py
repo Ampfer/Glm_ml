@@ -572,7 +572,7 @@ def receber():
 	query = (Pedidos.receber =='N') & (Pedidos.date_created >= '2020-03-01') & (Pedidos.nota != None)
 
 	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos", links=links,
-	    fields=fields,orderby =~ Pedidos.date_created)
+	    fields=fields,orderby = Pedidos.date_created)
 
 	return dict(gridPedidos=gridPedidos)
 
