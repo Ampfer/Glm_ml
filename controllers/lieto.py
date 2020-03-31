@@ -568,7 +568,8 @@ def receber():
 	       _href='{}'.format(URL('receber_baixar',args=row.id))))]
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.taxa, Pedidos.nota, Pedidos.valpag)
-	query = (Pedidos.receber=='N')
+	
+	query = (Pedidos.receber =='N') & (Pedidos.date_created >= '2020-01-01') & (Pedidos.nota != None)
 
 	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos", links=links,
 	    fields=fields,orderby =~ Pedidos.date_created)
@@ -668,7 +669,7 @@ def receber_baixar():
 
 @auth.requires_membership('admin')
 def importar_nota():
-	query = (Pedidos.nota == None) 
+	query = (Pedidos.nota == None) & (Pedidos.date_created >= '2020-01-01')
 	pedidos = db(query).select()
 	for pedido in pedidos:
 		
