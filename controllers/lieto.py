@@ -594,7 +594,7 @@ def receber_baixar():
 	query = "codcli = {}".format(parcela[0])
 	nomcli = cliente.select('nomcli',query).fetchone()[0]
 
-	nome = '{} - {}'.format(parcela[0],nomcli)
+	nome = '{} - {}'.format(parcela[0],nomcli.encode('UTF-8').replace("'",""))
 
 	dados = dict(cliente=nome,valpar = "{:.2f}".format(parcela[1]),datven=parcela[2].strftime('%d/%m/%Y'))
 
