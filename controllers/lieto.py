@@ -671,18 +671,22 @@ def importar_nota():
 	query = (Pedidos.nota == None) 
 	pedidos = db(query).select()
 	for pedido in pedidos:
-				
-		pedido1 = Pedidos1()
-		query = "numorc = '{}'".format(pedido.numdoc)
-		nota = pedido1.select('NUMNOT',query).fetchone()[0]
-
-		receber = Receber()
-		query = "numdoc = '{}'".format(nota)
-		valorBaixado = receber.select('valpag',query).fetchone()[0]
-
-		if valorBaixado == 0:
-			rec = 'N'
-		else:
-			rec = 'S'
 		
-		Pedidos[pedido.id] = dict(nota = nota,valpag = valorBaixado, receber= rec)
+		try:
+			pedido1 = Pedidos1()
+			query = "numorc = '{}'".format(pedido.numdoc)
+			nota = pedido1.select('NUMNOT',query).fetchone()[0]
+
+			receber = Receber()
+			query = "numdoc = '{}'".format(nota)
+			valorBaixado = receber.select('valpag',query).fetchone()[0]
+
+			if valorBaixado == 0:
+				rec = 'N'
+			else:
+				rec = 'S'
+			
+			Pedidos[pedido.id] = dict(nota = nota,valpag = valorBaixado, receber= rec)
+		except:
+			pass
+	return
