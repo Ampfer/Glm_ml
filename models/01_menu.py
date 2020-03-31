@@ -65,6 +65,8 @@ response.menu+=[
     (T('Lieto'), False, URL(request.application,'default','index'), [
     ('Cobrança Bradesco', False, URL(r=request, c='lieto', f='cobranca')),
     ('Gerar Pedidos', False, URL(r=request, c='lieto', f='pedidos')),
+    ('Receber', False, URL(r=request, c='lieto', f='receber')),
+    ('Importar Notas', False, URL(r=request, c='lieto', f='importar_nota')),
     ])]
 response.menu+=[
     (T('Full'), False, URL(request.application,'default','index'), [

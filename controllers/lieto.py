@@ -559,3 +559,130 @@ def lieto_pedidos2(numdoc,numorc):
 	return
 
 #*************************************************
+
+@auth.requires_membership('admin')
+def receber():
+
+	links=[dict(header='Selecionar',
+	        body=lambda row: A(TAG.button(I(_class='glyphicon glyphicon-edit')),
+	       _href='{}'.format(URL('receber_baixar',args=row.id))))]
+
+	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.taxa, Pedidos.nota, Pedidos.valpag)
+	query = (Pedidos.receber=='N')
+
+	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos", links=links,
+	    fields=fields,orderby =~ Pedidos.date_created)
+
+	return dict(gridPedidos=gridPedidos)
+
+@auth.requires_membership('admin')
+def receber_baixar():
+
+	idPedido = int(request.args[0])
+
+	pedido = db(Pedidos.id == idPedido).select().first()
+	itens = db(Pedidos_Itens.shipping_id == idPedido).select()
+
+	receber = Receber()
+	query = "numdoc = '{}'".format(pedido.nota)
+	parcela = receber.select('codcli,valpar,datven,numide',query).fetchone()
+	vencimento = parcela[2].strftime('%d.%m.%Y')
+
+
+	cliente = Clientes()
+	query = "codcli = {}".format(parcela[0])
+	nomcli = cliente.select('nomcli',query).fetchone()[0]
+
+	nome = '{} - {}'.format(parcela[0],nomcli)
+
+	dados = dict(cliente=nome,valpar = "{:.2f}".format(parcela[1]),datven=parcela[2].strftime('%d/%m/%Y'))
+
+	formReceber = SQLFORM.factory(
+	Field('tarifa','decimal(7,2)', default = pedido.taxa, Label='Tarifa:'),
+	Field('restou','decimal(7,2)', default = float(pedido.valor)-float(pedido.taxa), label='Mercado Pago:'),
+	table_name='receber',
+	submit_button='Baixar',
+	)
+	btnVoltar = voltar('receber')
+
+	def validar(form):
+		resultado = float(form.vars.tarifa) + float(form.vars.restou)
+		if resultado != float(parcela[1]):
+			form.errors.tarifa = 'a soma Tarifa + Restou deve ser igual ao valor do pedido'
+
+	if formReceber.process(onvalidation=validar).accepted:
+		recebimento = Recebimentos()
+
+		recebimento.numide = int(recebimento.last_id())
+		recebimento.iderec = parcela[3]
+		recebimento.datpag = vencimento
+		recebimento.valpag = formReceber.vars.tarifa
+		recebimento.codcor = 21
+		recebimento.obspag = ''
+		recebimento.idelot = 0
+
+		recebimento.insert()
+
+		fluxo = Fluxo()
+
+		fluxo.numide = int(fluxo.last_id())
+		fluxo.codcor = 21
+		fluxo.datdoc = vencimento
+		fluxo.hordoc = "{}:{}:{}".format(str(request.now.hour).zfill(2), str(request.now.minute).zfill(2),str(request.now.second).zfill(2))
+		fluxo.valdoc = formReceber.vars.tarifa
+		fluxo.hisdoc = "REC. {}-01/01 de (C{}) {}".format(str(pedido.nota).zfill(7),parcela[0], nomcli.encode('UTF-8').replace("'",""))[0:60]
+		fluxo.credeb = '+'
+		fluxo.codpag = 0
+		fluxo.origem = 'REC'
+		fluxo.iderec = recebimento.numide
+		fluxo.tippag = 'OUT'
+
+		fluxo.insert()
+
+		recebimento.numide = int(recebimento.last_id())
+		recebimento.valpag = formReceber.vars.restou
+		recebimento.codcor = 15
+
+		recebimento.insert()
+
+		fluxo.numide = int(fluxo.last_id())
+		fluxo.codcor = 15
+		fluxo.valdoc = formReceber.vars.restou
+		fluxo.iderec = recebimento.numide
+
+		fluxo.insert()
+
+		query = 'numide = {}'.format(int(parcela[3]))
+		receber.datpag = vencimento
+		receber.valpag = float(parcela[1])
+
+		receber.update(query)
+
+		Pedidos[idPedido] = dict(receber = 'S')
+
+		session.flash = 'Recebimento Baixado com sucesso...!'
+
+		redirect(URL('receber'))
+       
+	return dict(formReceber=formReceber,btnVoltar=btnVoltar,dados=dados, itens = itens)
+
+@auth.requires_membership('admin')
+def importar_nota():
+	query = (Pedidos.nota == None) 
+	pedidos = db(query).select()
+	for pedido in pedidos:
+				
+		pedido1 = Pedidos1()
+		query = "numorc = '{}'".format(pedido.numdoc)
+		nota = pedido1.select('NUMNOT',query).fetchone()[0]
+
+		receber = Receber()
+		query = "numdoc = '{}'".format(nota)
+		valorBaixado = receber.select('valpag',query).fetchone()[0]
+
+		if valorBaixado == 0:
+			rec = 'N'
+		else:
+			rec = 'S'
+		
+		Pedidos[pedido.id] = dict(nota = nota,valpag = valorBaixado, receber= rec)

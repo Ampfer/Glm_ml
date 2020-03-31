@@ -142,9 +142,6 @@ auth.settings.reset_password_requires_verification = True
 
 REDIRECT_URI = "http://localhost:8000/glm_ml/default/autorize"
 
-print  myconf.get('ml.client_secret')
-print "{}".format(myconf.get('ml.client_id'))
-print myconf.get('ml.user_id')
 
 CLIENT_ID = int(myconf.get('ml.client_id'))
 CLIENT_SECRET = "{}".format(myconf.get('ml.client_secret'))
