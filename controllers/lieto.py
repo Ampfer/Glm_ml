@@ -569,7 +569,7 @@ def receber():
 
 	fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.taxa, Pedidos.nota, Pedidos.valpag)
 	
-	query = (Pedidos.receber =='N') & (Pedidos.date_created >= '2020-03-01') & (Pedidos.nota != None)
+	query = (Pedidos.receber =='N') & (Pedidos.date_created >= '2020-03-01') & (Pedidos.nota != None) & (Pedidos.pagamento != "cancelled")
 
 	gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos", links=links,
 	    fields=fields,orderby =~ Pedidos.date_created)
@@ -607,8 +607,8 @@ def receber_baixar():
 	btnVoltar = voltar('receber')
 
 	def validar(form):
-		resultado = float(form.vars.tarifa) + float(form.vars.restou)
-		if resultado != float(parcela[1]):
+		resultado = round(float(form.vars.tarifa) + float(form.vars.restou),2)
+		if resultado != round(float(parcela[1]),2):
 			form.errors.tarifa = 'a soma Tarifa + Restou deve ser igual ao valor do pedido'
 
 	if formReceber.process(onvalidation=validar).accepted:
