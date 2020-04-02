@@ -153,7 +153,7 @@ def saldo_full(anuncio):
 def pedidos_full():
 
     fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado,Pedidos.status,Pedidos.pagamento)
-    query = (Pedidos.logistica == 'fulfillment')
+    query = (Pedidos.logistica != 'fulfillment') & (Pedidos.date_created >= '2020-01-01')
 
     gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
         fields=fields,orderby =~ Pedidos.date_created,selectable_submit_button='Exportar Pedidos',)
@@ -162,23 +162,6 @@ def pedidos_full():
 
     return dict(gridPedidos=gridPedidos)
 
-@auth.requires_membership('admin')
-def atualizar_status():
-    from meli import Meli 
-    import json
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
 
-    rows = db(Pedidos_Itens.logistica == 'fulfillment').select()
 
-    for row in rows:
-        args = "orders/%s" %(row.id)
-        busca = meli.get(args,{'access_token':session.ACCESS_TOKEN})
-        if busca.status_code == 200:
-            item = json.loads(busca.content)
-            Pedidos_Itens[int(row.id)] = dict(status=item['status']) 
-
-@auth.requires_membership('admin')
-def atualizar_status_pedido():
-    itens = db(Pedidos_Itens.status == 'cancelled').select()
-    for item in itens:
-        Pedidos[int(item.shipping_id)] = dict(pagamento=item.status)
+    

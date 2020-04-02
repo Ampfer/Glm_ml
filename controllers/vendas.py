@@ -413,6 +413,42 @@ def salvar_itens(itens):
 	con.close()
 	return
 
+@auth.requires_membership('admin')
+def pedidos_cancelados():
+
+    fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado,Pedidos.status,Pedidos.pagamento)
+    query = (Pedidos.pagamento == 'cancelled') & (Pedidos.date_created >= '2020-01-01')
+
+    gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
+        fields=fields,orderby =~ Pedidos.date_created,)
+
+    return dict(gridPedidos=gridPedidos)
+
+@auth.requires_membership('admin')
+def atualizar_status():
+
+	form = FORM.confirm('Atualizar status',{'Voltar':URL('default','index')})
+
+	if form.accepted:
+
+		from meli import Meli 
+		import json
+		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
+
+		rows = db(Pedidos.date_created >= '2020-01-01').select()
+
+		for row in rows:
+			args = "orders/%s" %(row.id)
+			busca = meli.get(args,{'access_token':session.ACCESS_TOKEN})
+			if busca.status_code == 200:
+				item = json.loads(busca.content)
+				Pedidos_Itens[int(row.id)] = dict(status=item['status']) 
+
+		itens = db(Pedidos_Itens.status == 'cancelled').select()
+		for item in itens:
+			Pedidos[int(item.shipping_id)] = dict(pagamento=item.status)
+
+	return dict(form=form)
 
 
 

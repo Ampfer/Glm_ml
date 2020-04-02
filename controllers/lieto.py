@@ -669,25 +669,30 @@ def receber_baixar():
 
 @auth.requires_membership('admin')
 def importar_nota():
-	query = (Pedidos.nota == None) & (Pedidos.date_created >= '2020-01-01')
-	pedidos = db(query).select()
-	for pedido in pedidos:
-		
-		try:
-			pedido1 = Pedidos1()
-			query = "numorc = '{}'".format(pedido.numdoc)
-			nota = pedido1.select('NUMNOT',query).fetchone()[0]
 
-			receber = Receber()
-			query = "numdoc = '{}'".format(nota)
-			valorBaixado = receber.select('valpag',query).fetchone()[0]
+	form = FORM.confirm('Importar Notas',{'Voltar':URL('default','index')})
 
-			if valorBaixado == 0:
-				rec = 'N'
-			else:
-				rec = 'S'
+	if form.accepted:
+
+		query = (Pedidos.nota == None) & (Pedidos.date_created >= '2020-01-01')
+		pedidos = db(query).select()
+		for pedido in pedidos:
 			
-			Pedidos[pedido.id] = dict(nota = nota,valpag = valorBaixado, receber= rec)
-		except:
-			pass
-	return
+			try:
+				pedido1 = Pedidos1()
+				query = "numorc = '{}'".format(pedido.numdoc)
+				nota = pedido1.select('NUMNOT',query).fetchone()[0]
+
+				receber = Receber()
+				query = "numdoc = '{}'".format(nota)
+				valorBaixado = receber.select('valpag',query).fetchone()[0]
+
+				if valorBaixado == 0:
+					rec = 'N'
+				else:
+					rec = 'S'
+				
+				Pedidos[pedido.id] = dict(nota = nota,valpag = valorBaixado, receber= rec)
+			except:
+				pass
+	return dict(form=form)

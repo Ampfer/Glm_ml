@@ -52,6 +52,8 @@ response.menu+=[
     (T('Vendas'), False, URL(request.application,'default','index'), [
     ('Importar Vendas', False, URL(r=request, c='vendas', f='importar_vendas')),
     ('Exportar Vendas', False, URL(r=request, c='lieto', f='exportar_vendas')),
+    ('Vendas Canceladas', False, URL(r=request, c='vendas', f='pedidos_cancelados')),
+    ('Atualizar Status', False, URL(r=request, c='vendas', f='atualizar_status')),
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [
