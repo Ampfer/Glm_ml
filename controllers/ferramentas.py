@@ -338,12 +338,20 @@ def atualizar_ean():
 def buscar_descricao(produtoId):
 
 	try:
-		anuncioId = db(Anuncios_Produtos.produto == produtoId).select().first()['anuncio']	
+		idAnuncio = db(Anuncios_Produtos.produto == produtoId).select().first()['anuncio']	
 	except Exception as e:
-		print '1'
 		descricao_curta = ''
 	else:
-		descricao_curta = Descricoes[Anuncios[int(anuncioId)].descricao].descricao
+		idDescricao = Anuncios[idAnuncio].descricao
+
+		if idDescricao == None:   
+			idFamilia = int(Anuncios[idAnuncio].familia)
+			try:
+				descricao_curta = Descricoes[Familias[idFamilia].descricao].descricao
+			except:
+				descricao_curta = '' 
+		else:
+			descricao_curta = Descricoes[Anuncios[int(idAnuncio)].descricao].descricao
 
 	return descricao_curta
 
@@ -505,20 +513,85 @@ def lista_tray_variacao(b):
 	tray_variacao_row.append(b['variacao_tipo']) # Tipo da variação 1 (exemplo: Cor)
 	return tray_variacao_row
 
-"""
+
+
+def exportar_bling():
+	anuncios = db(Anuncios.id == 80).select()
+	produtos_bling = []
+	for anuncio in anuncios:
+		idProduto = db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']
+		produto = db(db.produtos.id == idProduto).select().first()
+		descricao = buscar_descricao(idProduto)
+		idImagem = db(Anuncios_Imagens.anuncio == idAnuncio).select().first()['iamgem']
+		imagem = Imagens[int(idImagem)].imagem
+		url_imagem = 'http://18.230.73.54/glm_ml/default/download/{}'.format(imagem)
+
+
+		bling_produto = []
+		bling_produto.append('') # Id
+		bling_produto.append(str(idProduto).zfill(5)) # codigo
+		bling_produto.append(anuncio.titulo) # descrição
+		bling_produto.append('un') # unidade
+		bling_produto.append(produto.ncm) # Classificacao_fiscal
+		bling_produto.append(produto.origem) # Origem
+		bling_produto.append(anuncio.preco) # Preco
+		bling_produto.append('') #Valor_IPI_fixo
+		bling_produto.append('') # Observacoes 
+		bling_produto.append('Ativo') # Situacao
+		bling_produto.append(anuncio.estoque) # Estoque
+		bling_produto.append(0) # Preco_de_custo 
+		bling_produto.append(0) # Cod_no_fabricante 
+		bling_produto.append(0) # Fabricante  
+		bling_produto.append(produto.locpro) # Localizacao
+		bling_produto.append(0) # Estoque_maximo
+		bling_produto.append(0) # Estoque_minimo
+		bling_produto.append(produto.peso) # Peso_liquido_kg
+		bling_produto.append(produto.peso) # Peso_bruto_kg
+		bling_produto.append(produto.ean) # GTIN_EAN
+		bling_produto.append('') # GTIN_EAN_da_embalagem
+		bling_produto.append(produto.largura) # Largura_do_Produto
+		bling_produto.append(produto.altura) # Altura_do_Produto
+		bling_produto.append(produto.comprimento) # Profundidade_do_produto
+		bling_produto.append('') # Data_Validade = None,
+		bling_produto.append('') # Descricao_do_Produto_no_Fornecedor
+		bling_produto.append('') # Descricao_Complementar
+		bling_produto.append('') # Unidade_por_Caixa
+		bling_produto.append('produto') # Produto_Variacao	  
+		bling_produto.append('') # Tipo_Producao 
+		bling_produto.append('') # Classe_de_enquadramento_do_IPI
+		bling_produto.append('') # Codigo_da_lista_de_servicos
+		bling_produto.append('') # Tipo_do_item
+		bling_produto.append('') # Grupo_de_Tags_Tags
+		bling_produto.append(0) # Tributos
+		bling_produto.append('') # Codigo_Pai 
+		bling_produto.append('') # Codigo_Integracao
+		bling_produto.append('') # Grupo_de_Produtos
+		bling_produto.append(produto.marca) # Marca
+		bling_produto.append('') # CEST	
+		bling_produto.append(0) # Volumes
+		bling_produto.append(descricao) # Descricao_curta
+		bling_produto.append(0) # Cross_Docking
+		bling_produto.append(url_imagem) # URL_Imagens_Externas
+		bling_produto.append('') # Link_Externo
+		bling_produto.append(3) # Meses_Garantia
+		bling_produto.append('NÃO') # Clonar_dados_do_pai
+		bling_produto.append('NOVO') # Condicao_do_produto
+		bling_produto.append('NÃO') # Frete_Gratis
+		bling_produto.append(0) # Numero_FCI 
+		bling_produto.append('') #  Video
+
+		produtos_bling.append(bling_produto)
+
 	import csv
 	c = csv.writer(open("produto.csv", "wb",),delimiter=';')
 	head = ["ID","Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Valor_IPI_fixo","Observacoes","Situacao","Estoque","Preco_de_custo","Cod_no_fabricante","Fabricante","Localizacao","Estoque_maximo","Estoque_minimo","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","GTIN_EAN_da_ embalagem","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Data_Validade","Descricao_do_Produto_no_Fornecedor","Descricao_Complementar","Unidade_por_Caixa","Produto_Variacao","Tipo_Producao","Classe_de_enquadramento_do_IPI","Codigo_da_lista_de_servicos","Tipo_do_item","Grupo de Tags/Tags","Tributos","Código Pai","Código Integração","Grupo de Produtos","Marca","CEST","Volumes","Descrição curta","Cross-Docking","URL Imagens Externas","Link Externo","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis","Número FCI","Vídeo"]
 	#head = ["Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Situacao","Estoque","Localizacao","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Produto_Variacao","Código Pai","Marca","CEST","Descrição curta","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis"]
 	c.writerow(head)
-	for row in bling:
+	for row in produtos_bling:
 		c.writerow(row)
-	
-    #head= ['Código do produto (ID Tray)';'Referência (código fornecedor)';'Nome do produto';'Marca;Preço de venda em reais';'Nome da categoria - nível 1';'Estoque do produto';'Código EAN/GTIN/UPC';'NCM do produto';'Peso do produto (gramas)';'Largura (cm)';'Altura (cm)';'Comprimento (cm)';'HTML da descrição completa';'Endereço da imagem principal do produto';'Endereço da imagem do produto 2';'Endereço da imagem do produto 3';'Endereço da imagem do produto 4';'Endereço da imagem do produto 5';'Endereço da imagem do produto 6']
-
-    #********************************
 
 
+"""
 def lista_bling(b):
 	bling_produtos = []
 	bling_produtos.append('') # Id

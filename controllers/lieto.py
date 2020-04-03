@@ -599,8 +599,8 @@ def receber_baixar():
 	dados = dict(cliente=nome,valpar = "{:.2f}".format(parcela[1]),datven=parcela[2].strftime('%d/%m/%Y'))
 
 	formReceber = SQLFORM.factory(
-	Field('tarifa','decimal(7,2)', default = pedido.taxa, Label='Tarifa:'),
-	Field('restou','decimal(7,2)', default = float(pedido.valor)-float(pedido.taxa), label='Mercado Pago:'),
+	Field('tarifa','decimal(7,2)', default = pedido.taxa, Label='Tarifa:', requires= IS_DECIMAL_IN_RANGE(dot=',')),
+	Field('restou','decimal(7,2)', default = float(pedido.valor)-float(pedido.taxa), label='Mercado Pago:', requires= IS_DECIMAL_IN_RANGE(dot=',')),
 	table_name='receber',
 	submit_button='Baixar',
 	)
