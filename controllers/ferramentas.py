@@ -108,6 +108,47 @@ def zerar_estoque():
 			db.produtos[produto.id] = dict(estoque=0)
 	return dict(form=form)
 
+
+def sincronizar_produtos():
+	form = FORM.confirm('Sincronizar Produtos',{'Voltar':URL('default','index')})
+
+	if form.accepted:
+		prod = Produtos()
+		query = "tabela = 'S' and codgru = 1"
+		produtos = prod.select('codpro,nompro,modelo,clafis,codbar,oripro,locpro,sitden,unipro',query).fetchall()
+		for produto in produtos:
+			preco_tabela = prod.preco_tabela(produto[0])
+			try:
+				defaut = db.produtos[int(row.codigo)]
+				nome = defailt.nome 
+				marca = defailt.marca
+				ncm = default.ncm
+				ean = defailt.ean
+				origem = default.origem
+				locpro= default.locpro
+				cst = default.cst
+				unidade = default.unidade
+				preco = default.preco
+
+			except:
+				nome = marca = ean = ncm = locpro = unidade = origem = cst = ''
+				preco = 0
+
+			db.produtos.update_or_insert(db.produtos.id == produto[0],
+                id = produto[0],
+                nome=produto[1] if produto[1] else nome,
+                marca = produto[2] if produto[2] else marca,
+                ncm = produto[3] if produto[3] else ncm,
+                ean = produto[4] if produto[4] else ean,
+                origem = produto[5] if produto[5] else origem,
+                locpro = produto[6] if produto[6] else locpro,
+                cst = produto[7] if produto[7] else cst,
+                unidade = produto[8] if produto[8] else unidade,
+                preco = preco_tabela if preco_tabela else preco
+            )
+	return dict(form=form)
+
+
 """
 SINCRONIZAR ESTOQUE
 """
@@ -296,7 +337,7 @@ def buscar_variacao_estoque(idAnuncio):
     return variacao
 
 @auth.requires_membership('admin')
-def ean():
+def ean1():
     rows = db(Anuncios.id>0).select()
     for row in rows:
         if row.forma == 'Individual':
@@ -516,19 +557,25 @@ def lista_tray_variacao(b):
 
 
 def exportar_bling():
+
 	anuncios = db(Anuncios.id == 80).select()
 	produtos_bling = []
 	for anuncio in anuncios:
+
 		idProduto = db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']
 		produto = db(db.produtos.id == idProduto).select().first()
 		descricao = buscar_descricao(idProduto)
-		idImagem = db(Anuncios_Imagens.anuncio == idAnuncio).select().first()['iamgem']
-		imagem = Imagens[int(idImagem)].imagem
-		url_imagem = 'http://18.230.73.54/glm_ml/default/download/{}'.format(imagem)
+		imagens = db(Anuncios_Imagens.anuncio == anuncio.id).select()
 
+		url_imagens = []
+		for imagem in imagens:
+			img = Imagens[int(imagem.imagem)].imagem
+			url_imagens.append('http://18.230.73.54/glm_ml/default/download/{}'.format(img))
+
+		url = ', '.join(url_imagens)
 
 		bling_produto = []
-		bling_produto.append('') # Id
+		bling_produto.append('')# Id
 		bling_produto.append(str(idProduto).zfill(5)) # codigo
 		bling_produto.append(anuncio.titulo) # descrição
 		bling_produto.append('un') # unidade
@@ -548,7 +595,7 @@ def exportar_bling():
 		bling_produto.append(produto.peso) # Peso_liquido_kg
 		bling_produto.append(produto.peso) # Peso_bruto_kg
 		bling_produto.append(produto.ean) # GTIN_EAN
-		bling_produto.append('') # GTIN_EAN_da_embalagem
+		bling_produto.append(produto.ean) # GTIN_EAN_da_embalagem
 		bling_produto.append(produto.largura) # Largura_do_Produto
 		bling_produto.append(produto.altura) # Altura_do_Produto
 		bling_produto.append(produto.comprimento) # Profundidade_do_produto
@@ -557,10 +604,10 @@ def exportar_bling():
 		bling_produto.append('') # Descricao_Complementar
 		bling_produto.append('') # Unidade_por_Caixa
 		bling_produto.append('produto') # Produto_Variacao	  
-		bling_produto.append('') # Tipo_Producao 
+		bling_produto.append('Terceiros') # Tipo_Producao 
 		bling_produto.append('') # Classe_de_enquadramento_do_IPI
 		bling_produto.append('') # Codigo_da_lista_de_servicos
-		bling_produto.append('') # Tipo_do_item
+		bling_produto.append('Mercadoria para Revenda') # Tipo_do_item
 		bling_produto.append('') # Grupo_de_Tags_Tags
 		bling_produto.append(0) # Tributos
 		bling_produto.append('') # Codigo_Pai 
@@ -568,10 +615,10 @@ def exportar_bling():
 		bling_produto.append('') # Grupo_de_Produtos
 		bling_produto.append(produto.marca) # Marca
 		bling_produto.append('') # CEST	
-		bling_produto.append(0) # Volumes
+		bling_produto.append(1) # Volumes
 		bling_produto.append(descricao) # Descricao_curta
 		bling_produto.append(0) # Cross_Docking
-		bling_produto.append(url_imagem) # URL_Imagens_Externas
+		bling_produto.append(url) # URL_Imagens_Externas
 		bling_produto.append('') # Link_Externo
 		bling_produto.append(3) # Meses_Garantia
 		bling_produto.append('NÃO') # Clonar_dados_do_pai

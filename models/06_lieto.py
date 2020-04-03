@@ -63,7 +63,7 @@ class Base(object):
 			self.__class__.__name__.upper(), #Tabela 
 			condicao,
 			complemento) 
-		#print select
+		print select
 		result = con.cur.execute(select)
 		return result
 
