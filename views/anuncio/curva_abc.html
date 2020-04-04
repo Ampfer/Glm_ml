@@ -1,0 +1,46 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,('message' in globals())}}
+{{extend 'layout.html'}}
+<div class="container">
+	{{=titulo("ABC ","Curva Abc de Produtos")}}
+	<table id="curvaabc" class="display" cellspacing="0" width="100%">
+		<thead>
+			<tr>
+				<th>Pos</th>
+				<th>Anuncio</th>
+				<th>Quantidade</th>
+				<th>Preco</th>
+				<th>Total</th>
+				<th>Acumulado</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{for r in curva:}}
+			<tr>
+				<td>{{=r['id']}}</td>
+				<td>{{=r['anuncio']}}</td>
+				<td class="text-right">{{=r['quantidade']}}</td>
+				<td class="text-right">{{=r['preco']}}</td>
+				<td class="text-right">{{=r['total']}}</td>
+				<td class="text-right">{{=r['acumulado']}}</td>
+			</tr>
+			{{pass}}
+		</tbody>
+	</table>
+
+</div>
+
+
+<script>
+$(document).ready(function(){
+    $('#curvaabc').DataTable({
+        select: true,
+        paging: false,
+        scrollY: 300,
+        scrollCollapse: true,
+        searching: false,
+        ordering:  true,
+        language: {"url": "//cdn.datatables.net/plug-ins/1.10.13/i18n/Portuguese-Brasil.json"},
+    });
+});
+
+</script>

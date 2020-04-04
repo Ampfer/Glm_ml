@@ -771,12 +771,14 @@ def imagem_upload(idAnuncio):
 
 @auth.requires_membership('admin')
 def sincronizar_anuncios():
-    import json
-    from meli import Meli
-    meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
     
     form = FORM.confirm('Sincronizar Anuncios',{'Voltar':URL('default','index')})
+
     if form.accepted:
+        import json
+        from meli import Meli
+        meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET)
+
         anuncios = db(Anuncios.id >0).select()
         for anuncio in anuncios:
             xitens = []
@@ -944,3 +946,26 @@ def atualizar_produtos():
 			db.produtos[int(row.id)] = dict(origem=produto[1],ncm=produto[2], cst=produto[3])
 		except:
 			pass
+
+def curva_abc():
+    sum = Pedidos_Itens.quantidade.sum()
+    query = (Pedidos.date_created >= '2020-01-01') & (Pedidos.id == Pedidos_Itens.shipping_id) & (Anuncios.item_id == Pedidos_Itens.item_id)
+    abc = db(query).select(Anuncios.titulo, Anuncios.preco, Pedidos_Itens.item_id, sum.with_alias('total'), groupby =  Pedidos_Itens.item_id, orderby =~ sum)
+    curva = []
+    c = 0
+    t = 0
+    for r in abc:
+        c = c+1
+        total = round(float(r.total) * float(r.anuncios.preco), 2)
+        t = t + total
+        row = dict(
+            id = c,
+            anuncio = r.anuncios.titulo,
+            quantidade = r.total,
+            preco = r.anuncios.preco,
+            total = total,
+            acumulado = t 
+            )
+        curva.append(row)
+
+    return dict(curva = curva)
