@@ -35,6 +35,8 @@ Anuncios = db.define_table('anuncios',
     Field('descricao','reference descricoes', label='Descrição:'),
     Field('vendido','integer'),
     Field('qtevar','integer'),
+    Field('bling','boolean'),
+
     format='%(titulo)s'
     )
 Anuncios.titulo.requires = [notempty,IS_LENGTH(60)]
@@ -50,6 +52,8 @@ Anuncios.categoria.requires = IS_IN_DB(db,"categorias.categoria_id",'%(categoria
 Anuncios.status.requires = IS_IN_SET(STATUS,zero=None)
 Anuncios.status.represent = lambda status, row: STATUS[status]
 Anuncios.forma.requires = IS_IN_SET(FORMA,zero=None)
+Anuncios.bling.default = False
+
 
 Anuncios_Produtos = db.define_table('anuncios_produtos',
     Field('anuncio', 'reference anuncios'),

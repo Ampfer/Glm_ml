@@ -56,6 +56,7 @@
 'Bairro:': 'Bairro:',
 'Baixado:': 'Baixado:',
 'Baixar': 'Baixar',
+'Bling': 'Bling',
 'Buy this book': 'Compre o livro',
 "Buy web2py's book": 'Compre o livro do web2buy',
 'Cache': 'Cache',

@@ -65,6 +65,7 @@ response.menu+=[
     ('Sincronizar Produtos', False, URL(r=request, c='ferramentas', f='sincronizar_produtos')),
     ('Zerar Estoque', False, URL(r=request, c='ferramentas', f='zerar_estoque')),
     ('Atualizar Preços', False, URL(r=request, c='ferramentas', f='atualizar_preco')),
+    ('Estoque Bling', False, URL(r=request, c='ferramentas', f='bling_estoque')),
     ])]
 response.menu+=[
     (T('Lieto'), False, URL(request.application,'default','index'), [

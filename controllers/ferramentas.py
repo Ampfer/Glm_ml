@@ -633,12 +633,15 @@ def bling_csv(ids):
         bling_produto.append('NOVO') # Condicao_do_produto
         bling_produto.append('NÃO') # Frete_Gratis
         bling_produto.append(0) # Numero_FCI 
-        bling_produto.append('') #  Video
+        bling_produto.append('') # Video
+        bling_produto.append('') # Departamento
+        bling_produto.append('Centímetro') # Unidade de Medida
 
+        Anuncios[anuncio.id] = dict(bling = True)
         produtos_bling.append(bling_produto)
 
     import csv
-    c = csv.writer(open("produto.csv", "wb",),delimiter=';')
+    c = csv.writer(open("produtos_bling.csv", "wb",),delimiter=';')
     head = ["ID","Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Valor_IPI_fixo","Observacoes","Situacao","Estoque","Preco_de_custo","Cod_no_fabricante","Fabricante","Localizacao","Estoque_maximo","Estoque_minimo","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","GTIN_EAN_da_ embalagem","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Data_Validade","Descricao_do_Produto_no_Fornecedor","Descricao_Complementar","Unidade_por_Caixa","Produto_Variacao","Tipo_Producao","Classe_de_enquadramento_do_IPI","Codigo_da_lista_de_servicos","Tipo_do_item","Grupo de Tags/Tags","Tributos","Código Pai","Código Integração","Grupo de Produtos","Marca","CEST","Volumes","Descrição curta","Cross-Docking","URL Imagens Externas","Link Externo","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis","Número FCI","Vídeo"]
     #head = ["Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Situacao","Estoque","Localizacao","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Produto_Variacao","Código Pai","Marca","CEST","Descrição curta","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis"]
     c.writerow(head)
@@ -649,61 +652,43 @@ def bling_csv(ids):
 
     return
 
+def bling_estoque():
 
-"""
-def lista_bling(b):
-	bling_produtos = []
-	bling_produtos.append('') # Id
-	bling_produtos.append(b['codigo']) # codigo
-	bling_produtos.append(b['descricao']) # descrição
-	bling_produtos.append('un') # unidade
-	bling_produtos.append(b['ncm']) # Classificacao_fiscal
-	bling_produtos.append(b['origem']) # Origem
-	bling_produtos.append(b['preco']) # Preco
-	bling_produtos.append('') #Valor_IPI_fixo
-	bling_produtos.append('') # Observacoes 
-	bling_produtos.append('Ativo') # Situacao
-	bling_produtos.append(b['estoque']) # Estoque
-	bling_produtos.append(0) # Preco_de_custo 
-	bling_produtos.append(0) # Cod_no_fabricante 
-	bling_produtos.append(0) # Fabricante  
-	bling_produtos.append('') # Localizacao
-	bling_produtos.append(0) # Estoque_maximo
-	bling_produtos.append(0) # Estoque_minimo
-	bling_produtos.append(b['peso']) # Peso_liquido_kg
-	bling_produtos.append(b['peso']) # Peso_bruto_kg
-	bling_produtos.append(b['ean']) # GTIN_EAN
-	bling_produtos.append('') # GTIN_EAN_da_embalagem
-	bling_produtos.append(b['largura']) # Largura_do_Produto
-	bling_produtos.append(b['altura']) # Altura_do_Produto
-	bling_produtos.append(b['comprimento']) # Profundidade_do_produto
-	bling_produtos.append('') # Data_Validade = None,
-	bling_produtos.append('') # Descricao_do_Produto_no_Fornecedor
-	bling_produtos.append('') # Descricao_Complementar
-	bling_produtos.append('') # Unidade_por_Caixa
-	bling_produtos.append(b['tipo']) # Produto_Variacao	  
-	bling_produtos.append('') # Tipo_Producao 
-	bling_produtos.append('') # Classe_de_enquadramento_do_IPI
-	bling_produtos.append('') # Codigo_da_lista_de_servicos
-	bling_produtos.append('') # Tipo_do_item
-	bling_produtos.append('') # Grupo_de_Tags_Tags
-	bling_produtos.append(0) # Tributos
-	bling_produtos.append(b['pai']) # Codigo_Pai 
-	bling_produtos.append('') # Codigo_Integracao
-	bling_produtos.append('') # Grupo_de_Produtos
-	bling_produtos.append(b['marca']) # Marca
-	bling_produtos.append('') # CEST	
-	bling_produtos.append(0) # Volumes
-	bling_produtos.append(b['descricao_curta']) # Descricao_curta
-	bling_produtos.append(0) # Cross_Docking
-	bling_produtos.append('') # URL_Imagens_Externas
-	bling_produtos.append('') # Link_Externo
-	bling_produtos.append(3) # Meses_Garantia
-	bling_produtos.append('NÃO') # Clonar_dados_do_pai
-	bling_produtos.append('NOVO') # Condicao_do_produto
-	bling_produtos.append('NÃO') # Frete_Gratis
-	bling_produtos.append(0) # Numero_FCI 
-	bling_produtos.append('') #  Video
-	return bling_produtos
-"""
+	form = FORM.confirm('Gerar csv',{'Voltar':URL('default','index')})
+
+	if form.accepted:
+
+		head = ['ID Produto','Codigo produto *','GTIN **','Descrição Produto','Deposito (OBRIGATÓRIO)','Balanço (OBRIGATÓRIO)','Valor (OBRIGATÓRIO)','Preço de Custo,Observação','Data']
+		estoque_bling = []
+		estoque_bling.append(head)
+		dt = request.now.strftime('%d/%m/%Y')
+
+		anuncios = db(Anuncios.bling == True).select()
+		for anuncio in anuncios:
+			print anuncio.titulo
+			idProduto = str(db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']).zfill(5)
+			row = []
+			row.append('') #ID Produto
+			row.append(idProduto) #Codigo produto *
+			row.append('') #GTIN **,
+			row.append('') #Descrição Produto
+			row.append('Geral') #Deposito (OBRIGATÓRIO)
+			row.append(anuncio.estoque) #Balanço (OBRIGATÓRIO)
+			row.append(anuncio.preco) #Valor (OBRIGATÓRIO)
+			row.append(0) #Preço de Custo
+			row.append('') #Observação
+			row.append(dt) #Data
+
+			estoque_bling.append(row)
+
+		import csv
+		c = csv.writer(open("estoque_bling.csv", "wb",),delimiter=';')
+		for row in estoque_bling:
+			c.writerow(row)
+
+			session.flash = 'Arquivo csv gerado com sucesso...!'
+
+	return dict(form=form)
+
+		
 
