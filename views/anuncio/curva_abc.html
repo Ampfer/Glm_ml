@@ -2,6 +2,26 @@
 {{extend 'layout.html'}}
 <div class="container">
 	{{=titulo("ABC ","Curva Abc de Produtos")}}
+
+	{{=form.custom.begin}}
+	<div class="row">
+		<div class="col-md-2">
+			{{=form.custom.label.dtInicial}}
+			{{=form.custom.widget.dtInicial}}
+		</div>
+		<div class="col-md-2">
+			{{=form.custom.label.dtFinal}}
+			{{=form.custom.widget.dtFinal}}
+		</div>
+		<div class="col-md-2">
+			<div style="margin-top: 22px;">{{=form.custom.submit}}</div>
+		</div>
+	</div>
+	<div class="row">
+		<p></p>
+	</div>
+	{{=form.custom.end}}
+
 	<table id="curvaabc" class="display" cellspacing="0" width="100%">
 		<thead>
 			<tr>

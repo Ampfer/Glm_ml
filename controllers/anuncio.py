@@ -947,25 +947,48 @@ def atualizar_produtos():
 		except:
 			pass
 
+@auth.requires_membership('admin')
 def curva_abc():
-    sum = Pedidos_Itens.quantidade.sum()
-    query = (Pedidos.date_created >= '2020-01-01') & (Pedidos.id == Pedidos_Itens.shipping_id) & (Anuncios.item_id == Pedidos_Itens.item_id)
-    abc = db(query).select(Anuncios.titulo, Anuncios.preco, Pedidos_Itens.item_id, sum.with_alias('total'), groupby =  Pedidos_Itens.item_id, orderby =~ sum)
-    curva = []
-    c = 0
-    t = 0
-    for r in abc:
-        c = c+1
-        total = round(float(r.total) * float(r.anuncios.preco), 2)
-        t = t + total
-        row = dict(
-            id = c,
-            anuncio = r.anuncios.titulo,
-            quantidade = r.total,
-            preco = r.anuncios.preco,
-            total = total,
-            acumulado = t 
-            )
-        curva.append(row)
 
-    return dict(curva = curva)
+    curva = ''
+
+    form = SQLFORM.factory(
+        Field('dtInicial','date',requires = data, label='Data Inicial'),
+        Field('dtFinal','date',requires = data, label ='Data Final'),
+        table_name='curva',
+        submit_button='Gerar',
+        )
+    
+    if form.process().accepted:
+
+        dtInicial = form.vars.dtInicial
+        dtFinal = form.vars.dtFinal
+
+        sum = Pedidos_Itens.quantidade.sum()
+        #(Pedidos.date_created >= '2020-01-01')
+        try: 
+            query = (Pedidos.date_created >= dtInicial) & (Pedidos.date_created <= dtFinal) & (Pedidos.id == Pedidos_Itens.shipping_id) & (Anuncios.item_id == Pedidos_Itens.item_id)
+            abc = db(query).select(Anuncios.titulo, Anuncios.preco, Pedidos_Itens.item_id, sum.with_alias('total'), groupby =  Pedidos_Itens.item_id, orderby =~ sum)
+        except:
+            curva = ''
+        else:
+            curva = []
+            c = 0
+            t = 0
+            for r in abc:
+                c = c+1
+                total = round(float(r.total) * float(r.anuncios.preco), 2)
+                t = t + total
+                row = dict(
+                    id = c,
+                    anuncio = r.anuncios.titulo,
+                    quantidade = r.total,
+                    preco = r.anuncios.preco,
+                    total = total,
+                    acumulado = t 
+                    )
+                curva.append(row)
+                db(Anuncios.item_id==r.pedidos_itens.item_id).update(vendido=r.total)
+
+    return dict(curva = curva, form = form)
+

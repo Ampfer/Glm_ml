@@ -48,6 +48,7 @@ response.menu+=[
     ('Importar Anuncios', False, URL(r=request, c='anuncio', f='importar_anuncios')),
     ('Sincronizar Anuncios', False, URL(r=request, c='anuncio', f='sincronizar_anuncios')),
     ('Curva Abc', False, URL(r=request, c='anuncio', f='curva_abc')),
+    ('Exportar Bling', False, URL(r=request, c='ferramentas', f='exportar_bling')),
     ])]
 response.menu+=[
     (T('Vendas'), False, URL(request.application,'default','index'), [

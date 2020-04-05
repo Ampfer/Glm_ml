@@ -156,7 +156,7 @@ def pedidos_full():
     query = (Pedidos.logistica != 'fulfillment') & (Pedidos.date_created >= '2020-01-01')
 
     gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
-        fields=fields,orderby =~ Pedidos.date_created,selectable_submit_button='Exportar Pedidos',)
+        fields=fields,orderby =~ Pedidos.date_created,)
         
     #gridPedidos = DIV(gridPedidos, _class="well")
 
