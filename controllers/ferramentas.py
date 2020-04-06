@@ -151,7 +151,7 @@ def sincronizar_produtos():
 SINCRONIZAR ESTOQUE
 """
 @auth.requires_membership('admin')
-def importar_estoque():
+def importar_estoque_old():
 
 	form = FORM.confirm('Importar Estoque',{'Voltar':URL('default','index')})
 
@@ -172,7 +172,7 @@ def importar_estoque():
 
 	return dict(form=form)
 
-def teste():
+def importar_estoque():
 
 	import fdb
 	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
@@ -184,11 +184,13 @@ def teste():
 	select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
 	produtos = cur.execute(select).fetchall()
 	for produto in produtos:
-		estoque = float(produto[1])-float(produto[2]) - reservado(produto[0])
+		estoque = float(produto[1]) - float(produto[2]) - reservado(produto[0])
 		estoque = 0 if estoque <0 else estoque
 		db.produtos[int(produto[0])] = dict(estoque1 = estoque )
 	
 	con.close()
+
+	response.flash = 'Estoque Importado com Sucesso....'
 	
 	return 
 
