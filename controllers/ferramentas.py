@@ -168,9 +168,52 @@ def importar_estoque():
 
 			db.produtos[produto.id] = dict(estoque = estoque)
 
-		response.flash = 'Estoque Imoprtado com Sucesso....'
+		response.flash = 'Estoque Importado com Sucesso....'
 
 	return dict(form=form)
+
+def teste():
+
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	
+	for prod in db(db.produtos.id>0).select():
+		db.produtos[prod.id] = dict(estoque1 = 0 )
+
+	select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
+	produtos = cur.execute(select).fetchall()
+	for produto in produtos:
+		estoque = float(produto[1])-float(produto[2]) - reservado(produto[0])
+		estoque = 0 if estoque <0 else estoque
+		db.produtos[int(produto[0])] = dict(estoque1 = estoque )
+	
+	con.close()
+	
+	return 
+
+
+def estoque_erp1(codpro):
+	
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	
+	try:
+		select = "select tabela from produtos where codpro = {}".format(codpro)
+		tabela = cur.execute(select).fetchone()[0]
+	except:
+		tabela = 'N'
+
+	if tabela == 'S':
+		saldo  = float(cur.execute('select saldo from saldo_atual({})'.format(codpro)).fetchone()[0]) 
+	else:
+		saldo = 0
+
+	con.close()
+	
+	return saldo
+
 
 @auth.requires_membership('admin')
 def estoque_erp(codpro):
