@@ -1,0 +1,31 @@
+{{extend 'layout.html'}}
+{{=formProduto.custom.begin}} 
+
+<div class='container'>
+
+  {{=titulo("MULTILOJAS  ","Produto Multiloja",btnNovo,btnVoltar)}}
+  <div class="row">
+
+    {{=campo(2,formProduto.custom.label.id_produto,formProduto.custom.widget.id_produto)}}
+    {{=campo(6,formProduto.custom.label.produto,formProduto.custom.widget.produto)}}
+    {{=campo(2,formProduto.custom.label.preco_tabela,formProduto.custom.widget.preco_tabela)}}
+    {{=campo(2,formProduto.custom.label.desconto,formProduto.custom.widget.desconto)}}
+
+</div>
+<div class="row">
+
+    {{=campo(2,formProduto.custom.label.loja,formProduto.custom.widget.loja)}}
+    {{=campo(2,formProduto.custom.label.id_bling,formProduto.custom.widget.id_bling)}}    
+    {{=campo(2,formProduto.custom.label.id_loja,formProduto.custom.widget.id_loja)}}
+    {{=campo(2,formProduto.custom.label.preco,formProduto.custom.widget.preco)}}
+    {{=campo(2,formProduto.custom.label.preco_promocional,formProduto.custom.widget.preco_promocional)}}
+
+</div>
+<hr>
+{{=btnRodape(formProduto.custom.submit)}}
+{{=formProduto.custom.end}}
+
+</div>
+
+
+

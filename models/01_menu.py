@@ -59,7 +59,7 @@ response.menu+=[
     ])]
 response.menu+=[
     (T('Ferramentas'), False, URL(request.application,'default','index'), [
-    ('Importar Estoque', False, URL(r=request, c='ferramentas', f='importar_estoque')),
+    ('Importar Estoque', False, URL(r=request, c='ferramentas', f='importar_estoque_old')),
     ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='atualizar_estoque')),
     ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
     ('Sincronizar Produtos', False, URL(r=request, c='ferramentas', f='sincronizar_produtos')),
@@ -83,7 +83,8 @@ response.menu+=[
     ])]
 response.menu+=[
     (T('Bling'), False, URL(request.application,'default','index'), [
-    ('Vínculoe de  Produtos', False, URL(r=request, c='bling', f='importar_vinculo')),
+    ('Produtos Multilojas', False, URL(r=request, c='bling', f='produtos_multilojas')),
+    ('Importar Produtos Multilojas', False, URL(r=request, c='bling', f='importar_vinculo')),
     ])]
 response.menu+=[
     (T('Login ML'), False, URL(request.application,'default','login'),
