@@ -42,6 +42,31 @@ def categoria():
     return dict(formCategoria=formCategoria, btnNovo=btnNovo,btnVoltar=btnVoltar,btnExcluir=btnExcluir)
 
 @auth.requires_membership('admin')
+def categoria_qtde_anuncio():
+    categorias = db(Categorias.id > 0).select()
+    for item in categorias:
+        # Buscar Categorias
+        qtde = db(Anuncios.categoria == item.categoria_id).count()
+        Categorias[item.id] = dict(qtde_anuncios = qtde)
+
+@auth.requires_membership('admin')
+
+def vincular_categoria():
+    categorias = []
+    nivel1 = db(Categorias_Bling.pai_id == 0).select()
+    for n1 in nivel1:
+        item = []
+        nivel2 = db(Categorias_Bling.pai_id == n1.pai_id).select()
+        for n2 in nivel2:
+            nivel3 = db(Categorias_Bling.pai_id == n2.pai_id).select()
+            for n3 in nivel3:
+                item.append(n3.id)
+                item.append('{}/{}/{}'.format(n1.categoria,n2.categoria,n3.categoria))
+        categorias.append(item)
+    print categorias
+
+
+@auth.requires_membership('admin')
 def atualizar_categorias():
     categorias = db(Categorias.id > 0).select()
     for item in categorias:

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 data = IS_NULL_OR(IS_DATE(format=T("%d/%m/%Y")))
 notempty=IS_NOT_EMPTY(error_message='Campo Obrigatório')
 ATRIBUTO = ('Medida','Tamanho','Modelo','Voltagem','Cor')
@@ -45,6 +46,7 @@ Empresa = db.define_table('empresa',
     Field('classico','decimal(7,2)',label='Tarifa Clássico'),
     Field('token1','string',label='Token acesso:'),
     Field('token2','string',label='Token atualizar:'),
+    Field('Bling','string',label='Api:'),
     )
 Empresa.desconto.requires = IS_DECIMAL_IN_RANGE(dot=',')
 

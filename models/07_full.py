@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 STATUS_FULL = ('Em Preparação','Reservado','Concluido')
 
 Envios_Full = db.define_table('envios_full',

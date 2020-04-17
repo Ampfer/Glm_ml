@@ -82,6 +82,10 @@ response.menu+=[
     ('Pedidos', False, URL(r=request, c='full', f='pedidos_full')),
     ])]
 response.menu+=[
+    (T('Bling'), False, URL(request.application,'default','index'), [
+    ('Vínculoe de  Produtos', False, URL(r=request, c='bling', f='importar_vinculo')),
+    ])]
+response.menu+=[
     (T('Login ML'), False, URL(request.application,'default','login'),
     )]
 

@@ -1,5 +1,45 @@
 # -*- coding: utf-8 -*-
 
+import requests
+
+
+def categorias_bling():
+	import json
+	url = 'https://bling.com.br/Api/v2/categorias/json/'
+	payload = {'apikey': BLING_SECRET_KEY}
+
+	categorias = requests.get(url, params=payload).json()['retorno']['categorias']
+
+	for categoria in categorias:
+		Categorias_Bling.update_or_insert(Categorias_Bling.id == categoria['categoria']['id'],
+			id=categoria['categoria']['id'],
+			categoria = categoria['categoria']['descricao'],
+  			pai_id = categoria['categoria']['idCategoriaPai']
+			)
+
+	return 
+
+def categorias_bling_post():
+
+	xml = """
+	<?xml version="1.0" encoding="UTF-8"?>
+	<categorias>
+	  <categoria>
+	    <descricao>{}</descricao>
+	    <idcategoriapai>0</idcategoriapai>
+	  </categoria>
+	</categorias>
+	""".format('Animais')
+
+	url = 'https://bling.com.br/Api/v2/categoria/json/'
+	payload = {'apikey': BLING_SECRET_KEY,'xml' : xml}
+
+	categoria = requests.post(url, params=payload)
+
+	return categoria
+
+	
+
 @auth.requires_membership('admin')
 def importar_produtos():
 

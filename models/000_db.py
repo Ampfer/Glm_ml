@@ -147,6 +147,8 @@ CLIENT_ID = int(myconf.get('ml.client_id'))
 CLIENT_SECRET = "{}".format(myconf.get('ml.client_secret'))
 USER_ID = int(myconf.get('ml.user_id'))
 
+BLING_SECRET_KEY = "{}".format(myconf.get('bling.api_key'))
+
 if request.env.REMOTE_ADDR == '127.0.0.1':
     SERVERNAME = "localhost"
 else:

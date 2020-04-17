@@ -11,10 +11,16 @@ Categorias = db.define_table('categorias',
     Field('categoria','string',label='Categoria:',length=100),
     Field('categoria_id','string',label='Id Categoria',length=30),
     Field('frete','decimal(7,2)',label='Valor do Frete'),
+    Field('qtde_anuncios','integer',label='Quantidade de Anuncios'),
     )
 Categorias.categoria.requires  = notempty
 Categorias.categoria_id.requires = notempty
 Categorias.frete.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
+
+Categorias_Bling = db.define_table('categorias_bling',
+    Field('categoria','string',label='Categoria:',length=100),
+    Field('pai_id','integer',label='Valor do Frete'),
+    )
 
 Anuncios = db.define_table('anuncios',
     Field('familia', 'reference familias'),

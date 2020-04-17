@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from decimal import *
 
 Clientes = db.define_table('clientes',

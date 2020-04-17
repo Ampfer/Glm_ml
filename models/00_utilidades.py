@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def voltar(url):
     return A(SPAN(_class="glyphicon glyphicon-arrow-left"), ' Voltar ', _class="btn btn-warning",_href=URL(url))
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 Relatorio = db.define_table('relatorio',
                             Field('datarel','date',label ='Data'),
                             Field('codigo','string',label='Código',length=7),
