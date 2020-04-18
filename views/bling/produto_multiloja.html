@@ -3,7 +3,7 @@
 
 <div class='container'>
 
-  {{=titulo("MULTILOJAS  ","Produto Multiloja",btnNovo,btnVoltar)}}
+  {{=titulo("MULTILOJAS  ","Produto Multiloja",btnVoltar)}}
   <div class="row">
 
     {{=campo(2,formProduto.custom.label.id_produto,formProduto.custom.widget.id_produto)}}
@@ -15,8 +15,12 @@
 <div class="row">
 
     {{=campo(2,formProduto.custom.label.loja,formProduto.custom.widget.loja)}}
-    {{=campo(2,formProduto.custom.label.id_bling,formProduto.custom.widget.id_bling)}}    
-    {{=campo(2,formProduto.custom.label.id_loja,formProduto.custom.widget.id_loja)}}
+    {{=campo(2,formProduto.custom.label.tarifa,formProduto.custom.widget.tarifa)}}
+    {{=campo(2,formProduto.custom.label.frete,formProduto.custom.widget.frete)}}
+    <div class="col-md-2">
+        <label>Preço Sugerido:</label>
+        <p style="font-size: 30px; margin-top: 5px;">{{=sug}}</p>
+    </div>  
     {{=campo(2,formProduto.custom.label.preco,formProduto.custom.widget.preco)}}
     {{=campo(2,formProduto.custom.label.preco_promocional,formProduto.custom.widget.preco_promocional)}}
 
