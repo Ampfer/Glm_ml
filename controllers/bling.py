@@ -78,14 +78,33 @@ def atualizar_desconto():
 
 @auth.requires_membership('admin')
 def exportar_csv():
-	c = csv.writer(open("produtos_bling.csv", "wb",),delimiter=';')
-	head = ["ID","Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Valor_IPI_fixo","Observacoes","Situacao","Estoque","Preco_de_custo","Cod_no_fabricante","Fabricante","Localizacao","Estoque_maximo","Estoque_minimo","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","GTIN_EAN_da_ embalagem","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Data_Validade","Descricao_do_Produto_no_Fornecedor","Descricao_Complementar","Unidade_por_Caixa","Produto_Variacao","Tipo_Producao","Classe_de_enquadramento_do_IPI","Codigo_da_lista_de_servicos","Tipo_do_item","Grupo de Tags/Tags","Tributos","Código Pai","Código Integração","Grupo de Produtos","Marca","CEST","Volumes","Descrição curta","Cross-Docking","URL Imagens Externas","Link Externo","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis","Número FCI","Vídeo"]
-	#head = ["Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Situacao","Estoque","Localizacao","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Produto_Variacao","Código Pai","Marca","CEST","Descrição curta","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis"]
+	
+	produtos = db(Vinculos.id > 0).select()
+
+	produtos_bling = []
+
+	for produto in produtos:
+		bling_produto = []
+		bling_produto.append(produto.id_bling) # IdProduto
+		bling_produto.append(produto.id_loja) # ID na Loja
+		bling_produto.append(produto.produto) # Nome
+		bling_produto.append(produto.id_produto) # Código
+		bling_produto.append(produto.preco) # Preco
+		bling_produto.append(produto.preco_promocional) # PrecoPromocional
+		bling_produto.append(0) # ID do Fornecedor
+		bling_produto.append(0) # ID da Marca	Nome
+		bling_produto.append(produto.loja) # Loja (Multilojas)
+		produtos_bling.append(bling_produto)
+
+	c = csv.writer(open("vinculos.csv", "wb",),delimiter=';')
+	head = ["IdProduto","ID na Loja","Nome","Código","Preco","PrecoPromocional","ID do Fornecedor","ID da Marca	Nome","Loja (Multilojas)"]
+
 	c.writerow(head)
 	for row in produtos_bling:
 	    c.writerow(row)
 
 	session.flash = 'Arquivo csv gerado com sucesso...!'
+	return
 
 @auth.requires_membership('admin')
 def produtos_multilojas():
