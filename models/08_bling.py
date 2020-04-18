@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
-def sugerido(tabela,desconto,tarifa,frete):
-	preco_sugerido = (tabela*(1 - desconto/100))/(1 - tarifa/100) + frete
-	print round(preco_sugerido,1)
-	return preco_sugerido
+LOJAS = ['Amazon', 'Magalu', 'Olist']
+
+def sugerido_multiloja(loja,tabela,desconto,tarifa,frete):
+	preco_sugerido = 0
+	if loja == 'Amazon':
+		preco_sugerido = (float(tabela)*(1 - float(desconto)/100))/(1 - float(tarifa)/100) + float(frete)
+
+	return round(preco_sugerido,1)
 
 Vinculos = db.define_table('vinculos',
 	Field('id_produto', 'string', label='Id Produto:', length = 30),
@@ -17,7 +21,12 @@ Vinculos = db.define_table('vinculos',
 	Field('preco','decimal(7,2)',label='Preço:'),
 	Field('preco_promocional','decimal(7,2)',label='Promocional:'),
 	Field('preco_tabela','decimal(7,2)',label='Preco Tabela:'),
-	Field.Virtual('preco_sugerido',lambda row: round(sugerido( float(row.vinculos.preco_tabela), float(row.vinculos.desconto), float(row.vinculos.tarifa), float(row.vinculos.frete)),1),label='Preco Sugerido:')
+	Field.Virtual('preco_sugerido',lambda row: sugerido_multiloja(row.vinculos.loja,
+		row.vinculos.preco_tabela,
+		row.vinculos.desconto,
+		row.vinculos.tarifa, 
+		row.vinculos.frete, 
+		),label='Preco Sugerido:')
     )
 
 Vinculos.desconto.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
@@ -25,11 +34,12 @@ Vinculos.desconto.default = 12
 Vinculos.tarifa.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Vinculos.tarifa.default = 11
 Vinculos.frete.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
-Vinculos.frete.default = 5
+Vinculos.frete.default = 3
 Vinculos.preco.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Vinculos.preco_promocional.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Vinculos.id_bling.writable = False
 Vinculos.id_loja.writable = False
+Vinculos.loja.requires = IS_IN_SET(LOJAS,zero=None)
 
 
 

@@ -212,3 +212,24 @@ def buscar_categoria(categoriaId):
             valorFrete = frete['coverage']['all_country']['list_cost']
 
     return dict(categoria = nomeCategoria, categoriaId=categoriaId,valorFrete=valorFrete)
+
+
+def buscar_descricao(produtoId):
+
+    try:
+        idAnuncio = db(Anuncios_Produtos.produto == produtoId).select().first()['anuncio']  
+    except Exception as e:
+        descricao_curta = ''
+    else:
+        idDescricao = Anuncios[idAnuncio].descricao
+
+        if idDescricao == None:   
+            idFamilia = int(Anuncios[idAnuncio].familia)
+            try:
+                descricao_curta = Descricoes[Familias[idFamilia].descricao].descricao
+            except:
+                descricao_curta = '' 
+        else:
+            descricao_curta = Descricoes[Anuncios[int(idAnuncio)].descricao].descricao
+
+    return descricao_curta
