@@ -27,10 +27,10 @@ def importar_vinculo():
 
 					if loja == 'Amazon':
 						Vinculos.frete.default = 3
-						Vinculos.tafita.default = 11
+						Vinculos.tarifa.default = 11
 					if loja == "Magalu":
 						Vinculos.frete.default = 0
-						Vinculos.tafita.default = 12
+						Vinculos.tarifa.default = 12
 
 					preco_tabela = db.produtos[int(id_produto)].preco 
 
