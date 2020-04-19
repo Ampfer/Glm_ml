@@ -3,9 +3,8 @@
 LOJAS = ['Amazon', 'Magalu', 'Olist']
 
 def sugerido_multiloja(loja,tabela,desconto,tarifa,frete):
-	preco_sugerido = 0
-	if loja == 'Amazon':
-		preco_sugerido = (float(tabela)*(1 - float(desconto)/100))/(1 - float(tarifa)/100) + float(frete)
+	#preco_sugerido = 0
+	preco_sugerido = (float(tabela)*(1 - float(desconto)/100))/(1 - float(tarifa)/100) + float(frete)
 
 	return round(preco_sugerido,1)
 
@@ -32,9 +31,7 @@ Vinculos = db.define_table('vinculos',
 Vinculos.desconto.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Vinculos.desconto.default = 12
 Vinculos.tarifa.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
-Vinculos.tarifa.default = 11
 Vinculos.frete.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
-Vinculos.frete.default = 3
 Vinculos.preco.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Vinculos.preco_promocional.requires = IS_EMPTY_OR(IS_DECIMAL_IN_RANGE(dot=','))
 Vinculos.id_bling.writable = False
