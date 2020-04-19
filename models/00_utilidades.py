@@ -233,3 +233,19 @@ def buscar_descricao(produtoId):
             descricao_curta = Descricoes[Anuncios[int(idAnuncio)].descricao].descricao
 
     return descricao_curta
+
+
+@auth.requires_membership('admin')
+def saldo_full(anuncio): 
+
+    id = int(anuncio.id)
+
+    query = (Envios_Itens.anuncio_id == id) & (Envios_Full.id == Envios_Itens.envio_id) & (Envios_Full.status == "Concluido")
+    qt_envio = db(query).select(Envios_Itens.quantidade.sum()).first()[Envios_Itens.quantidade.sum()] or 0
+    
+    item_id = db(Anuncios.id == id).select(Anuncios.item_id).first()['item_id']
+    
+    query = (Pedidos.date_created >= '2020-02-01') & (Pedidos.logistica == 'fulfillment') & (Pedidos_Itens.shipping_id == Pedidos.id) & (Pedidos_Itens.status == 'paid') & "(Pedidos_Itens.item_id == '{}')".format(item_id)
+    qt_vendida = db(query).select(Pedidos_Itens.quantidade.sum()).first()[Pedidos_Itens.quantidade.sum()] or 0
+    
+    return float(qt_envio) - float(qt_vendida)

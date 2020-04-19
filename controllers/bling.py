@@ -25,6 +25,13 @@ def importar_vinculo():
 					preco = float(e.replace('"','').replace(',','.'))
 					preco_promocional = float(f.replace('"','').replace(',','.'))
 
+					if loja == 'Amazon':
+						Vinculos.frete.default = 3
+						Vinculos.tafita.default = 11
+					if loja == "Magalu":
+						Vinculos.frete.default = 0
+						Vinculos.tafita.default = 12
+
 					preco_tabela = db.produtos[int(id_produto)].preco 
 
 					query = (Vinculos.id_bling == id_bling) & (Vinculos.id_loja == id_loja ) & (Vinculos.id_produto == id_produto) & (Vinculos.loja == loja)
@@ -89,8 +96,8 @@ def exportar_csv():
 		bling_produto.append(produto.id_loja) # ID na Loja
 		bling_produto.append(produto.produto) # Nome
 		bling_produto.append(produto.id_produto) # Código
-		bling_produto.append(produto.preco) # Preco
-		bling_produto.append(produto.preco_promocional) # PrecoPromocional
+		bling_produto.append(float(produto.preco)) # Preco
+		bling_produto.append(float(produto.preco_promocional)) # PrecoPromocional
 		bling_produto.append(0) # ID do Fornecedor
 		bling_produto.append(0) # ID da Marca	Nome
 		bling_produto.append(produto.loja) # Loja (Multilojas)
@@ -293,7 +300,11 @@ def bling_estoque():
 
 		anuncios = db(Anuncios.bling == True).select()
 		for anuncio in anuncios:
-			#print anuncio.titulo
+
+			est_full = saldo_full(anuncio) if saldo_full(anuncio) > 0 else 0
+			estoque =  float(sugerido(anuncio)['estoque']) - float(est_full)
+			estoque = estoque if estoque > 0 else 0
+			
 			idProduto = str(db(Anuncios_Produtos.anuncio == anuncio.id).select().first()['produto']).zfill(5)
 			row = []
 			row.append('') #ID Produto
@@ -301,8 +312,8 @@ def bling_estoque():
 			row.append('') #GTIN **,
 			row.append('') #Descrição Produto
 			row.append('Geral') #Deposito (OBRIGATÓRIO)
-			row.append(anuncio.estoque) #Balanço (OBRIGATÓRIO)
-			row.append(anuncio.preco) #Valor (OBRIGATÓRIO)
+			row.append(float(estoque)) #Balanço (OBRIGATÓRIO)
+			row.append(float(anuncio.preco)) #Valor (OBRIGATÓRIO)
 			row.append(0) #Preço de Custo
 			row.append('') #Observação
 			row.append(dt) #Data

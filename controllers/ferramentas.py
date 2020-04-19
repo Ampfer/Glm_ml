@@ -62,7 +62,9 @@ def atualizar_estoque():
 
 	anuncios = db(Anuncios.id > 0).select()
 	for anuncio in anuncios:
-		estoque =  sugerido(anuncio)['estoque']
+		est_full = saldo_full(anuncio) if saldo_full(anuncio) > 0 else 0
+		estoque =  float(sugerido(anuncio)['estoque']) -  float(est_full)
+		estoque = estoque if estoque > 0 else 0
 		if estoque != anuncio.estoque:
 			Anuncios[anuncio.id] = dict(estoque=estoque,alterado = 'S')
 
@@ -279,6 +281,7 @@ def qtde_vendida(codpro):
 """
 **************************************************
 """
+
 @auth.requires_membership('admin')
 def reservado(produtos_id):
     

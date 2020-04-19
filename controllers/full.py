@@ -134,8 +134,21 @@ def anuncios_full():
 
     return dict(gridAnunciosFull=gridAnunciosFull)
 
+
 @auth.requires_membership('admin')
-def saldo_full(anuncio):
+def pedidos_full():
+
+    fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado,Pedidos.status,Pedidos.pagamento)
+    query = (Pedidos.logistica != 'fulfillment') & (Pedidos.date_created >= '2020-01-01')
+
+    gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
+        fields=fields,orderby =~ Pedidos.date_created,)
+
+    return dict(gridPedidos=gridPedidos)
+
+'''
+@auth.requires_membership('admin')
+def saldo_full(anuncio): ## funcão duplicata controller ferramentas.py
 
     id = int(anuncio.id)
 
@@ -148,20 +161,4 @@ def saldo_full(anuncio):
     qt_vendida = db(query).select(Pedidos_Itens.quantidade.sum()).first()[Pedidos_Itens.quantidade.sum()] or 0
     
     return float(qt_envio) - float(qt_vendida)
-
-@auth.requires_membership('admin')
-def pedidos_full():
-
-    fields = (Pedidos.date_created,Pedidos.id,Pedidos.buyer_id,Pedidos.valor,Pedidos.numdoc,Pedidos.logistica,Pedidos.enviado,Pedidos.status,Pedidos.pagamento)
-    query = (Pedidos.logistica != 'fulfillment') & (Pedidos.date_created >= '2020-01-01')
-
-    gridPedidos = grid(query,create=False, editable=False,deletable=False,formname="pedidos",
-        fields=fields,orderby =~ Pedidos.date_created,)
-        
-    #gridPedidos = DIV(gridPedidos, _class="well")
-
-    return dict(gridPedidos=gridPedidos)
-
-
-
-    
+'''
