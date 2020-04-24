@@ -190,7 +190,7 @@ def exportar_bling():
 
     fields = (Anuncios.titulo, Anuncios.preco, Anuncios.estoque)
     selectable = lambda ids: bling_csv(ids)
-    query = (Anuncios.status == 'active') & (Anuncios.bling != True) 
+    query = (Anuncios.status == 'active') 
     
     gridAnuncios = grid(query ,create=False, editable=False,deletable=False,formname="pedidos", alt='250px',
         fields=fields,orderby =~ Anuncios.vendido, selectable=selectable, selectable_submit_button='Exportar Bling',)
@@ -210,6 +210,7 @@ def bling_csv(ids):
 		produto = db(db.produtos.id == idProduto).select().first()
 		descricao = buscar_descricao(idProduto)
 		imagens = db(Anuncios_Imagens.anuncio == anuncio.id).select()
+		grupo = "com ST" if produto.cst == '60' else "com ST"
 
 		url_imagens = []
 		for imagem in imagens:
@@ -256,7 +257,7 @@ def bling_csv(ids):
 		bling_produto.append(0) # Tributos
 		bling_produto.append('') # Codigo_Pai 
 		bling_produto.append('') # Codigo_Integracao
-		bling_produto.append('') # Grupo_de_Produtos
+		bling_produto.append(grupo) # Grupo_de_Produtos
 		bling_produto.append(produto.marca) # Marca
 		bling_produto.append('') # CEST 
 		bling_produto.append(1) # Volumes
@@ -280,6 +281,7 @@ def bling_csv(ids):
 
 	head = ["ID","Codigo","Descricao","Unidade","Classificacao_fiscal","Origem","Preco","Valor_IPI_fixo","Observacoes","Situacao","Estoque","Preco_de_custo","Cod_no_fabricante","Fabricante","Localizacao","Estoque_maximo","Estoque_minimo","Peso_liquido_kg","Peso_bruto_kg","GTIN_EAN","GTIN_EAN_da_ embalagem","Largura_do_ Produto","Altura_do_Produto","Profundidade_do_produto","Data_Validade","Descricao_do_Produto_no_Fornecedor","Descricao_Complementar","Unidade_por_Caixa","Produto_Variacao","Tipo_Producao","Classe_de_enquadramento_do_IPI","Codigo_da_lista_de_servicos","Tipo_do_item","Grupo de Tags/Tags","Tributos","Código Pai","Código Integração","Grupo de Produtos","Marca","CEST","Volumes","Descrição curta","Cross-Docking","URL Imagens Externas","Link Externo","Meses Garantia","Clonar dados do pai","Condição do produto","Frete Grátis","Número FCI","Vídeo"]
 
+	#c.writerow(head)
 	for row in produtos_bling:
 		c.writerow(row)
 
