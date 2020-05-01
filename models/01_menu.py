@@ -82,6 +82,7 @@ response.menu+=[
     ])]
 response.menu+=[
     (T('Bling'), False, URL(request.application,'default','index'), [
+    ('Pedidos Blig', False, URL(r=request, c='bling', f='bling_pedidos')),
     ('Produtos Multilojas', False, URL(r=request, c='bling', f='produtos_multilojas')),
     ('Exportar Bling', False, URL(r=request, c='bling', f='exportar_bling')),
     ('Estoque Bling', False, URL(r=request, c='bling', f='bling_estoque')),

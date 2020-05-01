@@ -117,7 +117,7 @@ class Clientes(Base):
 	def buscar_coccli(self,cidade):
 		con = Connect()
 		select = "select codcid from cidades where nomcid = '{}'".format(cidade)
-		return con.cur.execute(select).fetchone()
+		return con.cur.execute(select).fetchone()[0]
 
 	def buscar_cliente_cnpj(self,cnpj_cpf):
 		con = Connect()

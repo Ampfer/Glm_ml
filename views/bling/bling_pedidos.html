@@ -1,0 +1,16 @@
+{{extend 'layout.html'}}
+<div class="container">
+	{{=titulo("PEDIDOS ","Importar Pedidos Bling")}}
+	{{=form.custom.begin}}
+	<div class="row">
+		<div class="col-md-2">
+			{{=form.custom.label.numero}}
+			{{=form.custom.widget.numero}}
+		</div>
+		<div class="col-md-2">
+			<div style="margin-top: 22px;">{{=form.custom.submit}}</div>
+		</div>
+	</div>
+
+	{{=form.custom.end}}
+</div>

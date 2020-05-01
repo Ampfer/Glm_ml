@@ -1,16 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import codecs
-
 #ERPFDB = "D:/lieto/Dados/ERP.FDB"
 #SERVERNAME = "localhost"
-
-from unicodedata import normalize
-
-@auth.requires_membership('admin')
-def remover_acentos(txt, codif='utf-8'):
-	return normalize('NFKD', txt.decode(codif)).encode('ASCII', 'ignore')
 
 @auth.requires_membership('admin')
 def cobranca():

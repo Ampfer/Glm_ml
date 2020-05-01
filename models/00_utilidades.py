@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+def decode(txt):
+    return txt.decode('UTF-8').encode('cp1252','ignore')
+
+def remover_acentos(txt, codif='utf-8'):
+    import codecs
+    from unicodedata import normalize
+    return normalize('NFKD', txt.decode(codif)).encode('ASCII', 'ignore')
+
 def voltar(url):
     return A(SPAN(_class="glyphicon glyphicon-arrow-left"), ' Voltar ', _class="btn btn-warning",_href=URL(url))
 

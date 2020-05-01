@@ -184,7 +184,6 @@ def produto_multiloja():
 
     return dict(formProduto=formProduto, btnVoltar=btnVoltar, sug=sug)
 
-
 @auth.requires_membership('admin')
 def exportar_bling():
 
@@ -365,4 +364,113 @@ def categorias_bling_post():
 
 	categoria = requests.post(url, params=payload)
 
-	return categoria
+	return categori
+
+
+def bling_pedidos():
+
+	form = SQLFORM.factory(
+	Field('numero','string',label='N. Pedido:'),
+	table_name='importarpedido',
+	submit_button='Importar',
+	)
+
+	if form.process().accepted:
+
+		numero = form.vars.numero
+		# Cunsulta de itens na Api do Bling
+		pedidos = buscar_pedido(numero)
+		salvar_pedidos(pedidos)
+
+	elif form.errors:
+		response.flash = 'Erro no Formulário'
+
+	return dict(form=form)
+
+def buscar_pedido(numero=None):
+
+	if numero == None:
+		url = 'https://bling.com.br/Api/v2/pedidos/json/'
+		payload = {'apikey': BLING_SECRET_KEY,"filters":"idSituacao[6]"}
+
+	else:
+		url = 'https://bling.com.br/Api/v2/pedido/{}/json/'.format(numero)
+		payload = {'apikey': BLING_SECRET_KEY}
+	
+	try:
+		pedidos = requests.get(url, params=payload).json()['retorno']['pedidos']
+	except Exception as e:
+		pedidos = []
+
+	return pedidos
+
+def salvar_pedidos(pedidos):
+
+	for pedido in pedidos:
+
+		cliente_id = bling_lieto_clientes(pedido['pedido']['cliente'])
+
+		dtpedido = pedido['pedido']['data']
+		numero =  pedido['pedido']['numero']
+		pedidoLoja = pedido['pedido']['numeroPedidoLoja']
+		itens =  pedido['pedido']['itens']
+
+		for item in itens:
+				pedido = numero,
+				codigo = item['item']['codigo'],
+				anuncio = item['item']['descricao'],
+				quantidade = item['item']['quantidade'],
+				preco = item['item']['valorunidade']
+
+
+@auth.requires_membership('admin')
+def bling_lieto_clientes(cliente_bl):
+	
+	cliente = Clientes()
+
+	cnpj = cliente_bl['cnpj'].replace(".","").replace("/","").replace("-","")
+
+	cliente.nomcli = cliente_bl['nome'][:50].upper()
+	cliente.nomfan = ''
+	cliente.fisjur = 'J' if len(cnpj) == 13 else 'F'
+	cliente.endcli = cliente_bl['endereco'][:50].upper()
+	cliente.baicli = cliente_bl['bairro'][:35].upper()
+	cliente.cidcli = cliente_bl['cidade'][:35].upper()
+	cliente.estcli = cliente_bl['uf'][:2].upper()
+	cliente.cepcli = cliente_bl['cep'].replace(".","")
+	cliente.emacli = cliente_bl['email'][:40]
+	cliente.telcli = cliente_bl['fone']
+	cliente.cgccpf = cnpj
+	cliente.numcli = cliente_bl['numero']
+	cliente.datalt = '{}'.format(request.now.date())
+	cliente.coccli = cliente.buscar_coccli(cliente.cidcli)
+	cliente.emanfe = cliente_bl['email'][:50]
+	cliente.codven = 147
+	cliente.codcon = 31
+	cliente.codcor = 15
+	cliente.codtra = 273
+	cliente.codtip = 5
+	cliente.porcom = 1
+	cliente.pdenor = 0
+	cliente.regalt = 'S'
+	cliente.calsub = 'N'
+	cliente.envpdf = 'S'
+	cliente.retpis = 'N'
+	cliente.retcof = 'N'
+	cliente.regesp = ''
+	cliente.pdeqnt = 100
+
+	cli = cliente.buscar_cliente_cnpj(cliente.cgccpf)
+	
+	if cli:
+		query = "CGCCPF = '%s'" %(cliente.cgccpf)
+		cliente.update(query)
+		cliente_id = cli[0]	
+	else:
+		cliente.codcli = int(cliente.lastId())
+		cliente.datcad = '%s' %(request.now.date())
+		cliente.insert()
+		cliente_id = cliente.codcli
+
+
+	return cliente_id
