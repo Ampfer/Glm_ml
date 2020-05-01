@@ -214,13 +214,16 @@ def buscar_categoria(categoriaId):
     return dict(categoria = nomeCategoria, categoriaId=categoriaId,valorFrete=valorFrete)
 
 
-def buscar_descricao(produtoId):
-
-    try:
-        idAnuncio = db(Anuncios_Produtos.produto == produtoId).select().first()['anuncio']  
-    except Exception as e:
-        descricao_curta = ''
+def buscar_descricao(produtoId=None, anuncioId = None):
+    if anuncioId:
+        idAnuncio = anuncioId
     else:
+        try:
+            idAnuncio = db(Anuncios_Produtos.produto == produtoId).select().first()['anuncio']  
+        except Exception as e:
+            descricao_curta = ''
+            idAnuncio = None
+    if idAnuncio:
         idDescricao = Anuncios[idAnuncio].descricao
 
         if idDescricao == None:   

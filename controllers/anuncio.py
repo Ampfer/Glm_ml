@@ -80,6 +80,40 @@ def atualizar_categorias():
                 frete = categoria['valorFrete'],
                 )
 
+def duplicar_anuncio():
+    anuncio_id = request.vars.anuncio
+    anuncio = Anuncios[anuncio_id]
+    produtos = db(Anuncios_Produtos.anuncio == anuncio_id).select()
+    atributos = db(Anuncios_Atributos.anuncio == anuncio_id).select()
+    imagens = db(Anuncios_Imagens.anuncio == anuncio_id).select()
+    
+    # Duplicando dados do Anuncio
+    newAnuncio = anuncio.as_dict()
+    del newAnuncio['id']
+    del newAnuncio['item_id']
+    Anuncios[None] = newAnuncio
+    newAnuncioId = db(Anuncios.id>0).select(orderby =~ Anuncios.id).first()['id']
+    # Duplicando Produtos do Anuncio
+    for produto in produtos:
+        newProduto = produto.as_dict()
+        del newProduto['id']
+        newProduto['anuncio'] = newAnuncioId
+        Anuncios_Produtos[None] = newProduto
+    # Duplicando Atributos do Anuncio
+    for atributo in atributos:
+        newAtributo = atributo.as_dict()
+        del newAtributo['id']
+        newAtributo['anuncio'] = newAnuncioId
+        Anuncios_Atributos[None] = newAtributo
+    # Duplicando Imagens do Anuncio
+    for imagem in imagens:
+        newImagem = imagem.as_dict()
+        del newImagem['id']
+        newImagem['anuncio'] = newAnuncioId
+        Anuncios_Imagens[None] = newImagem
+
+    redirect(URL('anuncio', args=newAnuncioId ))
+
 @auth.requires_membership('admin')      
 def anuncios():
 
@@ -90,8 +124,13 @@ def anuncios():
         except:
             pass
 
+    links=[dict(header='Duplicar',
+            body=lambda row: A(TAG.button('Duplicar',_class='btn btn-secondary btn-sm'),
+           _href=URL('duplicar_anuncio',vars = dict(anuncio=row.id)) , _target = '_blank', _onclick="return confirm('Deseja Duplicar esse Anuncio ?');" ))]
+
     fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.desconto, Anuncios.preco, Anuncios.estoque)
-    formAnuncios = grid(Anuncios,80,formname="formAnuncios",fields=fields, ondelete = delete_anuncio,orderby=Anuncios.titulo)
+    formAnuncios = grid(Anuncios,80,formname="formAnuncios",fields=fields, ondelete = delete_anuncio,
+        orderby=Anuncios.titulo, links=links)   
             
     formAnuncios = DIV(formAnuncios, _class="well")
 
@@ -502,7 +541,8 @@ def anunciar_item():
     if item.status_code == 201:
         status = 'Anunciado com Sucesso....'
     	### Salvando item_id no banco de dados
-        xitem = json.loads(item.content)    
+        xitem = json.loads(item.content)
+        valorfrete = buscar_valor_frete(xitem['id'])
         Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'])
         ### Salvando Atributos no ML
         atrib_args = "items/%s" %(xitem['id'])
@@ -510,7 +550,8 @@ def anunciar_item():
         if atrib.status_code != 200:
             status = 'Falha na Atualização do Item : item:%s ' %(atrib)        
     else:
-        status = 'Falha na Atualização do Item : item:%s ' %(item)        
+        status = 'Falha na Atualização do Item : item:%s ' %(item)   
+
     response.flash = status
     response.js = "$('#anunciospublicar').get(0).reload()"
 
@@ -856,7 +897,7 @@ def atualizar_sku():
 
 @auth.requires_membership('admin')
 def sku():
-    #id ancunio
+
 	anuncios = db(Anuncios.id>0).select()
 	for anuncio in anuncios:
 		sku = '%05d' % anuncio.id
