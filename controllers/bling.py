@@ -391,7 +391,7 @@ def buscar_pedido(numero=None):
 
 	if numero == None:
 		url = 'https://bling.com.br/Api/v2/pedidos/json/'
-		payload = {'apikey': BLING_SECRET_KEY,"filters":"idSituacao[6]"}
+		payload = {'apikey': BLING_SECRET_KEY,"filters":"idSituacao[9]"}
 
 	else:
 		url = 'https://bling.com.br/Api/v2/pedido/{}/json/'.format(numero)
@@ -408,12 +408,20 @@ def salvar_pedidos(pedidos):
 
 	for pedido in pedidos:
 
-		cliente_id = bling_lieto_clientes(pedido['pedido']['cliente'])
+		vendedor = 99
+		loja = pedido['pedido']['tipoIntegracao']
+		if loja == 'Amazon':
+			vendedor = 149
+		if loja == 'IntegraCommerce':
+			vendedor = 147
+
+		cliente_id = bling_lieto_clientes(pedido['pedido']['cliente'],vendedor)
 
 		dtpedido = pedido['pedido']['data']
 		numero =  pedido['pedido']['numero']
 		pedidoLoja = pedido['pedido']['numeroPedidoLoja']
 		itens =  pedido['pedido']['itens']
+		print pedido['pedido']['loja'], pedido['pedido']['tipoIntegracao']
 
 		for item in itens:
 				pedido = numero,
@@ -424,7 +432,7 @@ def salvar_pedidos(pedidos):
 
 
 @auth.requires_membership('admin')
-def bling_lieto_clientes(cliente_bl):
+def bling_lieto_clientes(cliente_bl,vendedor):
 	
 	cliente = Clientes()
 
@@ -445,7 +453,7 @@ def bling_lieto_clientes(cliente_bl):
 	cliente.datalt = '{}'.format(request.now.date())
 	cliente.coccli = cliente.buscar_coccli(cliente.cidcli)
 	cliente.emanfe = cliente_bl['email'][:50]
-	cliente.codven = 147
+	cliente.codven = vendedor
 	cliente.codcon = 31
 	cliente.codcor = 15
 	cliente.codtra = 273
@@ -471,6 +479,5 @@ def bling_lieto_clientes(cliente_bl):
 		cliente.datcad = '%s' %(request.now.date())
 		cliente.insert()
 		cliente_id = cliente.codcli
-
 
 	return cliente_id
