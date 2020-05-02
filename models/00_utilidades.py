@@ -8,6 +8,23 @@ def remover_acentos(txt, codif='utf-8'):
     from unicodedata import normalize
     return normalize('NFKD', txt.decode(codif)).encode('ASCII', 'ignore')
 
+import unicodedata
+import re
+
+"""
+A remoção de acentos foi baseada em uma resposta no Stack Overflow.
+http://stackoverflow.com/a/517974/3464573
+"""
+
+def removerAcentos1(palavra):
+
+    # Unicode normalize transforma um caracter em seu equivalente em latin.
+    nfkd = unicodedata.normalize('NFKD', palavra)
+    palavraSemAcento = u"".join([c for c in nfkd if not unicodedata.combining(c)])
+
+    # Usa expressão regular para retornar a palavra apenas com números, letras e espaço
+    return re.sub('[^a-zA-Z0-9 \\\]', '', palavraSemAcento)
+
 def voltar(url):
     return A(SPAN(_class="glyphicon glyphicon-arrow-left"), ' Voltar ', _class="btn btn-warning",_href=URL(url))
 
