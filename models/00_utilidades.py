@@ -16,7 +16,7 @@ A remoção de acentos foi baseada em uma resposta no Stack Overflow.
 http://stackoverflow.com/a/517974/3464573
 """
 
-def removerAcentos1(palavra):
+def remover_acentos1(palavra):
 
     # Unicode normalize transforma um caracter em seu equivalente em latin.
     nfkd = unicodedata.normalize('NFKD', palavra)
