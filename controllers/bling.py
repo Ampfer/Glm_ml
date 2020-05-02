@@ -288,6 +288,7 @@ def bling_csv(ids):
 
 	return
 
+@auth.requires_membership('admin')
 def bling_estoque():
 
 	form = FORM.confirm('Gerar csv',{'Voltar':URL('default','index')})
@@ -330,7 +331,7 @@ def bling_estoque():
 
 	return dict(form=form)
 
-
+@auth.requires_membership('admin')
 def categorias_bling():
 	import json
 	url = 'https://bling.com.br/Api/v2/categorias/json/'
@@ -347,6 +348,7 @@ def categorias_bling():
 
 	return 
 
+@auth.requires_membership('admin')
 def categorias_bling_post():
 
 	xml = """
@@ -364,9 +366,9 @@ def categorias_bling_post():
 
 	categoria = requests.post(url, params=payload)
 
-	return categori
+	return categoria
 
-
+@auth.requires_membership('admin')
 def bling_pedidos():
 
 	form = SQLFORM.factory(
@@ -387,6 +389,7 @@ def bling_pedidos():
 
 	return dict(form=form)
 
+@auth.requires_membership('admin')
 def buscar_pedido(numero=None):
 
 	if numero == None:
@@ -404,6 +407,7 @@ def buscar_pedido(numero=None):
 
 	return pedidos
 
+@auth.requires_membership('admin')
 def salvar_pedidos(pedidos):
 
 	for pedido in pedidos:
@@ -417,19 +421,25 @@ def salvar_pedidos(pedidos):
 
 		cliente_id = bling_lieto_clientes(pedido['pedido']['cliente'],vendedor)
 
-		dtpedido = pedido['pedido']['data']
-		numero =  pedido['pedido']['numero']
-		pedidoLoja = pedido['pedido']['numeroPedidoLoja']
+		venda = {}
+		venda['dtpedido'] = pedido['pedido']['data']
+		venda['numero'] =  pedido['pedido']['numero']
+		venda['pedidoLoja'] = pedido['pedido']['numeroPedidoLoja']
+		venda['vendedor'] = vendedor
+		venda['cliente'] = cliente_id
+		venda['totalprodutos'] = pedido['pedido']['totalprodutos']
+		venda['taxa'] = round(float(pedido['pedido']['totalprodutos'])*0.2,2)
+
+		numorc = bling_lieto_orcamentos1(venda)
+		
 		itens =  pedido['pedido']['itens']
-		print pedido['pedido']['loja'], pedido['pedido']['tipoIntegracao']
+		bling_lieto_orcamentos2(numorc,itens)
 
-		for item in itens:
-				pedido = numero,
-				codigo = item['item']['codigo'],
-				anuncio = item['item']['descricao'],
-				quantidade = item['item']['quantidade'],
-				preco = item['item']['valorunidade']
+		numdoc = bling_lieto_pedidos1(numorc)
 
+		bling_lieto_pedidos2(numdoc,numorc)
+
+	return
 
 @auth.requires_membership('admin')
 def bling_lieto_clientes(cliente_bl,vendedor):
@@ -481,3 +491,234 @@ def bling_lieto_clientes(cliente_bl,vendedor):
 		cliente_id = cliente.codcli
 
 	return cliente_id
+
+@auth.requires_membership('admin')
+def bling_lieto_orcamentos1(venda):
+	orcamentos1 = Orcamentos1()
+
+	# Retorna última Tabela de Preços
+	tabela = orcamentos1.tabela()
+
+	codmlb = 'B{}'.format(venda['numero'].zfill(6))
+
+	total = float(venda['totalprodutos'])
+	taxa = float(venda['taxa'])
+
+	orcamentos1.codcli = venda['cliente']
+	orcamentos1.pedven = venda['pedidoLoja']
+	orcamentos1.codmlb = codmlb
+	orcamentos1.codtab = str(tabela)
+	orcamentos1.codven = venda['vendedor']
+	orcamentos1.obsord = ''
+	orcamentos1.porcom = (0.02*(total-taxa)/total)*100
+	orcamentos1.codemp = 3
+	orcamentos1.numorc = 0
+	orcamentos1.pedcli = ''
+	orcamentos1.pdeped = 0
+	orcamentos1.pdeqnt = 0 
+	orcamentos1.pdeval = 0 
+	orcamentos1.pdepon = 0
+	orcamentos1.codcon = 1
+	orcamentos1.codcor = 15
+	orcamentos1.codtra = 273
+	orcamentos1.codred = 0
+	orcamentos1.valfre = 0
+	orcamentos1.tipfre = 0
+	orcamentos1.pedimp = 'N'
+	orcamentos1.tiporc = 'P'
+	orcamentos1.sitorc = 'A'
+	orcamentos1.status = 'PEN'
+	orcamentos1.numlot = 0
+	orcamentos1.horent = ''
+
+	#numdoc = venda.numdoc or 0
+	#orc =  orcamentos1.buscar(numdoc)
+
+	query = "codmlb = '{}'".format(codmlb)
+	try:
+		numdoc = orcamentos1.select('NUMDOC',query).fetchone()[0]
+	except:
+		numdoc = None
+
+	if numdoc:
+		print 'orcamento ja cadastrado'	
+	else:
+		lastId = orcamentos1.last_id() # Retorna último Id Tabela ORCAMENTOS1
+		numdoc = int(lastId) + 1
+		orcamentos1.numdoc = int(lastId) + 1
+		orcamentos1.datdoc = venda['dtpedido']
+		orcamentos1.datpro = venda['dtpedido']
+
+		orcamentos1.insert()
+
+	return numdoc
+
+@auth.requires_membership('admin')
+def bling_lieto_orcamentos2(numdoc,itens):
+	
+	orcamentos2 = Orcamentos2()
+
+	for item in itens:
+		codigo = int(item['item']['codigo'])
+		quantidade = item['item']['quantidade']
+		preco = float(item['item']['valorunidade'])
+
+		prod = Produtos()
+		# Buscar produto banco firebird
+		query = "CODPRO = {}".format(codigo)
+		produto = prod.select('CODPRO,CODINT,NOMPRO,UNIPRO', query).fetchone()
+		# Buscar preco tabela banco firebird
+		preco_tabela = float(prod.preco_tabela(produto[0]))
+		# calcular porcentagem de desconto do item
+		pdepro = round((1-(preco/preco_tabela)) * 100,2)
+		# verificar se existe item cadastrado
+		query = "NUMDOC = {} AND CODPRO = {}".format(int(numdoc),int(produto[0]))
+		
+		existe = orcamentos2.select('*',query).fetchone()
+	
+		orcamentos2.numdoc = int(numdoc)
+		orcamentos2.codpro = int(produto[0])
+		orcamentos2.codint = str(produto[1])
+		orcamentos2.nompro = produto[2].encode('UTF-8').replace("'","")
+		orcamentos2.unipro = str(produto[3])
+		orcamentos2.qntpro = quantidade
+		orcamentos2.pdepro = float(pdepro)
+		orcamentos2.preori = 0
+		orcamentos2.precus = 0
+		orcamentos2.prepro = preco
+		orcamentos2.enviar = 'S'
+		orcamentos2.tippro = 'VND'
+		orcamentos2.qntpre = 1
+
+		if existe:
+			orcamentos2.update(query)
+		else:
+			try:
+				orcamentos2.insert()
+			except:
+				orcamentos2.codpro = 1679
+				orcamentos2.nompro = 'PRODUTO NÃO ENCOTRADO'		
+				orcamentos2.insert()
+	return
+
+@auth.requires_membership('admin')
+def bling_lieto_pedidos1(numorc):
+	pedidos1 = Pedidos1()
+	orcamentos1 = Orcamentos1()
+	orcamentos2 = Orcamentos2()
+	numdoc = (numorc*100) + 01
+	
+	# Buscar Orcamento
+	fields = "codcli,numorc,pedcli,pedven,pdeped,pdeqnt,pdeval,pdepon,codtab,codven,porcom,codcon,codcor,codtra,codred,valfre,tipfre,datdoc,datpro,codmlb"
+	query = " numdoc = {}".format(numorc)
+	orcamento = orcamentos1.select(fields,query).fetchone()
+
+	# total do orçamento 
+	query = 'numdoc = {}'.format(numorc)
+	total_itens = orcamentos2.select('sum(qntpro*prepro)',query).fetchone()[0]
+	total = float(total_itens) + float(orcamento[15])
+	
+	pedidos1.numdoc = numdoc
+	pedidos1.codcli = orcamento[0]
+	pedidos1.numorc = numorc
+	pedidos1.pedcli = orcamento[2]
+	pedidos1.pedven = orcamento[3]
+	pedidos1.pdeped = orcamento[4]
+	pedidos1.pdeqnt = orcamento[5]
+	pedidos1.pdeval = orcamento[6]
+	pedidos1.pdepon = orcamento[7]
+	pedidos1.codtab = orcamento[8]
+	pedidos1.codven = orcamento[9]
+	pedidos1.porcom = orcamento[10]
+	pedidos1.codcon = orcamento[11]
+	pedidos1.codcor = orcamento[12]
+	pedidos1.codtra = orcamento[13]
+	pedidos1.codred = orcamento[14]
+	pedidos1.valfre = orcamento[15]
+	pedidos1.tipfre = orcamento[16]
+	pedidos1.datdoc = str(orcamento[17])
+	pedidos1.datpro = str(orcamento[18])
+	pedidos1.codmlb = str(orcamento[19])
+	pedidos1.totped = total
+	pedidos1.conimp = ''
+	pedidos1.codemp = 3
+	pedidos1.qntvol = 1
+	pedidos1.espvol = 'VOLUMES'
+	pedidos1.marvol = ''
+	pedidos1.numvol = 0
+	pedidos1.pesbru = 0
+	pedidos1.pesliq = 0
+	pedidos1.valsub = 0
+	pedidos1.numnot = 0
+	pedidos1.obsped = ''
+	pedidos1.obsord = ''
+	pedidos1.conimp = '0N' 
+	pedidos1.pedsub = 0
+	pedidos1.fretra = 0
+	pedidos1.pedimp = 'N'
+
+	query = 'numdoc = {}'.format(numdoc)
+	pedido = pedidos1.select('*',query).fetchone()
+
+	if pedido:
+		print 'pedido ja cadastrado'	
+		#query = "NUMDOC = '%s'" %(numdoc)
+		#pedidos1.update(query)
+	else:
+		pedidos1.insert()
+		
+		#Atualiza Tabela Orcamento 1
+		query = "NUMDOC = '%s'" %(int(numorc))
+		orcamentos1.pedimp = 'S'
+		orcamentos1.sitorc = 'E'
+		orcamentos1.update(query)
+
+	return numdoc
+
+@auth.requires_membership('admin')
+def bling_lieto_pedidos2(numdoc,numorc):
+
+	pedidos2 = Pedidos2()
+	orcamentos2 = Orcamentos2()
+	produtos = Produtos()
+
+	# buscar itens do orçamento
+	fields = 'codpro,codint,nompro,unipro,qntpro,pdepro,precus,preori,prepro,tippro'
+	query = 'NUMDOC = {}'.format(numorc)
+	itens = orcamentos2.select(fields,query).fetchall()
+	total_peso = 0
+	for item in itens:
+
+		pedidos2.numdoc = numdoc
+		pedidos2.codpro = item[0]
+		pedidos2.codint = item[1]
+		pedidos2.nompro = item[2]
+		pedidos2.unipro = item[3]
+		pedidos2.qntpro = item[4]
+		pedidos2.pdepro = item[5]
+		pedidos2.precus = item[6]
+		pedidos2.preori = item[7]
+		pedidos2.prepro = item[8]
+		pedidos2.tippro = item[9]
+
+		# buscar peso na tabela de produtos
+		query = 'CODPRO = {}'.format(item[0])
+		peso = float(produtos.select('pesbru',query).fetchone()[0])
+
+		total_peso = total_peso + peso
+
+		query = 'NUMDOC = {} AND CODPRO = {}'.format(numdoc,item[0])
+		existe = pedidos2.select('*',query).fetchone()
+		if existe:
+			pedidos2.update(query)
+		else:
+			pedidos2.insert()
+
+	#Atualiza pesos na tabela pedidos1
+	pedidos1 = Pedidos1()
+	pedidos1.pesliq = total_peso
+	pedidos1.pesbru = total_peso + 0.100
+	query = 'NUMDOC = {}'.format(numdoc)
+	pedidos1.update(query)
+	
+	return
