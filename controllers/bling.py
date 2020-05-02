@@ -448,13 +448,13 @@ def bling_lieto_clientes(cliente_bl,vendedor):
 
 	cnpj = cliente_bl['cnpj'].replace(".","").replace("/","").replace("-","")
 
-	cliente.nomcli = cliente_bl['nome'][:50].upper()
+	cliente.nomcli = remover_acentos(cliente_bl['nome'][:50]).upper()
 	cliente.nomfan = ''
 	cliente.fisjur = 'J' if len(cnpj) == 13 else 'F'
-	cliente.endcli = cliente_bl['endereco'][:50].upper()
-	cliente.baicli = cliente_bl['bairro'][:35].upper()
-	cliente.cidcli = cliente_bl['cidade'][:35].upper()
-	cliente.estcli = cliente_bl['uf'][:2].upper()
+	cliente.endcli = remover_acentos(cliente_bl['endereco'])[:50].upper()
+	cliente.baicli = remover_acentos(cliente_bl['bairro'])[:35].upper()
+	cliente.cidcli = remover_acentos(cliente_bl['cidade'])[:35].upper()
+	cliente.estcli = remover_acentos(cliente_bl['uf'][:2]).upper()
 	cliente.cepcli = cliente_bl['cep'].replace(".","")
 	cliente.emacli = cliente_bl['email'][:40]
 	cliente.telcli = cliente_bl['fone']
