@@ -188,7 +188,7 @@ def sugerido(anuncio,idProduto = 0):
     preco = preco * (1 - desconto/100)
     preco = preco + frete + frete2
     preco = preco/ (1-tarifa/100)
-    preco = round(preco,1)
+    preco = round(preco,1) + 0.5 #adicional de 0,50 
 
     if preco >= (120-frete2) and preco < 126:
         preco = 119.90
