@@ -300,6 +300,7 @@ def atualizar_sugerido():
 		anuncioId = int(anuncio.id)
 		Anuncios[anuncioId] = dict(preco=sugerido(anuncio)['preco'])
 	#response.js = "$('#teste').get(0).reload()"
+	session.flash = 'Preços Atualizados com Sucesso....!'
 	response.js = "location.reload(true)"
 
 @auth.requires_membership('admin')
@@ -352,9 +353,10 @@ def atualizar_preco():
 	
 	btnSugerido = A(SPAN(_class="glyphicon glyphicon-cog"), ' Atualizar Sugerido ', _class="btn btn-default",_id='atualizarsugerido', _onclick="if (confirm('Deseja Atualizar Preços com Sugeridos ?')) ajax('%s',[], 'formPrecos');" %URL('atualizar_sugerido',args=request.vars.keywords))
 	btnPreco = A(SPAN(_class="glyphicon glyphicon-cog"), ' Atualizar Preços ', _class="btn btn-default",_id='sincronizarpreco', _onclick="if (confirm('Deseja Atualizar Preços do Mercado Livre ?')) ajax('%s', [], 'formPrecosMl');" %URL('sincronizar_preco'))
-
+	btnDesconto = A(' Atualizar Descontos ', _class="btn btn-default",_id='atualizardesconto', _onclick="if (confirm('Deseja Atualizar Descontos ?')) ajax('%s', [], 'formDesconto');" %URL('atualizar_desconto'))
 	formPrecos[0].insert(-1, btnSugerido)
 	formPrecos[0].insert(-1, btnPreco)
+	formPrecos[0].insert(-1, btnDesconto)
 
 	formPrecos = DIV(formPrecos, _class="well")
 
@@ -363,6 +365,29 @@ def atualizar_preco():
 		redirect(URL('anuncio','anuncio', args=idAnuncio,))
 
 	return dict(formPrecos=formPrecos)
+
+@auth.requires_membership('admin')
+def atualizar_desconto():
+	
+	anuncios = db(Anuncios.id > 0).select()
+	
+	for anuncio in anuncios:
+
+		desconto = 12
+
+		if float(anuncio.preco) > 30:
+			desconto = 14
+			if float(anuncio.preco) > 60:
+				desconto = 16
+				if float(anuncio.preco) > 90:
+					desconto = 18
+					if  float(anuncio.preco) > 120:
+						desconto = 20
+
+		Anuncios[int(anuncio.id)] = dict(desconto=desconto)
+
+		session.flash = 'Descontos Atualizados com Sucesso....!'
+		response.js = "location.reload(true)"
 
 @auth.requires_membership('admin')
 def buscar_variacao_preco(idAnuncio,preco):
