@@ -365,14 +365,15 @@ def atualiza_imagem_familia():
 @auth.requires_membership('admin')
 def atualiza_imagem_produto():
     idAnuncio = int(request.args(0))
-    anuncio_produto = db(Anuncios_Produtos.anuncio == idAnuncio).select().first()
-    idproduto = anuncio_produto.produto
-    q1 = (Produtos_Imagens.familia == idproduto) & (Produtos_Imagens.imagem==Imagens.id)
-    imagensProduto = db(q1).select()
-    for row in imagensProduto:
-        imagem = row.produtos_imagens.imagem
-        q2 = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem == imagem)
-        Anuncios_Imagens.update_or_insert(q2,anuncio=idAnuncio,imagem=imagem)
+    anuncios_produtos = db(Anuncios_Produtos.anuncio == idAnuncio).select()
+    for anuncio_produto in anuncios_produtos:
+        idproduto = anuncio_produto.produto
+        q1 = (Produtos_Imagens.produto == idproduto) & (Produtos_Imagens.imagem==Imagens.id)
+        imagensProduto = db(q1).select()
+        for row in imagensProduto:
+            imagem = row.produtos_imagens.imagem
+            q2 = (Anuncios_Imagens.anuncio == idAnuncio) & (Anuncios_Imagens.imagem == imagem)
+            Anuncios_Imagens.update_or_insert(q2,anuncio=idAnuncio,imagem=imagem)
     response.js = "$('#anunciosimagens').get(0).reload();"
     
 @auth.requires_membership('admin')

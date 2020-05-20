@@ -186,14 +186,18 @@ def importar_estoque():
 		cur = con.cursor()
 		
 		for prod in db(db.produtos.id>0).select():
-			db.produtos[prod.id] = dict(estoque1 = 0 )
+			db.produtos[prod.id] = dict(estoque = 0 )
 
 		select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
 		produtos = cur.execute(select).fetchall()
 		for produto in produtos:
 			estoque = float(produto[1]) - float(produto[2]) - reservado(produto[0])
 			estoque = 0 if estoque <0 else estoque
-			db.produtos[int(produto[0])] = dict(estoque1 = estoque )
+			print produto[0]
+			try:
+				db.produtos[int(produto[0])] = dict(estoque = estoque )
+			except:
+				pass
 		
 		con.close()
 
