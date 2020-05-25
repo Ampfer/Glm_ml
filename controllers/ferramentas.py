@@ -110,6 +110,7 @@ def zerar_estoque():
 			db.produtos[produto.id] = dict(estoque=0)
 	return dict(form=form)
 
+@auth.requires_membership('admin')
 def sincronizar_produtos():
 	form = FORM.confirm('Sincronizar Produtos',{'Voltar':URL('default','index')})
 
@@ -149,31 +150,7 @@ def sincronizar_produtos():
             )
 	return dict(form=form)
 
-"""
-SINCRONIZAR ESTOQUE
-"""
 @auth.requires_membership('admin')
-def importar_estoque_old():
-
-	form = FORM.confirm('Importar Estoque',{'Voltar':URL('default','index')})
-
-	if form.accepted:
-		produtos = db(db.produtos.id>0).select()
-
-		for produto in produtos:
-			saldo = estoque_erp(produto.id)
-			qtde = qtde_vendida(produto.id)
-			qtde_reservada = reservado(produto.id)
-			saldo_corrigido = float(saldo)-float(qtde)-float(qtde_reservada)
-
-			estoque = saldo_corrigido if saldo_corrigido > 0 else 0
-
-			db.produtos[produto.id] = dict(estoque = estoque)
-
-		response.flash = 'Estoque Importado com Sucesso....'
-
-	return dict(form=form)
-
 def importar_estoque():
 
 	form = FORM.confirm('Importar Estoque',{'Voltar':URL('default','index')})
@@ -193,7 +170,6 @@ def importar_estoque():
 		for produto in produtos:
 			estoque = float(produto[1]) - float(produto[2]) - reservado(produto[0])
 			estoque = 0 if estoque <0 else estoque
-			print produto[0]
 			try:
 				db.produtos[int(produto[0])] = dict(estoque = estoque )
 			except:
@@ -205,97 +181,11 @@ def importar_estoque():
 	
 	return dict(form=form)
 
-
-def estoque_erp1(codpro):
-	
-	import fdb
-	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-	cur = con.cursor()
-	
-	try:
-		select = "select tabela from produtos where codpro = {}".format(codpro)
-		tabela = cur.execute(select).fetchone()[0]
-	except:
-		tabela = 'N'
-
-	if tabela == 'S':
-		saldo  = float(cur.execute('select saldo from saldo_atual({})'.format(codpro)).fetchone()[0]) 
-	else:
-		saldo = 0
-
-	con.close()
-	
-	return saldo
+def teste():
+	estoque = importar_estoque_produto(3413)
+	return dict(estoque=estoque)
 
 
-@auth.requires_membership('admin')
-def estoque_erp(codpro):
-	import fdb
-	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-	cur = con.cursor()
-	
-	try:
-		select = "select tabela from produtos where codpro = {}".format(codpro)
-		tabela = cur.execute(select).fetchone()[0]
-	except:
-		tabela = 'N'
-
-	if tabela == 'S':
-		select = "select SUM(qntent) from entradas2 where codpro = {}".format(codpro)
-		qtent = cur.execute(select).fetchone()
-		select = "select SUM(qntpro) from pedidos2 where codpro = {}".format(codpro)
-		qtsai = cur.execute(select).fetchone()
-		select = "select SUM(qntpro) from mestoque where entsai = 'E' and codpro = {}".format(codpro)
-		qtace = cur.execute(select).fetchone()
-		select = "select SUM(qntpro) from mestoque where entsai = 'S' and codpro = {}".format(codpro)
-		qtacs = cur.execute(select).fetchone()
-		select = "select SUM(qntpro) from devolucoes2 where codpro = {}".format(codpro)
-		qtdev = cur.execute(select).fetchone()
-
-		saldo = float(qtent[0] or 0) - float(qtsai[0] or 0) + float(qtace[0] or 0) - float(qtacs[0] or 0) + float(qtdev[0] or 0)
-	else:
-		saldo = 0
-
-	con.close()
-	
-	return saldo
-
-@auth.requires_membership('admin')
-def qtde_vendida(codpro):
-	import fdb
-	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-	cur = con.cursor()
-
-	select = "select sum(qntpro) from orcamentos1, orcamentos2 where orcamentos1.sitorc = 'A' and tiporc = 'P' and orcamentos1.numdoc = orcamentos2.numdoc and orcamentos2.codpro = {}".format(codpro)
-	orcamentos = cur.execute(select).fetchone()
-
-	select = """select sum(pedidos2.qntpro) from pedidos1, pedidos2, orcamentos1
-				where pedidos1.numdoc = pedidos2.numdoc and pedidos2.codpro = {0} and pedidos1.numorc=orcamentos1.numdoc 
-				and orcamentos1.sitorc = 'A' and orcamentos1.tiporc = 'P' """.format(codpro)
-	
-	pedidos = cur.execute(select).fetchone()
-
-	con.close()
-
-	vendido =  orcamentos[0] if orcamentos[0] else 0
-	enviado =  pedidos[0] if pedidos[0] else 0
-
-	return (vendido - enviado)
-
-"""
-**************************************************
-"""
-
-@auth.requires_membership('admin')
-def reservado(produtos_id):
-    
-    query = (Envios_Full.status == "Reservado") & (Envios_Produtos.envio_id == Envios_Full.id)
-    query = query & '(Envios_Produtos.produtos_id == {})'.format(produtos_id)
-    produtos= db(query).select()
-    soma = 0
-    for row in produtos:
-        soma += int(row.envios_produtos.quantidade)
-    return soma
 
 @auth.requires_membership('admin')
 def atualizar_sugerido():
@@ -615,6 +505,102 @@ def lista_tray_variacao(b):
 	return tray_variacao_row
 
 
+'''
+@auth.requires_membership('admin')
+def importar_estoque_old():
 
+	form = FORM.confirm('Importar Estoque',{'Voltar':URL('default','index')})
+
+	if form.accepted:
+		produtos = db(db.produtos.id>0).select()
+
+		for produto in produtos:
+			saldo = estoque_erp(produto.id)
+			qtde = qtde_vendida(produto.id)
+			qtde_reservada = reservado(produto.id)
+			saldo_corrigido = float(saldo)-float(qtde)-float(qtde_reservada)
+
+			estoque = saldo_corrigido if saldo_corrigido > 0 else 0
+
+			db.produtos[produto.id] = dict(estoque = estoque)
+
+		response.flash = 'Estoque Importado com Sucesso....'
+
+	return dict(form=form)
+def estoque_erp1(codpro):
+	
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	
+	try:
+		select = "select tabela from produtos where codpro = {}".format(codpro)
+		tabela = cur.execute(select).fetchone()[0]
+	except:
+		tabela = 'N'
+
+	if tabela == 'S':
+		saldo  = float(cur.execute('select saldo from saldo_atual({})'.format(codpro)).fetchone()[0]) 
+	else:
+		saldo = 0
+
+	con.close()
+	
+	return saldo
+
+
+@auth.requires_membership('admin')
+def estoque_erp(codpro):
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+	
+	try:
+		select = "select tabela from produtos where codpro = {}".format(codpro)
+		tabela = cur.execute(select).fetchone()[0]
+	except:
+		tabela = 'N'
+
+	if tabela == 'S':
+		select = "select SUM(qntent) from entradas2 where codpro = {}".format(codpro)
+		qtent = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from pedidos2 where codpro = {}".format(codpro)
+		qtsai = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from mestoque where entsai = 'E' and codpro = {}".format(codpro)
+		qtace = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from mestoque where entsai = 'S' and codpro = {}".format(codpro)
+		qtacs = cur.execute(select).fetchone()
+		select = "select SUM(qntpro) from devolucoes2 where codpro = {}".format(codpro)
+		qtdev = cur.execute(select).fetchone()
+
+		saldo = float(qtent[0] or 0) - float(qtsai[0] or 0) + float(qtace[0] or 0) - float(qtacs[0] or 0) + float(qtdev[0] or 0)
+	else:
+		saldo = 0
+
+	con.close()
+	
+	return saldo
+
+@auth.requires_membership('admin')
+def qtde_vendida(codpro):
+	import fdb
+	con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
+	cur = con.cursor()
+
+	select = "select sum(qntpro) from orcamentos1, orcamentos2 where orcamentos1.sitorc = 'A' and tiporc = 'P' and orcamentos1.numdoc = orcamentos2.numdoc and orcamentos2.codpro = {}".format(codpro)
+	orcamentos = cur.execute(select).fetchone()
+
+	select = """select sum(pedidos2.qntpro) from pedidos1, pedidos2, orcamentos1
+				where pedidos1.numdoc = pedidos2.numdoc and pedidos2.codpro = {0} and pedidos1.numorc=orcamentos1.numdoc 
+				and orcamentos1.sitorc = 'A' and orcamentos1.tiporc = 'P' """.format(codpro)
+	
+	pedidos = cur.execute(select).fetchone()
+
+	con.close()
+
+	vendido =  orcamentos[0] if orcamentos[0] else 0
+	enviado =  pedidos[0] if pedidos[0] else 0
+
+	return (vendido - enviado)
 		
-
+'''

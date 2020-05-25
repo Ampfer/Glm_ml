@@ -8,3 +8,5 @@ Importar_Produtos = db.define_table('importar_produtos',
     Field('estoque','decimal(7,2)',label='Estoque'),
     Field('ean','string',label='Ean:',length=13)
     )
+
+

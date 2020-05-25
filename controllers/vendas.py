@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# importar_estoque_produto, anuncio_alterado_produto,reservado estao model: 99_funcoes
+
 @auth.requires_membership('admin')
 def temp():
 	query = (Pedidos.numdoc != None) & (Pedidos.numdoc != 0)
@@ -410,6 +412,7 @@ def salvar_itens(itens):
 				cur.execute(insere)
 
 		con.commit()
+		importar_estoque_produto(int(produto[0]))
 	con.close()
 	return
 
