@@ -166,7 +166,7 @@ def importar_estoque():
 			db.produtos[prod.id] = dict(estoque = 0 )
 
 		#select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
-		select = "select codpro,qntest,qntvnd from produtos where altest = 'S'"
+		select = "select codpro,qntest,qntvnd from produtos where estalt = 'S'"
 		produtos = cur.execute(select).fetchall()
 		for produto in produtos:
 			estoque = float(produto[1]) - float(produto[2]) - reservado(produto[0])
