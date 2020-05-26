@@ -58,8 +58,9 @@ def atualiza_produtos():
                 )
 
 @auth.requires_membership('admin')
-def atualizar_estoque():
+def atualizar_estoque_comfirm():
 
+	'''
 	anuncios = db(Anuncios.id > 0).select()
 	for anuncio in anuncios:
 		est_full = saldo_full(anuncio) if saldo_full(anuncio) > 0 else 0
@@ -67,38 +68,23 @@ def atualizar_estoque():
 		estoque = estoque if estoque > 0 else 0
 		if estoque != anuncio.estoque:
 			Anuncios[anuncio.id] = dict(estoque=estoque,alterado = 'S')
+	'''
 
 	form = FORM.confirm('Atualizar Estoque',{'Voltar':URL('default','index')})
 
 	if form.accepted:
-
 		if session.ACCESS_TOKEN:
-			from meli import Meli 
-			meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-
-			#anuncios = db(Anuncios.alterado == 'S' or Anuncios.forma == 'Multiplos' ).select()
-			anuncios = db(Anuncios.item_id != '' and (Anuncios.alterado == 'S' or Anuncios.forma == 'Multiplos') ).select()
-			#anuncios = db(Anuncios.forma == 'Multiplos').select()
-			for anuncio in anuncios:
-				if anuncio['item_id']:
-					variacao = []
-					if anuncio['forma'] == 'Multiplos':
-						body = dict(variations=buscar_variacao_estoque(anuncio['id']))
-					else:
-						body = dict(available_quantity=float(anuncio['estoque']))
-					item_args = "items/%s" %(anuncio['item_id'])	
-					item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
-					if item.status_code != 200:
-						print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
-					else:
-						Anuncios[anuncio.id] = dict(alterado = 'N')
-
-			response.flash = 'Estoque Atualizado com Sucesso....'
-
+			atualizar_estoque()
+			status = 'Estoque Atualizado com Sucesso....'
 		else:
 			status = 'Antes Faça o Login....'
 
+		response.flash = status
+
 	return dict(form=form)
+
+
+
 
 @auth.requires_membership('admin')
 def zerar_estoque():
@@ -151,32 +137,17 @@ def sincronizar_produtos():
 	return dict(form=form)
 
 @auth.requires_membership('admin')
-def importar_estoque():
+def importar_estoque_comfirm():
 
 	form = FORM.confirm('Importar Estoque',{'Voltar':URL('default','index')})
 
 	if form.accepted:
 
-
-		import fdb
-		con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
-		cur = con.cursor()
-
-		select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
-
-		produtos = cur.execute(select).fetchall()
-		for produto in produtos:
-			salvar_estoque_gml(produto)
-			query = "update produtos set estalt = 'N' where codpro = {}".format(int(produto[0]))
-			cur.execute(query)
-			con.commit()
-
-		con.close()
+		importar_estoque()
 
 		response.flash = 'Estoque Importado com Sucesso....'
 	
 	return dict(form=form)
-
 
 
 @auth.requires_membership('admin')

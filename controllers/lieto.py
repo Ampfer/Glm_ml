@@ -202,6 +202,10 @@ def exportar(ids):
 		numorc = lieto_orcamentos1(venda)
 		itens = db(Pedidos_Itens.shipping_id==venda.id).select()
 		lieto_orcamentos2(numorc,itens)
+
+	# Atualizar estoque ML
+	importar_estoque()
+	atualizar_estoque()
 	
 	session.flash = 'Pedidos Exportados com Sucesso....'
 	return
@@ -233,7 +237,11 @@ def exportar_full(ids):
 		numdoc = lieto_pedidos1(numorc)
 		lieto_pedidos2(numdoc,numorc)
 
-	session.flash = "Pedido Importado com Sucesso....!"
+	# Atualizar estoque ML
+	importar_estoque()
+	atualizar_estoque()
+
+	session.flash = "Pedido Sicronizado com Sucesso....!"
 	return
 
 @auth.requires_membership('admin')
@@ -426,8 +434,7 @@ def lieto_orcamentos2(numdoc,itens):
 					orcamentos2.codpro = 1679
 					orcamentos2.nompro = 'PRODUTO NÃO ENCOTRADO'		
 					orcamentos2.insert()
-					
-			importar_estoque_produto(int(produto[0]))
+
 	return
 
 @auth.requires_membership('admin')
