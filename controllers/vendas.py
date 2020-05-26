@@ -410,9 +410,9 @@ def salvar_itens(itens):
 				insere = "INSERT INTO ORCAMENTOS2 ({}) VALUES ({})".format(', '.join(item_dict.keys()),str(item_dict.values()).strip('[]'))
 				
 				cur.execute(insere)
-
+			
 		con.commit()
-		importar_estoque_produto(int(produto[0]))
+			
 	con.close()
 	return
 

@@ -10,20 +10,26 @@ def importar_estoque_produto(codpro):
 	select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where codpro={}".format(codpro)
 	produto = cur.execute(select).fetchone()
 
+	salvar_estoque_gml(produto)
+
+	con.close()
+
+	return estoque
+
+@auth.requires_membership('admin')
+def salvar_estoque_gml(produto):
 	estoque = float(produto[1]) - float(produto[2]) - reservado(codpro)
 	estoque = 0 if estoque <0 else estoque
 
 	try:
 		db.produtos[int(codpro)] = dict(estoque = estoque )
-		
 	except:
 		pass
 
 	anuncio_alterado_produto(codpro)
 
-	con.close()
+	return
 
-	return estoque
 
 @auth.requires_membership('admin')
 def anuncio_alterado_produto(codpro):
@@ -36,9 +42,10 @@ def anuncio_alterado_produto(codpro):
 		estoque =  float(sugerido(anuncio)['estoque']) -  float(est_full)
 		estoque = estoque if estoque > 0 else 0
 		if estoque != anuncio.estoque:
-			Anuncios[anuncio.id] = dict(estoque=estoque,alterado = 'S')
-	print estoque
-
+			if est_full > 0:
+				Anuncios[anuncio.id] = dict(estoque=estoque)
+			else:
+				Anuncios[anuncio.id] = dict(estoque=estoque,alterado = 'S')
 
 @auth.requires_membership('admin')
 def reservado(produtos_id):

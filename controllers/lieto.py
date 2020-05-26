@@ -426,6 +426,8 @@ def lieto_orcamentos2(numdoc,itens):
 					orcamentos2.codpro = 1679
 					orcamentos2.nompro = 'PRODUTO NÃO ENCOTRADO'		
 					orcamentos2.insert()
+					
+			importar_estoque_produto(int(produto[0]))
 	return
 
 @auth.requires_membership('admin')
