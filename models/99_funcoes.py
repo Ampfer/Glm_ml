@@ -18,15 +18,15 @@ def importar_estoque_produto(codpro):
 
 @auth.requires_membership('admin')
 def salvar_estoque_gml(produto):
-	estoque = float(produto[1]) - float(produto[2]) - reservado(codpro)
+	estoque = float(produto[1]) - float(produto[2]) - reservado(produto[0])
 	estoque = 0 if estoque <0 else estoque
 
 	try:
-		db.produtos[int(codpro)] = dict(estoque = estoque )
+		db.produtos[int(produto[0])] = dict(estoque = estoque )
 	except:
 		pass
 
-	anuncio_alterado_produto(codpro)
+	anuncio_alterado_produto(produto[0])
 
 	return
 
