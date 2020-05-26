@@ -11,6 +11,9 @@ def importar_estoque_produto(codpro):
 	produto = cur.execute(select).fetchone()
 
 	salvar_estoque_gml(produto)
+	query = "update produtos set estalt = 'N' where codpro = {}".format(int(produto[0]))
+	cur.execute(query)
+	con.commit()
 
 	con.close()
 

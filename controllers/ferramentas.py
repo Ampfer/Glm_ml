@@ -163,11 +163,14 @@ def importar_estoque():
 		cur = con.cursor()
 
 		select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
-		#select = "select codpro,qntest,qntvnd from produtos where tabela = 'S'"
+
 		produtos = cur.execute(select).fetchall()
 		for produto in produtos:
 			salvar_estoque_gml(produto)
-		
+			query = "update produtos set estalt = 'N' where codpro = {}".format(int(produto[0]))
+			cur.execute(query)
+			con.commit()
+
 		con.close()
 
 		response.flash = 'Estoque Importado com Sucesso....'
