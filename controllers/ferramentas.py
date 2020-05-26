@@ -161,20 +161,12 @@ def importar_estoque():
 		import fdb
 		con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 		cur = con.cursor()
-		
-		for prod in db(db.produtos.id>0).select():
-			db.produtos[prod.id] = dict(estoque = 0 )
 
 		#select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
-		select = "select codpro,qntest,qntvnd from produtos where estalt = 'S'"
+		select = "select codpro,qntest,qntvnd from produtos where tabela = 'S'"
 		produtos = cur.execute(select).fetchall()
 		for produto in produtos:
-			estoque = float(produto[1]) - float(produto[2]) - reservado(produto[0])
-			estoque = 0 if estoque <0 else estoque
-			try:
-				db.produtos[int(produto[0])] = dict(estoque = estoque )
-			except:
-				pass
+			salvar_estoque_gml(produto)
 		
 		con.close()
 
