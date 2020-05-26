@@ -162,8 +162,8 @@ def importar_estoque():
 		con = fdb.connect(host=SERVERNAME, database=ERPFDB,user='sysdba', password='masterkey',charset='UTF8')
 		cur = con.cursor()
 
-		#select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
-		select = "select codpro,qntest,qntvnd from produtos where tabela = 'S'"
+		select = "select codpro,qntest,(select VENDIDO FROM qtde_vendida(codpro)) from produtos where tabela = 'S'"
+		#select = "select codpro,qntest,qntvnd from produtos where tabela = 'S'"
 		produtos = cur.execute(select).fetchall()
 		for produto in produtos:
 			salvar_estoque_gml(produto)
@@ -173,10 +173,6 @@ def importar_estoque():
 		response.flash = 'Estoque Importado com Sucesso....'
 	
 	return dict(form=form)
-
-def teste():
-	estoque = importar_estoque_produto(4672)
-	return dict(estoque=estoque)
 
 
 

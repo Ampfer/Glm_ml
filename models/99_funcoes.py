@@ -14,7 +14,7 @@ def importar_estoque_produto(codpro):
 
 	con.close()
 
-	return estoque
+	return 
 
 @auth.requires_membership('admin')
 def salvar_estoque_gml(produto):
