@@ -98,42 +98,64 @@ def zerar_estoque():
 
 @auth.requires_membership('admin')
 def sincronizar_produtos():
-	form = FORM.confirm('Sincronizar Produtos',{'Voltar':URL('default','index')})
 
-	if form.accepted:
+	form = SQLFORM.factory(
+	Field('codpro','integer',label='Código Produto:', default=0),
+		table_name='importarprodutos',
+		submit_button='Importar Produtos',
+	)
+
+	#form = FORM.confirm('Sincronizar Produtos',{'Voltar':URL('default','index')})
+
+	if form.process().accepted:
 		prod = Produtos()
-		query = "tabela = 'S' and codgru = 1"
+
+		if form.vars.codpro == 0:
+			query = "tabela = 'S' and codgru = 1"
+		else:
+			query = "tabela = 'S' and codgru = 1 and codpro = {}".format(form.vars.codpro)
+		
 		produtos = prod.select('codpro,nompro,modelo,clafis,codbar,oripro,locpro,sitden,unipro',query).fetchall()
-		for produto in produtos:
-			preco_tabela = prod.preco_tabela(produto[0])
-			try:
-				defaut = db.produtos[int(row.codigo)]
-				nome = defailt.nome 
-				marca = defailt.marca
-				ncm = default.ncm
-				ean = defailt.ean
-				origem = default.origem
-				locpro= default.locpro
-				cst = default.cst
-				unidade = default.unidade
-				preco = default.preco
+		
+		if len(produtos) > 0:
 
-			except:
-				nome = marca = ean = ncm = locpro = unidade = origem = cst = ''
-				preco = 0
+			for produto in produtos:
+				preco_tabela = prod.preco_tabela(produto[0])
+				try:
+					defaut = db.produtos[int(row.codigo)]
+					nome = defailt.nome 
+					marca = defailt.marca
+					ncm = default.ncm
+					ean = defailt.ean
+					origem = default.origem
+					locpro= default.locpro
+					cst = default.cst
+					unidade = default.unidade
+					preco = default.preco
 
-			db.produtos.update_or_insert(db.produtos.id == produto[0],
-                id = produto[0],
-                nome=produto[1] if produto[1] else nome,
-                marca = produto[2] if produto[2] else marca,
-                ncm = produto[3] if produto[3] else ncm,
-                ean = produto[4] if produto[4] else ean,
-                origem = produto[5] if produto[5] else origem,
-                locpro = produto[6] if produto[6] else locpro,
-                cst = produto[7] if produto[7] else cst,
-                unidade = produto[8] if produto[8] else unidade,
-                preco = preco_tabela if preco_tabela else preco
-            )
+				except:
+					nome = marca = ean = ncm = locpro = unidade = origem = cst = ''
+					preco = 0
+
+				db.produtos.update_or_insert(db.produtos.id == produto[0],
+	                id = produto[0],
+	                nome=produto[1] if produto[1] else nome,
+	                marca = produto[2] if produto[2] else marca,
+	                ncm = produto[3] if produto[3] else ncm,
+	                ean = produto[4] if produto[4] else ean,
+	                origem = produto[5] if produto[5] else origem,
+	                locpro = produto[6] if produto[6] else locpro,
+	                cst = produto[7] if produto[7] else cst,
+	                unidade = produto[8] if produto[8] else unidade,
+	                preco = preco_tabela if preco_tabela else preco
+	            )
+
+			status = 'Produto(s) Importado com Sucesso.!'
+		else:
+			status = 'Nenhum produto importado !'
+
+		response.flash = status
+	
 	return dict(form=form)
 
 @auth.requires_membership('admin')

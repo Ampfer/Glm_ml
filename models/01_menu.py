@@ -33,7 +33,7 @@ response.menu = [
 ]
 
 response.menu+=[
-    (T('Arquivos'), False, URL(request.application,'default','index'), [
+    (T('Cadastros'), False, URL(request.application,'default','index'), [
     ('Empresa', False, URL(r=request, c='cadastro', f='empresa')),
     ('Cliente', False, URL(r=request, c='cadastro', f='clientes')),
     ('Marcas', False, URL(r=request, c='cadastro', f='marcas')),
@@ -57,14 +57,13 @@ response.menu+=[
     ('Atualizar Status', False, URL(r=request, c='vendas', f='atualizar_status')),
     ])]
 response.menu+=[
-    (T('Ferramentas'), False, URL(request.application,'default','index'), [
+    (T('Produtos'), False, URL(request.application,'default','index'), [
     ('Importar Estoque', False, URL(r=request, c='ferramentas', f='importar_estoque_comfirm')),
     ('Atualizar Estoque', False, URL(r=request, c='ferramentas', f='atualizar_estoque_comfirm')),
-    ('Importar Produtos', False, URL(r=request, c='ferramentas', f='importar_produtos')),
-    ('Sincronizar Produtos', False, URL(r=request, c='ferramentas', f='sincronizar_produtos')),
+    ('Importar Produtos', False, URL(r=request, c='ferramentas', f='sincronizar_produtos')),
+    ('Importar Produtos csv', False, URL(r=request, c='ferramentas', f='importar_produtos')),
     ('Zerar Estoque', False, URL(r=request, c='ferramentas', f='zerar_estoque')),
     ('Atualizar Preços', False, URL(r=request, c='ferramentas', f='atualizar_preco')),
-    ('Estoque Bling', False, URL(r=request, c='ferramentas', f='bling_estoque')),
     ])]
 response.menu+=[
     (T('Lieto'), False, URL(request.application,'default','index'), [
