@@ -104,7 +104,7 @@ def grid(query,maxtextlength=50,pag=100,alt='400px',**kwargs):
 def titulo(titulo,subTitulo,*args):
     subTitulo = '<small>%s</small>' %(subTitulo)
     btn = DIV(args,_class="btn-group btn-group-xs",_role = 'group') if args else ''
-    return DIV(H1(titulo,XML(subTitulo)),btn,_class='page-header text-info') 
+    return DIV(H2(titulo,XML(subTitulo)),btn,_class='page-header text-info',_style='margin-top:0px') 
 
 def btnRodape(*args):
     return DIV(args,_class="btn-group btn-group-sm",_role = 'group')
@@ -236,7 +236,7 @@ def buscar_categoria(categoriaId):
             frete = json.loads(categoriaFrete.content)
             valorFrete = frete['coverage']['all_country']['list_cost']
 
-    return dict(categoria = nomeCategoria, categoriaId=categoriaId,valorFrete=valorFrete)
+    return dict(categoria = nomeCategoria, categoriaId=categoriaId, valorFrete=valorFrete)
 
 
 def buscar_descricao(produtoId=None, anuncioId = None):

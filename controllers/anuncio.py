@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
+from math import floor
+
+def teste():
+    categorias = db(Categorias.id > 0).select()
+    for item in categorias:
+         db(Anuncios.categoria == item.categoria_id ).update(fretegratis=item.frete)
+
+
 @auth.requires_membership('admin')
 def categorias():
     fields = (Categorias.categoria_id,Categorias.categoria,Categorias.frete)
     formCategorias = grid(Categorias,150,formname="formCategorias",fields=fields, orderby=Categorias.categoria)
             
-    formCategorias = DIV(formCategorias, _class="well")
-
-    btnAtualizar = atualizar('atualizar_categorias', 'Atualizar Categoria', 'formCategorias')
-    formCategorias[0].insert(-1, btnAtualizar)
-
     if request.args(-2) == 'new':
        redirect(URL('categoria'))
     elif request.args(-3) == 'edit':
@@ -68,27 +71,56 @@ def vincular_categoria():
 
 @auth.requires_membership('admin')
 def atualizar_categorias():
-    categorias = db(Categorias.id > 0).select()
-    for item in categorias:
-         # Buscar Categorias
-        categoria = buscar_categoria(item['categoria_id'])
+
+    form = FORM.confirm('Atualizar Categoria',{'Voltar':URL('default','index')})
+
+    if form.accepted:
+        categorias = db(Categorias.id > 0).select()
+        for item in categorias:
+             # Buscar Categorias
+            categoria = buscar_categoria(item['categoria_id'])
+            
+            # Salvar Categorias
+            Categorias.update_or_insert(Categorias.categoria_id == item.categoria_id,
+                    categoria = categoria['categoria'],
+                    categoria_id = item['categoria_id'],
+                    frete = categoria['valorFrete'],
+                    )
+
+            # Atualizar anuncios
+            db(Anuncios.categoria == item['categoria_id'] ).update(fretegratis=categoria['valorFrete'])
         
-        # Salvar Categorias
-        Categorias.update_or_insert(Categorias.categoria_id == item.categoria_id,
-                categoria = categoria['categoria'],
-                categoria_id = item['categoria_id'],
-                frete = categoria['valorFrete'],
-                )
+        response.flash = 'Categorias Atualizadas com Sucesso'
+
+    return dict(form=form)
 
 def duplicar_anuncio():
     anuncio_id = request.vars.anuncio
+    x = request.vars.x
     anuncio = Anuncios[anuncio_id]
     produtos = db(Anuncios_Produtos.anuncio == anuncio_id).select()
     atributos = db(Anuncios_Atributos.anuncio == anuncio_id).select()
     imagens = db(Anuncios_Imagens.anuncio == anuncio_id).select()
-    
+      
+    tp = 'P' if anuncio.tipo == 'gold_pro' else 'C'
+   
+    if int(x) > 1:
+        quantidade = int(x)
+        forma = 'Pack'
+        sk = tp[0] + x
+        tipo = anuncio.tipo
+        tt = ' ({} PEÇAS)'.format(x)
+    else:
+        quantidade = 0
+        forma = anuncio.forma
+        sk = tp[0]
+        tipo = 'gold_special' if anuncio.tipo == 'gold_pro' else 'gold_pro'
+        tt = ''
+
     # Duplicando dados do Anuncio
     newAnuncio = anuncio.as_dict()
+    newAnuncio['forma'] = forma
+    newAnuncio['tipo'] = tipo
     del newAnuncio['id']
     del newAnuncio['item_id']
     Anuncios[None] = newAnuncio
@@ -96,12 +128,16 @@ def duplicar_anuncio():
     # Duplicando Produtos do Anuncio
     for produto in produtos:
         newProduto = produto.as_dict()
+        quantidade = quantidade if quantidade > 0 else int(produto.quantidade)
+        newProduto['quantidade'] = quantidade
         del newProduto['id']
         newProduto['anuncio'] = newAnuncioId
         Anuncios_Produtos[None] = newProduto
     # Duplicando Atributos do Anuncio
     for atributo in atributos:
         newAtributo = atributo.as_dict()
+        if atributo.atributo == 313:
+            newAtributo['valor'] = newAtributo['valor'] + sk
         del newAtributo['id']
         newAtributo['anuncio'] = newAnuncioId
         Anuncios_Atributos[None] = newAtributo
@@ -111,6 +147,18 @@ def duplicar_anuncio():
         del newImagem['id']
         newImagem['anuncio'] = newAnuncioId
         Anuncios_Imagens[None] = newImagem
+
+    newSugerido = sugerido(Anuncios[newAnuncioId])
+    titulo = (Anuncios[newAnuncioId].titulo + tt)[:60]
+
+    if newSugerido['preco'] >= 120:
+        Anuncios[newAnuncioId] = dict(frete = 'gratis')
+        newSugerido = sugerido(Anuncios[newAnuncioId])
+
+    Anuncios[newAnuncioId] = dict(preco = newSugerido['preco'], 
+                                  estoque = floor(newSugerido['estoque']),
+                                  titulo=titulo,
+                                  )
 
     redirect(URL('anuncio', args=newAnuncioId ))
 
@@ -123,16 +171,53 @@ def anuncios():
             del Descricoes[idDescricao] 
         except:
             pass
+    '''
+    links=[
+    dict(header='',
+        body=lambda row: A(TAG.button('P/C',_class='btn btn-secondary btn-sm'),
+         _href=URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=1)) , _target = '_blank', _onclick="return confirm('Deseja Duplicar esse Anuncio ?');" )),
+    dict(header='',
+        body=lambda row: A(TAG.button('2X',_class='btn btn-secondary btn-sm'),
+         _href=URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=2)) , _target = '_blank', _onclick="return confirm('Deseja gerar kit com 2 unidades ?');" )),
+    dict(header='',
+        body=lambda row: A(TAG.button('5X',_class='btn btn-secondary btn-sm'),
+         _href=URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=5)) , _target = '_blank', _onclick="return confirm('href={} target = '_blank' onclick="return confirm('Deseja Duplicar esse Anuncio ?');"s ?');" )),
+    dict(header='',
+        body=lambda row: A(TAG.button('10X',_class='btn btn-secondary btn-sm'),
+        _href=URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=10)) , _target = '_blank', _onclick="return confirm('Deseja gerar kit com 10 unidades ?');" ))
+    ]
+    '''
+    def btn(row):
+        btnHtml = """
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Duplicar
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href={} target = '_blank' onclick="return confirm('Deseja Duplicar esse Anuncio ?');" style='padding:10px'>Premium / Clássico</a><br>
+            <a class="dropdown-item" href={} target = '_blank' onclick="return confirm('Deseja gerar kit com 02 unidades ?');" style='padding:10px'>Kit 02 unidades</a><br>
+            <a class="dropdown-item" href={} target = '_blank' onclick="return confirm('Deseja gerar kit com 04 unidades ?');" style='padding:10px'>Kit 04 unidades</a><br>
+            <a class="dropdown-item" href={} target = '_blank' onclick="return confirm('Deseja gerar kit com 06 unidades ?');" style='padding:10px'>Kit 06 unidades</a><br>
+            <a class="dropdown-item" href={} target = '_blank' onclick="return confirm('Deseja gerar kit com 10 unidades ?');" style='padding:10px'>Kit 10 unidades</a><br>
+            <a class="dropdown-item" href={} target = '_blank' onclick="return confirm('Deseja gerar kit com 12 unidades ?');" style='padding:10px'>Kit 12 unidades</a><br>
+          </div>
+        </div>
+        """.format(
+            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=1)),
+            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=2)),
+            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=4)),
+            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=8)),
+            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=10)),
+            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=12)),
 
-    links=[dict(header='Duplicar',
-            body=lambda row: A(TAG.button('Duplicar',_class='btn btn-secondary btn-sm'),
-           _href=URL('duplicar_anuncio',vars = dict(anuncio=row.id)) , _target = '_blank', _onclick="return confirm('Deseja Duplicar esse Anuncio ?');" ))]
+            )
+        return XML(btnHtml)
+
+    links=[dict(header='Ações',body=lambda row: btn(row))]
 
     fields = (Anuncios.id,Anuncios.titulo, Anuncios.tipo, Anuncios.desconto, Anuncios.preco, Anuncios.estoque)
     formAnuncios = grid(Anuncios,80,formname="formAnuncios",fields=fields, ondelete = delete_anuncio,
         orderby=Anuncios.titulo, links=links)   
-            
-    formAnuncios = DIV(formAnuncios, _class="well")
 
     if request.args(-2) == 'new':
        redirect(URL('anuncio'))
@@ -184,16 +269,11 @@ def anuncio():
     formAnuncio.element(_name='fretegratis')['_readonly'] = "readonly"
     formAnuncio.element(_name='titulo')['_onblur']   = "ajax('%s', ['titulo','categoria'], ':eval');" % URL('anuncio', 'sugerir_categoria')
 
-    if formAnuncio.process().accepted:
+    def validar(form):
+        valorfrete = buscar_categoria(form.vars.categoria)['valorFrete'] or 0
+        form.vars.fretegratis = valorfrete
 
-		### Salva Sku na tabela Anuncios_Atributos	
-		#sku = '%05d' % int(formAnuncio.vars.id)
-		#query = (Anuncios_Atributos.anuncio == formAnuncio.vars.id) & (Anuncios_Atributos.atributo == 313)
-		#Anuncios_Atributos.update_or_insert(query,
-	    #    								anuncio = formAnuncio.vars.id,
-		#									atributo = 313,
-		#									valor = sku
-		#									)
+    if formAnuncio.process(onvalidation=validar).accepted:
 
 		response.flash = 'Anuncio Salvo com Sucesso!'
 		redirect(URL('anuncio', args=formAnuncio.vars.id))

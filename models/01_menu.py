@@ -43,7 +43,9 @@ response.menu+=[
     ])]
 response.menu+=[
     (T('Anuncio'), False, URL(request.application,'default','index'), [
+    ('Anuncio', False, URL(r=request, c='anuncio', f='anuncios')),
     ('Categoria', False, URL(r=request, c='anuncio', f='categorias')),
+    ('Atualizar Categorias', False, URL(r=request, c='anuncio', f='atualizar_categorias')),
     ('Anuncio', False, URL(r=request, c='anuncio', f='anuncios')),
     ('Importar Anuncios', False, URL(r=request, c='anuncio', f='importar_anuncios')),
     ('Sincronizar Anuncios', False, URL(r=request, c='anuncio', f='sincronizar_anuncios')),
