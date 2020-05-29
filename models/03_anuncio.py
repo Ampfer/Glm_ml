@@ -60,6 +60,8 @@ Anuncios.status.requires = IS_IN_SET(STATUS,zero=None)
 Anuncios.status.represent = lambda status, row: STATUS[status]
 Anuncios.forma.requires = IS_IN_SET(FORMA,zero=None)
 Anuncios.bling.default = False
+Anuncios.preco_alterado.writable = Anuncios.preco_alterado.readable =  False
+Anuncios.alterado.writable = Anuncios.alterado.readable =  False
 
 
 Anuncios_Produtos = db.define_table('anuncios_produtos',

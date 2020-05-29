@@ -492,8 +492,12 @@ def anuncios_preco():
         preco = form.vars.preco
         estoque = form.vars.estoque
         desc = round((1-(float(preco)*(1-float(desconto/100)))/float(ep))*100,2)
+
+        precoAnterior = Anuncios[idAnuncio].preco
+
+        preAlt = 'S' if abs(float(preco)-float(precoAnterior))> float(0.05) else 'N'
         
-        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque,desconto=desc)
+        Anuncios[idAnuncio] = dict(preco=preco,estoque = estoque,desconto=desc, preco_alterado = preAlt)
         response.js = "$('#anuncios_desconto').val(%s)" %(desc)
         if preco >= 120:
             Anuncios[idAnuncio] = dict(frete = 'gratis')
@@ -624,7 +628,7 @@ def anunciar_item():
     	### Salvando item_id no banco de dados
         xitem = json.loads(item.content)
         valorfrete = buscar_valor_frete(xitem['id'])
-        Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'])
+        Anuncios[int(idAnuncio)] = dict(item_id=xitem['id'], preco_alterado = 'N')
         ### Salvando Atributos no ML
         atrib_args = "items/%s" %(xitem['id'])
         atrib = meli.put(atrib_args, bodyAtributo, {'access_token':session.ACCESS_TOKEN})
@@ -686,6 +690,8 @@ def alterar_item():
             status = 'Falha na Atualização do Item : item:%s Descrição:%s' %(item.content,desc)
         else:
             status = 'Anuncio Atualizado com Sucesso....'
+
+        Anuncios[int(idAnuncio)] = dict(preco_alterado = 'N')
 
     else:
         status = 'Antes Faça o Login....'

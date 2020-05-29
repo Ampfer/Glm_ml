@@ -213,6 +213,8 @@ def sincronizar_preco():
 				item = meli.put(item_args, body, {'access_token':session.ACCESS_TOKEN})
 				if item.status_code != 200:
 					print '%s - %s - %s' %(anuncio['item_id'],anuncio['id'] ,item)
+				else:
+					Anuncios[anuncio.id] = dict(preco_alterado = 'N')
 
 		session.flash = 'Preços Atualizado com Sucesso'
 	else:
