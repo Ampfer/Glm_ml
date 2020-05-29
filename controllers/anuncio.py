@@ -102,15 +102,15 @@ def duplicar_anuncio():
     atributos = db(Anuncios_Atributos.anuncio == anuncio_id).select()
     imagens = db(Anuncios_Imagens.anuncio == anuncio_id).select()
       
-    tp = 'P' if anuncio.tipo == 'gold_pro' else 'C'
-   
     if int(x) > 1:
+        tp = 'P' if anuncio.tipo == 'gold_pro' else 'C'
         quantidade = int(x)
         forma = 'Pack'
         sk = tp[0] + x
         tipo = anuncio.tipo
         tt = ' ({} PEÇAS)'.format(x)
     else:
+        tp = 'C' if anuncio.tipo == 'gold_pro' else 'P'
         quantidade = 0
         forma = anuncio.forma
         sk = tp[0]
