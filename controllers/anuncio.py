@@ -206,7 +206,7 @@ def anuncios():
             URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=1)),
             URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=2)),
             URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=4)),
-            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=8)),
+            URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=6)),
             URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=10)),
             URL('duplicar_anuncio',vars = dict(anuncio=row.id,x=12)),
 
