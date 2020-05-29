@@ -295,6 +295,7 @@
 'previous %s rows': 'previous %s rows',
 'previous 100 rows': '100 linhas anteriores',
 'Preço': 'Preço',
+'Preço Alterado:': 'Preço Alterado:',
 'Preço:': 'Preço:',
 'Produto': 'Produto',
 'Produto:': 'Produto:',

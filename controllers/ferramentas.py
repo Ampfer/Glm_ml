@@ -83,9 +83,6 @@ def atualizar_estoque_comfirm():
 
 	return dict(form=form)
 
-
-
-
 @auth.requires_membership('admin')
 def zerar_estoque():
 
@@ -171,13 +168,14 @@ def importar_estoque_comfirm():
 	
 	return dict(form=form)
 
-
 @auth.requires_membership('admin')
 def atualizar_sugerido():
 	anuncios = db(Anuncios.id > 0).select()
 	for anuncio in anuncios:
 		anuncioId = int(anuncio.id)
-		Anuncios[anuncioId] = dict(preco=sugerido(anuncio)['preco'])
+		preco = sugerido(anuncio)['preco']
+		if abs(float(anuncio.preco) - float(preco)) > float(0.05):
+			Anuncios[anuncioId] = dict(preco=preco, preco_alterado = 'S')
 	#response.js = "$('#teste').get(0).reload()"
 	session.flash = 'Preços Atualizados com Sucesso....!'
 	response.js = "location.reload(true)"
@@ -203,9 +201,8 @@ def sincronizar_preco():
 	if session.ACCESS_TOKEN:
 		from meli import Meli 
 		meli = Meli(client_id=CLIENT_ID,client_secret=CLIENT_SECRET, access_token=session.ACCESS_TOKEN, refresh_token=session.REFRESH_TOKEN)
-		anuncios = db(Anuncios.status == 'active').select()
-		#anuncios = db(Anuncios.id == 841).select()
-		#anuncios = db(Anuncios.forma == 'Multiplos').select()
+		query = (Anuncios.status == 'active') & (Anuncios.preco_alterado == 'S')
+		anuncios = db(query).select()
 		for anuncio in anuncios:		
 			if anuncio['item_id']:
 				if anuncio['forma'] == 'Multiplos':
@@ -329,7 +326,6 @@ def atualizar_ean():
 			else:
 				status = 'Antes Faça o Login....'
 				item = ''   
-
 
 @auth.requires_membership('admin')
 def exportar_produtos():
@@ -488,7 +484,6 @@ def lista_tray_variacao(b):
 	tray_variacao_row.append(b['variacao_nome']) # Nome da variação 1 (exemplo: Branco)
 	tray_variacao_row.append(b['variacao_tipo']) # Tipo da variação 1 (exemplo: Cor)
 	return tray_variacao_row
-
 
 '''
 @auth.requires_membership('admin')
