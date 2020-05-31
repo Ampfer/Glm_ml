@@ -196,6 +196,7 @@ def exportar_bling():
 
     return dict(gridAnuncios = gridAnuncios)
 
+
 @auth.requires_membership('admin')
 def bling_csv(ids):
 
@@ -218,6 +219,9 @@ def bling_csv(ids):
 
 		url = ', '.join(url_imagens)
 
+		pesoCubico = (produto.largura*produto.altura*produto.comprimento)/6000
+		pesoBruto = produto.peso if produto.peso > pesoCubico else pesoCubico
+
 		bling_produto = []
 		bling_produto.append('')# Id
 		bling_produto.append(str(idProduto).zfill(5)) # codigo
@@ -237,7 +241,7 @@ def bling_csv(ids):
 		bling_produto.append(0) # Estoque_maximo
 		bling_produto.append(0) # Estoque_minimo
 		bling_produto.append(produto.peso) # Peso_liquido_kg
-		bling_produto.append(produto.peso) # Peso_bruto_kg
+		bling_produto.append(pesoBruto) # Peso_bruto_kg
 		bling_produto.append(produto.ean) # GTIN_EAN
 		bling_produto.append(produto.ean) # GTIN_EAN_da_embalagem
 		bling_produto.append(produto.largura) # Largura_do_Produto
