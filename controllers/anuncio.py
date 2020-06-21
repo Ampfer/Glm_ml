@@ -551,7 +551,7 @@ def anuncios_publicar():
                     listing_type_id=anuncio.tipo,
                     frete=frete,
                     condition="new",
-                    warranty=anuncio.garantia,
+                    #warranty=anuncio.garantia,
                     description = descricao,
                     attributes=atributos,
                     forma=anuncio.forma,
@@ -604,7 +604,7 @@ def anunciar_item():
                 buying_mode=session.anuncio['buying_mode'],
                 listing_type_id=session.anuncio['listing_type_id'],
                 condition=session.anuncio['condition'],
-                warranty=session.anuncio['warranty'],
+                #warranty=session.anuncio['warranty'],
                 description=session.anuncio['description'],
                 shipping=session.anuncio['frete'],
                 seller_custom_field = session.anuncio['sku'],
@@ -639,8 +639,8 @@ def anunciar_item():
 
     response.flash = status
     response.js = "$('#anunciospublicar').get(0).reload()"
-
-    return
+    print item.content
+    return 
 
 @auth.requires_membership('admin')
 def alterar_item():
