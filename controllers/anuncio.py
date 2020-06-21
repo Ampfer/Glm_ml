@@ -7,7 +7,6 @@ def teste():
     for item in categorias:
          db(Anuncios.categoria == item.categoria_id ).update(fretegratis=item.frete)
 
-
 @auth.requires_membership('admin')
 def categorias():
     fields = (Categorias.categoria_id,Categorias.categoria,Categorias.frete)
@@ -67,7 +66,6 @@ def vincular_categoria():
                 item.append('{}/{}/{}'.format(n1.categoria,n2.categoria,n3.categoria))
         categorias.append(item)
     print categorias
-
 
 @auth.requires_membership('admin')
 def atualizar_categorias():
