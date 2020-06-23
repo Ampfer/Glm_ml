@@ -409,7 +409,7 @@ def lieto_orcamentos2(numdoc,itens):
 			pdepro = round((1-((item.valor/indice) / preco_tabela)) * 100,2)
 			# verificar se existe item cadastrado
 			query = "NUMDOC = {} AND CODPRO = {}".format(int(numdoc),int(produto[0]))
-			existe = orcamentos2.select('*',query).fetchone()
+			existe = orcamentos2.select('qntpro',query).fetchone()
 		
 			orcamentos2.numdoc = int(numdoc)
 			orcamentos2.codpro = int(produto[0])
@@ -426,6 +426,7 @@ def lieto_orcamentos2(numdoc,itens):
 			orcamentos2.qntpre = 1
 
 			if existe:
+				orcamentos2.qntpro = orcamentos2.qntpro + float(existe[0])
 				orcamentos2.update(query)
 			else:
 				try:
