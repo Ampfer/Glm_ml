@@ -426,7 +426,7 @@ def lieto_orcamentos2(numdoc,itens):
 			orcamentos2.qntpre = 1
 
 			if existe:
-				orcamentos2.qntpro = orcamentos2.qntpro + float(existe[0])
+				#orcamentos2.qntpro = orcamentos2.qntpro + float(existe[0])
 				orcamentos2.update(query)
 			else:
 				try:
